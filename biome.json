@@ -44,6 +44,10 @@
         "noUselessElse": "error",
         "useAsConstAssertion": "error",
         "useConst": "error"
+      },
+      "nursery": {
+        "useTailwindShorthandClasses": "error",
+        "noTailwindLegacyUtilities": "error"
       }
     },
     "domains": {
@@ -64,5 +68,8 @@
       "quoteStyle": "single",
       "semicolons": "always"
     }
+  },
+  "tailwind": {
+    "stylesheet": "./src/app/_styles/globals.css"
   }
 }

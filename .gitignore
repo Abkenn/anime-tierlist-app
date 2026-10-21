@@ -30,3 +30,9 @@ next-env.d.ts
 Thumbs.db
 *-debug.log*
 .env.example
+/.vscode/
+
+# Generated offline worker (contains build-specific asset paths)
+/public/sw.js
+
+/docs/
