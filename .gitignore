@@ -36,3 +36,7 @@ Thumbs.db
 /public/sw.js
 
 /docs/
+
+# Storybook build and local cache
+/storybook-static/
+/.storybook-cache/

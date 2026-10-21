@@ -12,7 +12,6 @@ export const PreviewLink = ({ expanded }: PreviewLinkProps) => (
       buttonVariants({ variant: 'link' }),
       'h-10 justify-start rounded-none px-0 font-normal underline-offset-8',
     )}
-    aria-label={expanded ? 'Close preview' : 'Explore the tiers'}
     aria-expanded={expanded}
     aria-controls="tier-preview"
   >

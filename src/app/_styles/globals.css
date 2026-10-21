@@ -178,31 +178,7 @@
   }
 }
 
-.terminal-title {
-  display: inline-block;
-  animation: terminal-type 560ms steps(7, end) both;
-}
-
-.terminal-rule {
-  border-color: color-mix(in srgb, var(--foreground) 18%, var(--background));
-}
-
-@keyframes terminal-type {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
 :where(a, button):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 5px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .terminal-title {
-    animation: none;
-  }
 }

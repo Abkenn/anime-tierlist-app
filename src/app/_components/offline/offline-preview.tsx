@@ -7,7 +7,7 @@ import {
   useState,
   ViewTransition,
 } from 'react';
-import { TierPreview } from '@/app/_components/home/tier-preview';
+import { TierBoard } from '@/app/_components/tierlist/tier-board';
 import { Button } from '@/app/_components/ui/button';
 import { OFFLINE_RECONNECT_EVENT } from '@/app/_services/offline-mode';
 import {
@@ -64,7 +64,7 @@ export const OfflinePreview = () => {
             enter="preview-change"
             exit="preview-change"
           >
-            <TierPreview />
+            <TierBoard />
           </ViewTransition>
         )}
       </div>

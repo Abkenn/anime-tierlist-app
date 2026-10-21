@@ -10,7 +10,9 @@ export const HomeShell = ({ children }: PropsWithChildren) => (
         id="home-title"
         className="text-[clamp(3.25rem,11vw,7rem)] leading-none font-normal tracking-[-0.06em]"
       >
-        <span className="terminal-title">Tierlist</span>
+        <span className="inline-block [clip-path:inset(0)] starting:[clip-path:inset(0_100%_0_0)] transition-[clip-path] duration-560 ease-[steps(7,end)] motion-reduce:transition-none">
+          Tierlist
+        </span>
       </h1>
       <p className="max-w-md text-sm leading-7 text-muted-foreground">
         Your anime. Your order.
@@ -18,7 +20,7 @@ export const HomeShell = ({ children }: PropsWithChildren) => (
     </section>
     <section
       aria-label="Tier preview"
-      className="mt-16 w-full max-w-xl border-t terminal-rule pt-5 sm:mt-20"
+      className="mt-16 w-full border-t border-[color-mix(in_srgb,var(--foreground)_18%,var(--background))] pt-5 sm:mt-20"
     >
       {children}
     </section>

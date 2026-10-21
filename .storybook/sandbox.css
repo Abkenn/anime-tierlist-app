@@ -1,0 +1,8 @@
+:root {
+  --font-geist-sans: Arial, sans-serif;
+  --font-geist-mono: ui-monospace, Consolas, monospace;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
