@@ -43,6 +43,7 @@ const Sandbox = ({ imageMode }: SandboxProps) => {
           layout="single-line"
           interaction={interaction}
         />
+
         <TierBoardItems
           interaction={interaction}
           imageMode={imageMode}

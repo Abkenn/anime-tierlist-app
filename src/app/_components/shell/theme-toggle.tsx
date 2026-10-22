@@ -14,6 +14,7 @@ export const ThemeToggle = () => {
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
     >
       <span className="hidden dark:inline">Light</span>
+
       <span className="inline dark:hidden">Dark</span>
     </Button>
   );

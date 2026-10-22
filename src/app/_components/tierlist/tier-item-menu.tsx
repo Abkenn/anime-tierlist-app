@@ -56,6 +56,7 @@ export const TierItemMenu = ({
       render={trigger}
       aria-haspopup={mode === 'natural' ? 'dialog' : 'menu'}
     />
+
     <ContextMenuContent
       finalFocus={finalFocus}
       className={
@@ -85,11 +86,13 @@ export const TierItemMenu = ({
           <ContextMenuItem disabled={!hasImage || editing} onClick={onEdit}>
             Edit crop
           </ContextMenuItem>
+
           <ContextMenuItem disabled={!hasImage || editing} onClick={onReset}>
             Reset crop
           </ContextMenuItem>
         </>
       )}
+
       {mode === 'natural' && (
         <div className="w-60 max-w-full px-3">
           <Slider
@@ -118,6 +121,7 @@ export const TierItemMenu = ({
           />
         </div>
       )}
+
       {mode === 'contain' && (
         <ContextMenuItem disabled>Image centered in square</ContextMenuItem>
       )}

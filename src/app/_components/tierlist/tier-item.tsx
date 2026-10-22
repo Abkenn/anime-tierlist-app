@@ -87,6 +87,7 @@ const TierItemTrigger = ({
     {image ? (
       <>
         {editing && <TierCropPreview image={image} crop={crop} />}
+
         <span className="relative block size-full overflow-hidden">
           <TierItemImage image={image} mode={imageMode} crop={crop} />
         </span>
@@ -233,6 +234,7 @@ export const TierItem = ({
           />
         }
       />
+
       {editing && (
         <TierCropControls
           anchor={itemRef}

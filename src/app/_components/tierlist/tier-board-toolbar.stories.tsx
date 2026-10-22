@@ -28,6 +28,7 @@ const meta = {
           }
           onImageModeChange={(imageMode) => updateArgs({ imageMode })}
         />
+
         <div id={args.optionsId} hidden />
       </>
     );

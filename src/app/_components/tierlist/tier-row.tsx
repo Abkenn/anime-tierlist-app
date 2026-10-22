@@ -56,6 +56,7 @@ export const TierRow = ({
     >
       {rank}
     </div>
+
     <div
       className={cn(
         'min-w-0 transition-colors duration-150 motion-reduce:transition-none',

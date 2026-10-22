@@ -81,6 +81,7 @@ export const TierCropControls = ({
               }}
             >
               <p>Drag image · Enter saves · Esc cancels</p>
+
               <div className="flex items-center justify-center gap-4">
                 <button
                   type="button"
@@ -92,6 +93,7 @@ export const TierCropControls = ({
                 >
                   Done
                 </button>
+
                 <button
                   type="button"
                   className={actionClassName}
@@ -99,6 +101,7 @@ export const TierCropControls = ({
                 >
                   Cancel
                 </button>
+
                 <button
                   type="button"
                   className={cn(

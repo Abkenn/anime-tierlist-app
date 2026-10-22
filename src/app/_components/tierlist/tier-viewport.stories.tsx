@@ -41,8 +41,11 @@ const RefCleanupSandbox = ({ scrollable }: { scrollable: boolean }) => {
       >
         Unmount viewport
       </button>
+
       <output aria-label="Viewport element">{elementName}</output>
+
       <output aria-label="Ref cleanup count">{cleanupCount}</output>
+
       {visible && (
         <TierViewport ref={viewportRef} scrollable={scrollable}>
           <div className="h-240 w-120">Scrollable content</div>

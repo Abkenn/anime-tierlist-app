@@ -38,6 +38,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <OfflineSupport />
+
           <ScrollArea className="h-dvh w-full" aria-label="Page content">
             <div className="flex min-h-dvh flex-col bg-background text-foreground">
               <header className="mx-auto flex w-full max-w-480 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
@@ -50,13 +51,16 @@ const RootLayout = ({ children }: RootLayoutProps) => {
                 >
                   <HomeLink />
                 </Suspense>
+
                 <div className="flex items-center gap-3">
                   <Suspense fallback={null}>
                     <OfflineStatus />
                   </Suspense>
+
                   <ThemeToggle />
                 </div>
               </header>
+
               <ViewTransition default="page-change" update="none">
                 {children}
               </ViewTransition>

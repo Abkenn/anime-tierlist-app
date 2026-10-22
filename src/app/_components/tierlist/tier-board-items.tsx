@@ -38,6 +38,7 @@ export const TierBoardItems = ({
     <p role="status" className="sr-only">
       {interaction.announcement}
     </p>
+
     <div className="pointer-events-none absolute inset-0">
       {interaction.dropPosition && (
         <motion.div
@@ -49,6 +50,7 @@ export const TierBoardItems = ({
           className="absolute left-0 top-0 z-0 border border-dashed border-white/80 bg-white/15"
         />
       )}
+
       {interaction.items.map((item) => {
         const position = interaction.position(item);
         const rank = interaction.visibleRank(item);

@@ -98,12 +98,14 @@ export const TierBoard = ({
         onToggleOptions={() => setSettingsOpen((open) => !open)}
         onImageModeChange={changeImageMode}
       />
+
       <TierRankOptions
         id={optionsId}
         open={settingsOpen}
         enabledRanks={enabledRanks}
         onToggle={toggleVariant}
       />
+
       <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
         <motion.div
           ref={interaction.boardRef}
@@ -116,6 +118,7 @@ export const TierBoard = ({
             layout={layout}
             interaction={interaction}
           />
+
           <TierBoardItems
             interaction={interaction}
             imageMode={imageMode}

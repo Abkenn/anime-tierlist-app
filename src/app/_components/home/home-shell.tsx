@@ -9,10 +9,12 @@ export const HomeShell = ({ children }: PropsWithChildren) => (
       >
         Tierlist
       </h1>
+
       <p className="hidden text-xs text-muted-foreground sm:block">
         Your anime. Your order.
       </p>
     </header>
+
     <section aria-labelledby="home-title" className="w-full">
       {children}
     </section>

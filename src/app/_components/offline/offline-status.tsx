@@ -45,6 +45,7 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
         <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
         offline
       </button>
+
       {open && (
         <aside
           id={noticeId}
@@ -55,11 +56,14 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
             aria-hidden="true"
             className="absolute -top-1.5 right-24 size-2.5 rotate-45 border-l border-t border-gold/60 bg-lemon-cream dark:bg-olive sm:right-6"
           />
+
           <div className="flex items-start justify-between gap-4">
             <div role="status" className="space-y-2">
               <p className="text-sm font-medium">You’re in offline mode</p>
+
               <p className="text-xs leading-5">{descriptions[mode]}</p>
             </div>
+
             <button
               type="button"
               aria-label="Dismiss offline notice"
@@ -69,6 +73,7 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
               ×
             </button>
           </div>
+
           <button
             type="button"
             disabled={checking}

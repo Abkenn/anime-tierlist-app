@@ -27,12 +27,14 @@ export const TierBoardToolbar = ({
         <p>
           {rankCount} tiers · {itemCount} items
         </p>
+
         <p role="status" className="mt-1 text-xs">
           {keyboardMode
             ? 'Keyboard mode · ↑↓ / W S tier · ←→ / A D order · Esc exit'
             : 'Drag to rank · Tab to select · Enter after click'}
         </p>
       </div>
+
       <button
         type="button"
         className="min-h-11 underline underline-offset-4"
@@ -43,6 +45,7 @@ export const TierBoardToolbar = ({
         {settingsOpen ? 'close options' : 'tier options'}
       </button>
     </div>
+
     <label className="mb-2 flex w-fit items-center gap-2 text-xs text-muted-foreground">
       Images
       <select
@@ -54,7 +57,9 @@ export const TierBoardToolbar = ({
         }
       >
         <option value="contain">Fit squares</option>
+
         <option value="cover">Fill squares</option>
+
         <option value="natural">Original ratio</option>
       </select>
     </label>

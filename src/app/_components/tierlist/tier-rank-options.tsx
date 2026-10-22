@@ -18,10 +18,12 @@ export const TierRankOptions = ({
     <p className="mb-3 text-xs text-muted-foreground">
       Add or remove letter variants
     </p>
+
     <div className="flex flex-wrap gap-x-6 gap-y-4">
       {tierLetters.map((letter) => (
         <fieldset key={letter} className="flex gap-3">
           <legend className="mb-2 text-xs">{letter}</legend>
+
           {(['+', '−'] as const).map((modifier) => (
             <label
               key={modifier}
@@ -32,7 +34,9 @@ export const TierRankOptions = ({
                 checked={enabledRanks.includes(`${letter}${modifier}`)}
                 onChange={() => onToggle(`${letter}${modifier}`)}
               />
+
               {letter}
+
               {modifier}
             </label>
           ))}

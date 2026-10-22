@@ -22,6 +22,7 @@ export const ContextMenuCheckboxItem = ({
         <CheckIcon className="size-4" />
       </Primitive.CheckboxItemIndicator>
     </span>
+
     {children}
   </Primitive.CheckboxItem>
 );

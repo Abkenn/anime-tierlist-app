@@ -33,7 +33,9 @@ const ScrollArea = ({
           {children}
         </ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
+
       <ScrollBar orientation={orientation} />
+
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   );

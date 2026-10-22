@@ -17,6 +17,7 @@ const Sandbox = (
       >
         1
       </button>
+
       <TierCropControls {...props} anchor={anchor} />
     </div>
   );

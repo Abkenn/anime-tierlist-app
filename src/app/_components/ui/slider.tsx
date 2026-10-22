@@ -46,6 +46,7 @@ export const Slider = ({
             className="bg-primary select-none data-horizontal:h-full data-vertical:w-full"
           />
         </SliderPrimitive.Track>
+
         {thumbs.map((thumb, index) => (
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
@@ -66,6 +67,7 @@ export const Slider = ({
                 }}
               >
                 {thumbAttributes.children}
+
                 {thumbLabel && (
                   <span
                     role="tooltip"
