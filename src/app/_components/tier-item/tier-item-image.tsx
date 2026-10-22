@@ -4,10 +4,12 @@ import { cn } from 'cn';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { fullImageTrim, getTrimmedImage } from '@/app/_lib/tier-image-trim';
 import type {
   TierCrop,
   TierImage,
   TierImageMode,
+  TierImageTrim,
 } from '@/app/_types/tierlist.types';
 
 const MotionImage = motion.create(Image);
@@ -16,14 +18,43 @@ type TierItemImageProps = {
   image: TierImage;
   mode: TierImageMode;
   crop: TierCrop;
+  trim?: TierImageTrim;
 };
 
-export const TierItemImage = ({ image, mode, crop }: TierItemImageProps) => {
+export const TierItemImage = ({
+  image,
+  mode,
+  crop,
+  trim = fullImageTrim,
+}: TierItemImageProps) => {
   const [failedSource, setFailedSource] = useState<string | null>(null);
+  const trimmed = getTrimmedImage(image, trim);
 
-  return failedSource === image.src ? (
-    <span className="px-1 text-xs">{image.alt}</span>
-  ) : (
+  if (failedSource === image.src) {
+    return <span className="px-1 text-xs">{image.alt}</span>;
+  }
+
+  if (mode === 'natural') {
+    return (
+      <svg
+        viewBox={`${image.width * trim.left} ${image.height * trim.top} ${trimmed.width} ${trimmed.height}`}
+        className="pointer-events-none size-full overflow-hidden object-contain select-none"
+        role="img"
+        aria-label={image.alt}
+      >
+        <title>{image.alt}</title>
+
+        <image
+          href={image.src}
+          width={image.width}
+          height={image.height}
+          onError={() => setFailedSource(image.src)}
+        />
+      </svg>
+    );
+  }
+
+  return (
     <MotionImage
       src={image.src}
       alt={image.alt}

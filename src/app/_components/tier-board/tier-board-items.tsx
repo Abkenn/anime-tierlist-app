@@ -7,6 +7,7 @@ import { TierItem } from '@/app/_components/tier-item/tier-item';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
+import { getTrimmedImage } from '@/app/_lib/tier-image-trim';
 
 type TierBoardItemsProps = {
   interaction: Pick<
@@ -61,10 +62,12 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
               editing={editingItemId === item.id}
               image={item.image}
               crop={item.crop}
+              trim={item.trim}
+              onTrimChange={(trim) => interaction.updateItem(item.id, { trim })}
               onCropChange={(crop) => interaction.updateItem(item.id, { crop })}
               sizingControl={
                 <TierItemSizing
-                  image={item.image}
+                  image={item.image && getTrimmedImage(item.image, item.trim)}
                   expansion={item.rowHeightExpansion ?? 0}
                   onChange={(rowHeightExpansion) =>
                     interaction.updateItem(item.id, { rowHeightExpansion })

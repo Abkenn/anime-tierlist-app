@@ -5,7 +5,7 @@ import type { TierImage } from '@/app/_types/tierlist.types';
 
 const expansionLabel = (value: number) => {
   if (value === 0) {
-    return 'Original ratio';
+    return 'Custom ratio';
   }
 
   if (value === 100) {

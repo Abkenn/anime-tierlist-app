@@ -26,6 +26,6 @@ describe('image mode SSR', () => {
     );
 
     expect(controlled).toContain('<output>cover</output>');
-    expect(independent).toContain('<output>contain</output>');
+    expect(independent).toContain('<output>natural</output>');
   });
 });

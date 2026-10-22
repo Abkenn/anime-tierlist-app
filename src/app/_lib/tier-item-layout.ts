@@ -1,5 +1,7 @@
 import type { TierImageMode, TierItemData } from '@/app/_types/tierlist.types';
 
+import { getTrimmedImage } from './tier-image-trim';
+
 export const tierItemGap = 0.125;
 
 export type TierItemBox = {
@@ -19,7 +21,8 @@ type ItemSizeInput = {
 };
 
 export const getTierItemSize = ({ item, size, mode }: ItemSizeInput) => {
-  const ratio = item.image ? item.image.width / item.image.height : 1;
+  const image = item.image && getTrimmedImage(item.image, item.trim);
+  const ratio = image ? image.width / image.height : 1;
 
   if (mode !== 'natural' || !Number.isFinite(ratio) || ratio <= 0) {
     return { width: size, height: size };

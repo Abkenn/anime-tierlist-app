@@ -17,8 +17,8 @@ describe('tierlist settings', () => {
     const first = createStore();
     const second = createStore();
 
-    first.set(changeImageModeAtom, 'natural');
-    expect(first.get(imageModeAtom)).toBe('natural');
-    expect(second.get(imageModeAtom)).toBe('contain');
+    first.set(changeImageModeAtom, 'cover');
+    expect(first.get(imageModeAtom)).toBe('cover');
+    expect(second.get(imageModeAtom)).toBe('natural');
   });
 });

@@ -3,6 +3,7 @@ export { TierBoardItems } from '../tier-board/tier-board-items';
 export { TierViewport } from '../tier-board/tier-viewport';
 export { TierCropControls } from '../tier-item/tier-crop-controls';
 export { TierCropPreview } from '../tier-item/tier-crop-preview';
+export { TierImageTrimEditor } from '../tier-item/tier-image-trim-editor';
 export { TierItem } from '../tier-item/tier-item';
 export { TierItemImage } from '../tier-item/tier-item-image';
 export { TierItemMenu } from '../tier-item/tier-item-menu';

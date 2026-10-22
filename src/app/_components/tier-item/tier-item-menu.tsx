@@ -12,6 +12,7 @@ type TierItemMenuProps = {
   trigger: ReactElement;
   finalFocus?: RefObject<HTMLElement | null>;
   hasImage: boolean;
+  squareImage?: boolean;
   editing: boolean;
   sizingControl?: ReactElement;
   onOpen: () => void;
@@ -23,6 +24,7 @@ export const TierItemMenu = ({
   trigger,
   finalFocus,
   hasImage,
+  squareImage = false,
   editing,
   sizingControl,
   onOpen,
@@ -68,16 +70,26 @@ export const TierItemMenu = ({
         role={mode === 'natural' ? 'dialog' : 'menu'}
         aria-label={mode === 'natural' ? 'Image size' : undefined}
       >
-        {mode === 'cover' && (
-          <>
-            <ContextMenuItem disabled={!hasImage || editing} onClick={onEdit}>
+        {(mode === 'cover' || mode === 'natural') && (
+          <div role="menu" aria-label="Image crop actions">
+            <ContextMenuItem
+              disabled={
+                !hasImage || editing || (mode === 'cover' && squareImage)
+              }
+              onClick={onEdit}
+            >
               Edit crop
             </ContextMenuItem>
 
-            <ContextMenuItem disabled={!hasImage || editing} onClick={onReset}>
+            <ContextMenuItem
+              disabled={
+                !hasImage || editing || (mode === 'cover' && squareImage)
+              }
+              onClick={onReset}
+            >
               Reset crop
             </ContextMenuItem>
-          </>
+          </div>
         )}
 
         {mode === 'natural' && sizingControl}

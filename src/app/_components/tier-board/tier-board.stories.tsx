@@ -20,7 +20,7 @@ const RankSandbox = ({
 }: NonNullable<ComponentProps<typeof TierBoard>>) => {
   const [currentRanks, setCurrentRanks] = useState(ranks);
   const [currentImageMode, setCurrentImageMode] = useState<TierImageMode>(
-    imageMode ?? 'contain',
+    imageMode ?? 'natural',
   );
 
   const rankKey = ranks.join(',');
@@ -30,7 +30,7 @@ const RankSandbox = ({
   }, [rankKey]);
 
   useEffect(() => {
-    setCurrentImageMode(imageMode ?? 'contain');
+    setCurrentImageMode(imageMode ?? 'natural');
   }, [imageMode]);
 
   return (
@@ -541,7 +541,7 @@ export const IndependentBoards: Story = {
     await expect(item).toHaveAttribute('data-image-mode', 'cover');
     await expect(
       secondBoard.getByRole('button', { name: 'Item 1 in S+' }),
-    ).toHaveAttribute('data-image-mode', 'contain');
+    ).toHaveAttribute('data-image-mode', 'natural');
   },
 };
 
@@ -581,5 +581,60 @@ export const FixedImageMode: Story = {
     await expect(
       canvas.getByRole('button', { name: 'Item 1 in S+' }),
     ).toHaveAttribute('data-image-mode', 'contain');
+  },
+};
+
+export const OriginalRatioCrop: Story = {
+  args: {
+    imageMode: 'natural',
+    initialItems: [
+      {
+        id: 'trim-test',
+        label: 'Trim test',
+        rank: 'S+',
+        image: {
+          src: '/tier-samples/landscape.svg',
+          width: 1600,
+          height: 900,
+          alt: 'Landscape TEST',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await canvas.findByRole('button', {
+      name: 'Item Trim test in S+',
+    });
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit crop' }),
+    );
+    const right = await page.findByRole('slider', { name: 'right crop edge' });
+    [1, 2, 3, 4, 5].forEach(() => {
+      fireEvent.keyDown(right, { code: 'ArrowLeft', shiftKey: true });
+    });
+    await userEvent.click(page.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(
+        Number(
+          item.querySelector('svg')?.getAttribute('viewBox')?.split(' ')[2],
+        ),
+      ).toBeCloseTo(800),
+    );
+    fireEvent.contextMenu(item);
+    const expansion = await page.findByRole('slider', {
+      name: 'Row height expansion',
+    });
+    await expect(expansion).toHaveAttribute('aria-valuenow', '100');
+    await expect(expansion).toBeDisabled();
+    await userEvent.click(page.getByRole('menuitem', { name: 'Reset crop' }));
+    await waitFor(() =>
+      expect(item.querySelector('svg')).toHaveAttribute(
+        'viewBox',
+        '0 0 1600 900',
+      ),
+    );
   },
 };

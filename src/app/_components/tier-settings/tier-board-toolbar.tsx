@@ -58,11 +58,11 @@ export const TierBoardToolbar = ({
           onImageModeChange(event.currentTarget.value as TierImageMode)
         }
       >
+        <option value="natural">Custom ratio</option>
+
         <option value="contain">Fit squares</option>
 
         <option value="cover">Fill squares</option>
-
-        <option value="natural">Original ratio</option>
       </select>
     </label>
   </>

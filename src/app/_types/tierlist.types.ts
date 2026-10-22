@@ -37,6 +37,13 @@ export type TierImageMode = 'contain' | 'cover' | 'natural';
 
 export type TierCrop = { x: number; y: number };
 
+export type TierImageTrim = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
+
 export type TierImage = {
   src: string;
   width: number;
@@ -50,5 +57,6 @@ export type TierItemData = {
   rank: TierRank;
   image?: TierImage;
   crop?: TierCrop;
+  trim?: TierImageTrim;
   rowHeightExpansion?: number;
 };

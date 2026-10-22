@@ -76,7 +76,7 @@ export const useTierItems = ({
   initialItemCount = 2,
   wrapItems = false,
   initialItems,
-  imageMode = 'contain',
+  imageMode = 'natural',
 }: TierItemsInput) => {
   const [viewportElement, setViewportElement] = useState<HTMLElement | null>(
     null,
@@ -388,7 +388,7 @@ export const useTierItems = ({
       (boxesFor(rank, previewItems).at(-1)?.line ?? 0) + 1,
     updateItem: (
       id: string,
-      changes: Partial<Pick<Item, 'crop' | 'rowHeightExpansion'>>,
+      changes: Partial<Pick<Item, 'crop' | 'trim' | 'rowHeightExpansion'>>,
     ) =>
       setItems((current) =>
         current.map((item) =>
