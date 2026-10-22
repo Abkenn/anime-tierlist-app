@@ -4,14 +4,9 @@ import { type PropsWithChildren, useEffect, useRef } from 'react';
 import { mocked, sb } from 'storybook/test';
 import { themes } from 'storybook/theming';
 import { useOfflineReconnect } from '../src/app/_hooks/use-offline-reconnect';
-import {
-  readPreviewExpanded,
-  savePreviewExpanded,
-} from '../src/app/_services/offline-storage';
 import '../src/app/_styles/globals.css';
 import './sandbox.css';
 
-sb.mock('../src/app/_services/offline-storage.ts');
 sb.mock('../src/app/_hooks/use-offline-reconnect.ts');
 sb.mock('../src/app/_services/offline-mode.ts', { spy: true });
 
@@ -64,8 +59,6 @@ const preview: Preview = {
     ),
   ],
   beforeEach() {
-    mocked(readPreviewExpanded).mockResolvedValue(false);
-    mocked(savePreviewExpanded).mockResolvedValue(undefined);
     mocked(useOfflineReconnect).mockReturnValue({
       mode: 'dev',
       checking: false,

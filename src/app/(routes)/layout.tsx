@@ -40,7 +40,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <OfflineSupport />
           <ScrollArea className="h-dvh w-full" aria-label="Page content">
             <div className="flex min-h-dvh flex-col bg-background text-foreground">
-              <header className="mx-auto flex w-full max-w-5xl items-center justify-between p-6 sm:px-12 sm:py-8">
+              <header className="mx-auto flex w-full max-w-480 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
                 <Suspense
                   fallback={
                     <Link href="/" className="text-xs text-muted-foreground">

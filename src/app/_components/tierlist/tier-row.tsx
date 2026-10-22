@@ -7,12 +7,25 @@ export type TierColor =
   | 'Dropped'
   | 'Watching';
 
-type TierRowProps = { rank: string; color: TierColor };
+type TierRowProps = {
+  rank: string;
+  color: TierColor;
+  active?: boolean;
+  itemCount?: number;
+};
 
-export const TierRow = ({ rank, color }: TierRowProps) => (
+export const TierRow = ({
+  rank,
+  color,
+  active = false,
+  itemCount = 0,
+}: TierRowProps) => (
   <li
-    className="grid min-h-27 grid-cols-[clamp(5rem,12vw,7.5rem)_minmax(0,1fr)] border-[#111] not-first:border-t"
-    aria-label={`${rank} tier, empty`}
+    className="grid min-h-16 grid-cols-[clamp(5rem,8vw,7rem)_minmax(0,1fr)] lg:min-h-9 border-[#111] not-first:border-t"
+    data-tier-rank={rank}
+    aria-label={
+      itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
+    }
   >
     <div
       className={cn(
@@ -43,6 +56,11 @@ export const TierRow = ({ rank, color }: TierRowProps) => (
     >
       {rank}
     </div>
-    <div className="grid auto-rows-27 grid-cols-[repeat(auto-fill,4.5rem)] content-start" />
+    <div
+      className={cn(
+        'min-w-0 transition-colors duration-150 motion-reduce:transition-none',
+        active && 'bg-white/10 ring-1 ring-inset ring-white/40',
+      )}
+    />
   </li>
 );

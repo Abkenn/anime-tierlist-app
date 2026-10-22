@@ -86,12 +86,7 @@ export const Narrow: Story = {
 };
 
 export const AllVariants: Story = {
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'tier options' }));
-    for (const checkbox of canvas.getAllByRole('checkbox')) {
-      if (!(checkbox as HTMLInputElement).checked)
-        await userEvent.click(checkbox);
-    }
+  play: async ({ canvas }) => {
     const rows = canvas.getAllByRole('listitem');
     const colors = rows.map(
       (row) =>
@@ -99,5 +94,20 @@ export const AllVariants: Story = {
     );
     await expect(rows).toHaveLength(20);
     await expect(new Set(colors).size).toBe(20);
+  },
+};
+
+export const KeyboardMovement: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const item = await canvas.findByRole('button', { name: 'Item 1 in S+' });
+    item.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(
+      canvas.findByRole('button', { name: 'Item 1 in S' }),
+    ).resolves.toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect(
+      canvas.findByRole('button', { name: 'Item 1 in S+' }),
+    ).resolves.toHaveFocus();
   },
 };
