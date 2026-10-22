@@ -2,6 +2,7 @@
 import { Button } from '@/app/_components/ui/button';
 
 type RouteErrorProps = { error: unknown; retry: () => void };
+
 const RouteError = ({ retry }: RouteErrorProps) => (
   <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-24 sm:px-12">
     <h1 className="text-2xl">Unable to load this page</h1>
@@ -13,4 +14,5 @@ const RouteError = ({ retry }: RouteErrorProps) => (
     </Button>
   </main>
 );
+
 export default RouteError;

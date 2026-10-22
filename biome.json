@@ -43,7 +43,8 @@
         "noNonNullAssertion": "error",
         "noUselessElse": "error",
         "useAsConstAssertion": "error",
-        "useConst": "error"
+        "useConst": "error",
+        "useBlockStatements": "error"
       },
       "nursery": {
         "useTailwindShorthandClasses": "error",

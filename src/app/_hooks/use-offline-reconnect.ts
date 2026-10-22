@@ -19,33 +19,49 @@ export const useOfflineReconnect = () => {
   const refreshAfterNavigation = useRef(false);
 
   const reconnect = useCallback(async () => {
-    if (inFlight.current) return;
+    if (inFlight.current) {
+      return;
+    }
+
     inFlight.current = true;
     setChecking(true);
+
     const request = new AbortController();
+
     controller.current = request;
+
     const timeout = window.setTimeout(() => request.abort(), 5000);
+
     try {
       const response = await fetch('/api/connection', {
         cache: 'no-store',
         redirect: 'error',
         signal: request.signal,
       });
+
       if (
         request.signal.aborted ||
         response.status !== 200 ||
         response.headers.get('X-Tierlist-Connection') !== 'online'
-      )
+      ) {
         return;
+      }
+
       refreshAfterNavigation.current = true;
+
       const href = withOfflineMode(new URL(window.location.href), null);
+
       startTransition(() =>
         router.replace(href, { scroll: false, transitionTypes: ['reconnect'] }),
       );
     } catch {
     } finally {
       window.clearTimeout(timeout);
-      if (controller.current === request) controller.current = null;
+
+      if (controller.current === request) {
+        controller.current = null;
+      }
+
       inFlight.current = false;
       setChecking(false);
     }
@@ -59,18 +75,30 @@ export const useOfflineReconnect = () => {
   }, [mode, router]);
 
   useEffect(() => {
-    if (mode === null) return;
+    if (mode === null) {
+      return;
+    }
+
     const retry = () => {
       void reconnect();
     };
+
     window.addEventListener(OFFLINE_RECONNECT_EVENT, retry);
+
     const interval =
       mode === 'dev'
         ? undefined
         : window.setInterval(retry, OFFLINE_POLL_INTERVAL_MS);
-    if (mode !== 'dev') window.addEventListener('online', retry);
+
+    if (mode !== 'dev') {
+      window.addEventListener('online', retry);
+    }
+
     return () => {
-      if (interval !== undefined) window.clearInterval(interval);
+      if (interval !== undefined) {
+        window.clearInterval(interval);
+      }
+
       window.removeEventListener('online', retry);
       window.removeEventListener(OFFLINE_RECONNECT_EVENT, retry);
       controller.current?.abort();

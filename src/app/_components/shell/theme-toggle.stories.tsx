@@ -6,8 +6,10 @@ const meta = {
   title: 'Shell/ThemeToggle',
   component: ThemeToggle,
 } satisfies Meta<typeof ThemeToggle>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
+
 export const Default: Story = {
   play: async ({ canvas, userEvent }) => {
     await waitFor(() => expect(document.documentElement).toHaveClass('dark'));

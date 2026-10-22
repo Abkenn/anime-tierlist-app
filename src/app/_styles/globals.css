@@ -5,6 +5,38 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-charcoal: var(--charcoal);
+  --color-ink: var(--ink);
+  --color-cloud: var(--cloud);
+  --color-graphite: var(--graphite);
+  --color-gray: var(--gray);
+  --color-silver: var(--silver);
+  --color-white: var(--white);
+  --color-wisteria: var(--wisteria);
+  --color-stone: var(--stone);
+  --color-lemon-cream: var(--lemon-cream);
+  --color-brown: var(--brown);
+  --color-umber: var(--umber);
+  --color-olive: var(--olive);
+  --color-divider: var(--divider);
+  --color-orchid: var(--orchid);
+  --color-rose: var(--rose);
+  --color-salmon: var(--salmon);
+  --color-apricot: var(--apricot);
+  --color-gold: var(--gold);
+  --color-yellow: var(--yellow);
+  --color-citron: var(--citron);
+  --color-chartreuse: var(--chartreuse);
+  --color-lime: var(--lime);
+  --color-leaf: var(--leaf);
+  --color-mint: var(--mint);
+  --color-jade: var(--jade);
+  --color-seafoam: var(--seafoam);
+  --color-aqua: var(--aqua);
+  --color-sky: var(--sky);
+  --color-azure: var(--azure);
+  --color-periwinkle: var(--periwinkle);
+  --color-lavender: var(--lavender);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -49,6 +81,38 @@
 }
 
 :root {
+  --lemon-cream: #fef3c7;
+  --brown: #451a03;
+  --umber: #92400e;
+  --olive: #38301c;
+  --charcoal: #1c1c1c;
+  --ink: #111;
+  --cloud: #ededeb;
+  --graphite: #202020;
+  --gray: #737373;
+  --silver: #aaa;
+  --white: #fff;
+  --wisteria: #a39bdf;
+  --stone: #aaa9a5;
+  --divider: color-mix(in srgb, var(--foreground) 18%, var(--background));
+  --orchid: hsl(300 64% 73%);
+  --rose: hsl(355 64% 73%);
+  --salmon: hsl(12 64% 73%);
+  --apricot: hsl(28 64% 73%);
+  --gold: hsl(40 64% 73%);
+  --yellow: hsl(50 64% 73%);
+  --citron: hsl(65 64% 73%);
+  --chartreuse: hsl(80 64% 73%);
+  --lime: hsl(95 64% 73%);
+  --leaf: hsl(112 64% 73%);
+  --mint: hsl(130 64% 73%);
+  --jade: hsl(145 64% 73%);
+  --seafoam: hsl(160 64% 73%);
+  --aqua: hsl(180 64% 73%);
+  --sky: hsl(195 64% 73%);
+  --azure: hsl(210 64% 73%);
+  --periwinkle: hsl(225 64% 73%);
+  --lavender: hsl(240 64% 73%);
   --background: #f3f3f1;
   --foreground: #252525;
   --card: #ffffff;

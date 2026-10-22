@@ -14,8 +14,10 @@ const meta = {
     ),
   ],
 } satisfies Meta<typeof OfflineStatus>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
+
 export const Offline: Story = {};
 export const Reconnecting: Story = {
   beforeEach: () => {

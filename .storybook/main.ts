@@ -13,10 +13,12 @@ const config: StorybookConfig = {
   core: { disableTelemetry: true },
   async viteFinal(config) {
     const { mergeConfig } = await import('vite');
+
     return mergeConfig(config, {
       plugins: [tailwindcss()],
-      optimizeDeps: { include: ['motion/react'] },
+      optimizeDeps: { include: ['motion/react', '@base-ui/react/scroll-area'] },
     });
   },
 };
+
 export default config;

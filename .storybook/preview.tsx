@@ -11,14 +11,20 @@ sb.mock('../src/app/_hooks/use-offline-reconnect.ts');
 sb.mock('../src/app/_services/offline-mode.ts', { spy: true });
 
 type SandboxThemeProps = PropsWithChildren<{ theme: string }>;
+
 const SandboxTheme = ({ theme, children }: SandboxThemeProps) => {
   const { setTheme } = useTheme();
   const appliedTheme = useRef<string | undefined>(undefined);
+
   useEffect(() => {
-    if (appliedTheme.current === theme) return;
+    if (appliedTheme.current === theme) {
+      return;
+    }
+
     appliedTheme.current = theme;
     setTheme(theme);
   }, [theme, setTheme]);
+
   return children;
 };
 
@@ -66,4 +72,5 @@ const preview: Preview = {
     });
   },
 };
+
 export default preview;

@@ -8,8 +8,10 @@ const meta = {
   args: { children: <TierBoard /> },
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof HomeShell>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
+
 export const Default: Story = {};
 export const AllRanks: Story = {
   args: { children: <TierBoard ranks={tierRanks} /> },

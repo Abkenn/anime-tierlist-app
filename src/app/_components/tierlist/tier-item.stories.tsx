@@ -16,17 +16,21 @@ const meta = {
     onDrop: fn(() => null),
     onCancel: fn(),
     onKeyboardMove: fn(),
+    onKeyboardModeChange: fn(),
   },
   argTypes: { boardRef: { control: false } },
   render: (args) => {
     const boardRef = useRef<HTMLDivElement>(null);
+
     return (
-      <div ref={boardRef} className="relative h-80 bg-[#1c1c1c]">
+      <div ref={boardRef} className="relative h-80 bg-charcoal">
         <TierItem {...args} boardRef={boardRef} />
       </div>
     );
   },
 } satisfies Meta<typeof TierItem>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
+
 export const Default: Story = {};

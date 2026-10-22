@@ -3,7 +3,7 @@
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { cn } from 'cn';
 
-function TooltipContent({
+const TooltipContent = ({
   className,
   side = 'top',
   sideOffset = 4,
@@ -15,7 +15,7 @@ function TooltipContent({
   Pick<
     TooltipPrimitive.Positioner.Props,
     'align' | 'alignOffset' | 'side' | 'sideOffset'
-  >) {
+  >) => {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner
@@ -39,6 +39,6 @@ function TooltipContent({
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
   );
-}
+};
 
 export { TooltipContent };

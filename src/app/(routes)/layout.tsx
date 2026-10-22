@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     'A home for your favorite anime. Create your own anime rankings.',
 };
 
-export default function RootLayout({ children }: RootLayoutProps) {
+const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html
       lang="en"
@@ -66,4 +66,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

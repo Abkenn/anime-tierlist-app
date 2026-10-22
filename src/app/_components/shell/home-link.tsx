@@ -6,6 +6,7 @@ import { withOfflineMode } from '@/app/_services/offline-mode';
 
 export const HomeLink = () => {
   const mode = useOfflineMode();
+
   return (
     <Link
       href="/"
@@ -18,10 +19,14 @@ export const HomeLink = () => {
           event.shiftKey ||
           event.altKey ||
           event.button !== 0
-        )
+        ) {
           return;
+        }
+
         event.preventDefault();
+
         const url = new URL(window.location.href);
+
         url.pathname = '/';
         window.history.replaceState(null, '', withOfflineMode(url, mode));
       }}

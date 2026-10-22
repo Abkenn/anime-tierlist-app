@@ -5,12 +5,17 @@ const root = process.cwd();
 const buildId = (
   await readFile(path.join(root, '.next/BUILD_ID'), 'utf8')
 ).trim();
-if (!buildId) throw new Error('Next build ID is missing.');
+
+if (!buildId) {
+  throw new Error('Next build ID is missing.');
+}
+
 const template = await readFile(
   path.join(root, '.next/offline-worker/offline-worker.js'),
   'utf8',
 );
 const worker = template.replace('__OFFLINE_BUILD__', buildId);
+
 await mkdir(path.join(root, 'public'), { recursive: true });
 await writeFile(
   path.join(root, 'public/sw.js'),

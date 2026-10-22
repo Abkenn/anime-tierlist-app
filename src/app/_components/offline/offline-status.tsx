@@ -9,7 +9,11 @@ type OfflineNoticeProps = ReturnType<typeof useOfflineReconnect> & {
 
 export const OfflineStatus = () => {
   const connection = useOfflineReconnect();
-  if (connection.mode === null) return null;
+
+  if (connection.mode === null) {
+    return null;
+  }
+
   return (
     <OfflineNotice
       key={connection.mode}
@@ -22,16 +26,18 @@ export const OfflineStatus = () => {
 const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
   const [open, setOpen] = useState(true);
   const noticeId = useId();
+
   const descriptions = {
     offline: 'The server is unreachable. Checking again every 30 seconds.',
     dev: 'Offline preview is pinned. Automatic reconnection is paused.',
     'dev-temporary': 'Offline preview. Checking the server every 30 seconds.',
   };
+
   return (
     <div className="relative">
       <button
         type="button"
-        className="flex min-h-11 items-center gap-2 px-2 text-xs text-amber-800 dark:text-amber-300"
+        className="flex min-h-11 items-center gap-2 px-2 text-xs text-umber dark:text-gold"
         aria-expanded={open}
         aria-controls={noticeId}
         onClick={() => setOpen((value) => !value)}
@@ -43,11 +49,11 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
         <aside
           id={noticeId}
           aria-label="Offline connection"
-          className="absolute -right-16 top-full z-40 mt-2 w-[min(21rem,calc(100vw-3rem))] rounded-lg border border-amber-700/40 bg-amber-100 p-4 text-amber-950 shadow-sm sm:right-0 dark:border-amber-400/40 dark:bg-[#38301c] dark:text-amber-100"
+          className="absolute -right-16 top-full z-40 mt-2 w-[min(21rem,calc(100vw-3rem))] rounded-lg border border-gold/60 bg-lemon-cream dark:bg-olive p-4 text-brown dark:text-lemon-cream shadow-sm sm:right-0"
         >
           <span
             aria-hidden="true"
-            className="absolute -top-1.5 right-24 size-2.5 rotate-45 border-l border-t border-amber-700/40 bg-amber-100 sm:right-6 dark:border-amber-400/40 dark:bg-[#38301c]"
+            className="absolute -top-1.5 right-24 size-2.5 rotate-45 border-l border-t border-gold/60 bg-lemon-cream dark:bg-olive sm:right-6"
           />
           <div className="flex items-start justify-between gap-4">
             <div role="status" className="space-y-2">
@@ -57,7 +63,7 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
             <button
               type="button"
               aria-label="Dismiss offline notice"
-              className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-sm text-lg hover:bg-amber-950/10 dark:hover:bg-amber-100/10"
+              className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-sm text-lg hover:bg-brown/10 dark:hover:bg-lemon-cream/10"
               onClick={() => setOpen(false)}
             >
               ×
