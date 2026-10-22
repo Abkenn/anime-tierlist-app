@@ -2,57 +2,19 @@
 
 import { cn } from 'cn';
 import { motion } from 'motion/react';
-import { startTransition, useId, useState, ViewTransition } from 'react';
-import { TierItem } from '@/app/_components/tierlist/tier-item';
-import { TierRow } from '@/app/_components/tierlist/tier-row';
+import { startTransition, useId, useState } from 'react';
+import { TierBoardItems } from '@/app/_components/tierlist/tier-board-items';
+import { TierBoardRows } from '@/app/_components/tierlist/tier-board-rows';
+import { TierBoardToolbar } from '@/app/_components/tierlist/tier-board-toolbar';
+import { TierRankOptions } from '@/app/_components/tierlist/tier-rank-options';
 import { TierViewport } from '@/app/_components/tierlist/tier-viewport';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
+import { defaultTierRanks, tierRanks } from '@/app/_lib/tier-ranks';
 import type {
-  TierColor,
   TierImageMode,
   TierItemData,
   TierRank,
 } from '@/app/_types/tierlist.types';
-
-const letters = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
-
-type Modifier = '+' | '−';
-
-export const tierRanks: TierRank[] = [
-  ...letters.flatMap<TierRank>((letter) => [
-    `${letter}+`,
-    letter,
-    `${letter}−`,
-  ]),
-  'Dropped',
-  'Watching',
-];
-const tierColors: Record<TierRank, TierColor> = {
-  'S+': 'orchid',
-  S: 'rose',
-  'S−': 'salmon',
-  'A+': 'apricot',
-  A: 'gold',
-  'A−': 'yellow',
-  'B+': 'citron',
-  B: 'chartreuse',
-  'B−': 'lime',
-  'C+': 'leaf',
-  C: 'mint',
-  'C−': 'jade',
-  'D+': 'seafoam',
-  D: 'aqua',
-  'D−': 'sky',
-  'F+': 'azure',
-  F: 'periwinkle',
-  'F−': 'lavender',
-  Dropped: 'wisteria',
-  Watching: 'stone',
-};
-
-const defaultRanks = tierRanks.filter(
-  (rank) => !rank.endsWith('−') && !['C+', 'D+', 'F+'].includes(rank),
-);
 
 type TierBoardProps = {
   ranks?: TierRank[];
@@ -74,7 +36,7 @@ export const TierBoard = ({
   onImageModeChange,
 }: TierBoardProps = {}) => {
   const optionsId = useId();
-  const [localRanks, setLocalRanks] = useState(defaultRanks);
+  const [localRanks, setLocalRanks] = useState(defaultTierRanks);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyboardMode, setKeyboardMode] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -108,81 +70,40 @@ export const TierBoard = ({
     });
   };
 
+  const changeImageMode = (mode: TierImageMode) => {
+    setEditingItemId(null);
+    setLocalImageMode(mode);
+    onImageModeChange?.(mode);
+  };
+
+  const changeEditingItem = (id: string, editing: boolean) => {
+    setEditingItemId((current) => {
+      if (editing) {
+        return id;
+      }
+
+      return current === id ? null : current;
+    });
+  };
+
   return (
     <section aria-label="Anime tierlist" className="mt-1">
-      <div className="mb-1 flex items-center justify-between gap-4 text-xs">
-        <div className="text-muted-foreground">
-          <p>
-            {ranks.length} tiers · {interaction.items.length} items
-          </p>
-          <p role="status" className="mt-1 text-xs">
-            {keyboardMode
-              ? 'Keyboard mode · ↑↓ / W S tier · ←→ / A D order · Esc exit'
-              : 'Drag to rank · Tab to select · Enter after click'}
-          </p>
-        </div>
-        <button
-          type="button"
-          className="min-h-11 underline underline-offset-4"
-          aria-expanded={settingsOpen}
-          aria-controls={optionsId}
-          onClick={() => setSettingsOpen((open) => !open)}
-        >
-          {settingsOpen ? 'close options' : 'tier options'}
-        </button>
-      </div>
-      <label className="mb-2 flex w-fit items-center gap-2 text-xs text-muted-foreground">
-        Images
-        <select
-          aria-label="Image sizing"
-          value={imageMode}
-          className="min-h-9 border border-divider bg-background px-2 text-foreground"
-          onChange={(event) => {
-            const mode = event.currentTarget.value as TierImageMode;
-
-            setEditingItemId(null);
-            setLocalImageMode(mode);
-            onImageModeChange?.(mode);
-          }}
-        >
-          <option value="contain">Fit squares</option>
-          <option value="cover">Fill squares</option>
-          <option value="natural">Original ratio</option>
-        </select>
-      </label>
-      <div
+      <TierBoardToolbar
+        rankCount={ranks.length}
+        itemCount={interaction.items.length}
+        keyboardMode={keyboardMode}
+        settingsOpen={settingsOpen}
+        optionsId={optionsId}
+        imageMode={imageMode}
+        onToggleOptions={() => setSettingsOpen((open) => !open)}
+        onImageModeChange={changeImageMode}
+      />
+      <TierRankOptions
         id={optionsId}
-        hidden={!settingsOpen}
-        className="mb-5 border-y border-divider py-4"
-      >
-        <p className="mb-3 text-xs text-muted-foreground">
-          Add or remove letter variants
-        </p>
-        <div className="flex flex-wrap gap-x-6 gap-y-4">
-          {letters.map((letter) => (
-            <fieldset key={letter} className="flex gap-3">
-              <legend className="mb-2 text-xs">{letter}</legend>
-              {(['+', '−'] as const).map((modifier: Modifier) => (
-                <label
-                  key={modifier}
-                  className="flex min-h-8 cursor-pointer items-center gap-2 text-xs"
-                >
-                  <input
-                    type="checkbox"
-                    checked={enabledRanks.includes(`${letter}${modifier}`)}
-                    onChange={() => toggleVariant(`${letter}${modifier}`)}
-                  />
-                  {letter}
-                  {modifier}
-                </label>
-              ))}
-            </fieldset>
-          ))}
-        </div>
-      </div>
-      <p role="status" className="sr-only">
-        {interaction.announcement}
-      </p>
+        open={settingsOpen}
+        enabledRanks={enabledRanks}
+        onToggle={toggleVariant}
+      />
       <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
         <motion.div
           ref={interaction.boardRef}
@@ -190,96 +111,19 @@ export const TierBoard = ({
           transition={{ duration: 0 }}
           className={cn('relative', scrollable && 'min-w-full')}
         >
-          <ViewTransition
-            default="none"
-            enter="preview-change"
-            exit="preview-change"
-          >
-            <ol
-              className={cn(
-                'grid overflow-hidden border border-ink bg-charcoal text-cloud',
-                layout === 'two-line' ? 'auto-rows-auto' : 'auto-rows-fr',
-              )}
-              aria-label="Ranked tiers"
-            >
-              {ranks.map((rank) => (
-                <TierRow
-                  key={rank}
-                  rank={rank}
-                  color={tierColors[rank]}
-                  active={interaction.targetRank === rank}
-                  fixedItemSize={layout === 'two-line'}
-                  lines={interaction.lines(rank)}
-                  itemCount={
-                    interaction.items.filter(
-                      (item) => interaction.visibleRank(item) === rank,
-                    ).length
-                  }
-                />
-              ))}
-            </ol>
-          </ViewTransition>
-          <div className="pointer-events-none absolute inset-0">
-            {interaction.dropPosition && (
-              <motion.div
-                aria-hidden="true"
-                data-drop-slot=""
-                initial={false}
-                animate={interaction.dropPosition}
-                transition={{ duration: 0.12 }}
-                className="absolute left-0 top-0 z-0 border border-dashed border-white/80 bg-white/15"
-              />
-            )}
-            {interaction.items.map((item) => {
-              const position = interaction.position(item);
-              const rank = interaction.visibleRank(item);
-
-              return position && rank ? (
-                <TierItem
-                  key={item.id}
-                  label={item.label}
-                  rank={rank}
-                  editing={editingItemId === item.id}
-                  onEditingChange={(editing) =>
-                    setEditingItemId((current) => {
-                      if (editing) {
-                        return item.id;
-                      }
-
-                      return current === item.id ? null : current;
-                    })
-                  }
-                  image={item.image}
-                  imageMode={imageMode}
-                  crop={item.crop}
-                  rowHeightExpansion={item.rowHeightExpansion}
-                  onCropChange={(crop) =>
-                    interaction.updateItem(item.id, { crop })
-                  }
-                  onRowHeightExpansionChange={(rowHeightExpansion) =>
-                    interaction.updateItem(item.id, { rowHeightExpansion })
-                  }
-                  position={position}
-                  boardRef={interaction.boardRef}
-                  onStart={(clientX, clientY) => {
-                    setEditingItemId(null);
-                    interaction.start(item.id, clientX, clientY);
-                  }}
-                  onMove={(clientX, clientY) =>
-                    interaction.move(item.id, clientX, clientY)
-                  }
-                  onDrop={(clientX, clientY) =>
-                    interaction.drop(item.id, clientX, clientY)
-                  }
-                  onCancel={interaction.cancel}
-                  onKeyboardModeChange={setKeyboardMode}
-                  onKeyboardMove={(move) =>
-                    interaction.keyboardMove(item.id, move)
-                  }
-                />
-              ) : null;
-            })}
-          </div>
+          <TierBoardRows
+            ranks={ranks}
+            layout={layout}
+            interaction={interaction}
+          />
+          <TierBoardItems
+            interaction={interaction}
+            imageMode={imageMode}
+            editingItemId={editingItemId}
+            onEditingChange={changeEditingItem}
+            onDragStart={() => setEditingItemId(null)}
+            onKeyboardModeChange={setKeyboardMode}
+          />
         </motion.div>
       </TierViewport>
     </section>

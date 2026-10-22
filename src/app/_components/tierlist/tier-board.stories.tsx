@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { type ComponentProps, useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { expect, fireEvent, waitFor, within } from 'storybook/test';
+import { tierRanks } from '@/app/_lib/tier-ranks';
 import type { TierImageMode, TierRank } from '@/app/_types/tierlist.types';
-import { TierBoard, tierRanks } from './tier-board';
+import { TierBoard } from './tier-board';
 import { aspectRatioTierItems } from './tier-image.fixtures';
 
 type StoryArgs = NonNullable<ComponentProps<typeof TierBoard>> &

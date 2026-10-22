@@ -36,10 +36,10 @@ export const Slider = ({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex min-h-11 w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
+      <SliderPrimitive.Control className="relative flex min-h-11 w-full touch-none items-center select-none data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
         <SliderPrimitive.Track
           data-slot="slider-track"
-          className="relative grow overflow-hidden rounded-full bg-muted select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
+          className="relative grow overflow-hidden rounded-full bg-muted select-none data-disabled:opacity-50 data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
         >
           <SliderPrimitive.Indicator
             data-slot="slider-range"
@@ -51,7 +51,7 @@ export const Slider = ({
             data-slot="slider-thumb"
             key={thumb}
             index={index}
-            className="group/thumb relative block size-4 shrink-0 cursor-default rounded-full border border-ring bg-white ring-ring/50 transition-[color,box-shadow] select-none after:absolute after:-inset-2 focus-within:ring-3 focus-within:outline-hidden motion-reduce:transition-none"
+            className="group/thumb relative block size-4 shrink-0 cursor-default rounded-full border border-ring bg-white ring-ring/50 data-disabled:bg-white/50 transition-[color,box-shadow] select-none after:absolute after:-inset-2 focus-within:ring-3 focus-within:outline-hidden motion-reduce:transition-none"
             {...thumbProps}
             render={(thumbAttributes, state) => (
               <span
