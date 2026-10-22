@@ -68,6 +68,8 @@ export const Landscape: Story = {
     const right = await page.findByRole('slider', { name: 'right crop edge' });
     fireEvent.keyDown(right, { code: 'KeyA', shiftKey: true });
     await expect(right).toHaveAttribute('aria-valuenow', '90');
+    await userEvent.hover(right);
+    await expect(getComputedStyle(right).stroke).toBe('none');
     await userEvent.click(page.getByRole('button', { name: 'Done' }));
     await expect(args.onSave).toHaveBeenCalledWith({
       ...fullImageTrim,

@@ -154,8 +154,7 @@ export const TierImageTrimEditor = ({
                         aria-orientation={
                           horizontal ? 'horizontal' : 'vertical'
                         }
-                        className="cursor-crosshair fill-transparent stroke-transparent outline-none hover:stroke-white focus-visible:stroke-white"
-                        strokeWidth="0.008"
+                        className="cursor-crosshair fill-transparent outline-none focus-visible:fill-white/15"
                         onPointerDown={(event) => editor.start(event, edge)}
                         onPointerMove={editor.move}
                         onPointerUp={editor.end}
