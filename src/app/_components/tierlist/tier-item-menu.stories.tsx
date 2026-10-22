@@ -1,6 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { ComponentProps } from 'react';
 import { fn } from 'storybook/test';
+import { TierBoardSettingsContext } from '@/app/_providers/tier-board-context';
+import type { TierImageMode } from '@/app/_types/tierlist.types';
 import { TierItemMenu } from './tier-item-menu';
+import { TierItemSizing } from './tier-item-sizing';
+
+type StoryArgs = ComponentProps<typeof TierItemMenu> & {
+  imageMode: TierImageMode;
+};
 
 const meta = {
   title: 'Tierlist/TierItemMenu',
@@ -11,19 +19,34 @@ const meta = {
         Right click for image options
       </button>
     ),
-    mode: 'cover',
+    imageMode: 'cover',
     hasImage: true,
     editing: false,
-    rowHeightExpansion: 0,
     onOpen: fn(),
     onEdit: fn(),
     onReset: fn(),
-    onRowHeightExpansion: fn(),
+    sizingControl: (
+      <TierItemSizing
+        image={{
+          src: '/storybook/tier-landscape.svg',
+          width: 16,
+          height: 9,
+          alt: 'Landscape poster',
+        }}
+        expansion={0}
+        onChange={fn()}
+      />
+    ),
   },
-} satisfies Meta<typeof TierItemMenu>;
+  render: ({ imageMode, ...args }) => (
+    <TierBoardSettingsContext value={imageMode}>
+      <TierItemMenu {...args} />
+    </TierBoardSettingsContext>
+  ),
+} satisfies Meta<StoryArgs>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Fill: Story = {};
-export const OriginalRatio: Story = { args: { mode: 'natural' } };
+export const OriginalRatio: Story = { args: { imageMode: 'natural' } };

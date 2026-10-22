@@ -482,3 +482,40 @@ export const FullHeightImageSlider: Story = {
     await userEvent.keyboard('{Escape}');
   },
 };
+
+export const IndependentBoards: Story = {
+  // This isolation fixture repeats the same default landmark names in one document.
+  parameters: {
+    a11y: { config: { rules: [{ id: 'landmark-unique', enabled: false }] } },
+  },
+  render: () => (
+    <div className="space-y-8">
+      <TierBoard />
+
+      <TierBoard />
+    </div>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const [first, second] = canvas.getAllByRole('region', {
+      name: 'Anime tierlist',
+    });
+    const firstBoard = within(first);
+    const secondBoard = within(second);
+    const item = firstBoard.getByRole('button', { name: 'Item 1 in S+' });
+
+    item.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect(firstBoard.getByText(/^Keyboard mode/)).toBeInTheDocument();
+    await expect(
+      secondBoard.queryByText(/^Keyboard mode/),
+    ).not.toBeInTheDocument();
+    await userEvent.selectOptions(
+      firstBoard.getByRole('combobox', { name: 'Image sizing' }),
+      'cover',
+    );
+    await expect(item).toHaveAttribute('data-image-mode', 'cover');
+    await expect(
+      secondBoard.getByRole('button', { name: 'Item 1 in S+' }),
+    ).toHaveAttribute('data-image-mode', 'contain');
+  },
+};

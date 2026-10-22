@@ -2,14 +2,19 @@
 
 import { cn } from 'cn';
 import { motion } from 'motion/react';
-import { startTransition, useId, useState } from 'react';
+import { startTransition, useId, useReducer, useState } from 'react';
 import { TierBoardItems } from '@/app/_components/tierlist/tier-board-items';
 import { TierBoardRows } from '@/app/_components/tierlist/tier-board-rows';
 import { TierBoardToolbar } from '@/app/_components/tierlist/tier-board-toolbar';
 import { TierRankOptions } from '@/app/_components/tierlist/tier-rank-options';
 import { TierViewport } from '@/app/_components/tierlist/tier-viewport';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
+import { tierBoardReducer } from '@/app/_lib/tier-board-state';
 import { defaultTierRanks, tierRanks } from '@/app/_lib/tier-ranks';
+import {
+  TierBoardActionsContext,
+  TierBoardSettingsContext,
+} from '@/app/_providers/tier-board-context';
 import type {
   TierImageMode,
   TierItemData,
@@ -38,8 +43,10 @@ export const TierBoard = ({
   const optionsId = useId();
   const [localRanks, setLocalRanks] = useState(defaultTierRanks);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [keyboardMode, setKeyboardMode] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [{ keyboardMode, editingItemId }, dispatch] = useReducer(
+    tierBoardReducer,
+    { keyboardMode: false, editingItemId: null },
+  );
   const [localImageMode, setLocalImageMode] =
     useState<TierImageMode>('contain');
 
@@ -71,64 +78,56 @@ export const TierBoard = ({
   };
 
   const changeImageMode = (mode: TierImageMode) => {
-    setEditingItemId(null);
+    dispatch({ type: 'clear-editing' });
     setLocalImageMode(mode);
     onImageModeChange?.(mode);
   };
 
-  const changeEditingItem = (id: string, editing: boolean) => {
-    setEditingItemId((current) => {
-      if (editing) {
-        return id;
-      }
-
-      return current === id ? null : current;
-    });
-  };
-
   return (
-    <section aria-label="Anime tierlist" className="mt-1">
-      <TierBoardToolbar
-        rankCount={ranks.length}
-        itemCount={interaction.items.length}
-        keyboardMode={keyboardMode}
-        settingsOpen={settingsOpen}
-        optionsId={optionsId}
-        imageMode={imageMode}
-        onToggleOptions={() => setSettingsOpen((open) => !open)}
-        onImageModeChange={changeImageMode}
-      />
-
-      <TierRankOptions
-        id={optionsId}
-        open={settingsOpen}
-        enabledRanks={enabledRanks}
-        onToggle={toggleVariant}
-      />
-
-      <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
-        <motion.div
-          ref={interaction.boardRef}
-          animate={scrollable ? { width: interaction.canvasWidth } : undefined}
-          transition={{ duration: 0 }}
-          className={cn('relative', scrollable && 'min-w-full')}
-        >
-          <TierBoardRows
-            ranks={ranks}
-            layout={layout}
-            interaction={interaction}
-          />
-
-          <TierBoardItems
-            interaction={interaction}
+    <TierBoardSettingsContext value={imageMode}>
+      <TierBoardActionsContext value={dispatch}>
+        <section aria-label="Anime tierlist" className="mt-1">
+          <TierBoardToolbar
+            rankCount={ranks.length}
+            itemCount={interaction.items.length}
+            keyboardMode={keyboardMode}
+            settingsOpen={settingsOpen}
+            optionsId={optionsId}
             imageMode={imageMode}
-            editingItemId={editingItemId}
-            onEditingChange={changeEditingItem}
-            onDragStart={() => setEditingItemId(null)}
-            onKeyboardModeChange={setKeyboardMode}
+            onToggleOptions={() => setSettingsOpen((open) => !open)}
+            onImageModeChange={changeImageMode}
           />
-        </motion.div>
-      </TierViewport>
-    </section>
+
+          <TierRankOptions
+            id={optionsId}
+            open={settingsOpen}
+            enabledRanks={enabledRanks}
+            onToggle={toggleVariant}
+          />
+
+          <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
+            <motion.div
+              ref={interaction.boardRef}
+              animate={
+                scrollable ? { width: interaction.canvasWidth } : undefined
+              }
+              transition={{ duration: 0 }}
+              className={cn('relative', scrollable && 'min-w-full')}
+            >
+              <TierBoardRows
+                ranks={ranks}
+                layout={layout}
+                interaction={interaction}
+              />
+
+              <TierBoardItems
+                interaction={interaction}
+                editingItemId={editingItemId}
+              />
+            </motion.div>
+          </TierViewport>
+        </section>
+      </TierBoardActionsContext>
+    </TierBoardSettingsContext>
   );
 };

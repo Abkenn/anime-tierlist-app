@@ -1,12 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useRef } from 'react';
 import { fn } from 'storybook/test';
+import { TierBoardActionsContext } from '@/app/_providers/tier-board-context';
 import { TierItem } from './tier-item';
 
 const meta = {
   title: 'Tierlist/TierItem',
   component: TierItem,
   args: {
+    id: 'item-1',
     label: '1',
     rank: 'S+',
     position: { x: '1rem', y: '1rem', width: '4rem', height: '4rem' },
@@ -16,8 +18,14 @@ const meta = {
     onDrop: fn(() => null),
     onCancel: fn(),
     onKeyboardMove: fn(),
-    onKeyboardModeChange: fn(),
   },
+  decorators: [
+    (Story) => (
+      <TierBoardActionsContext value={fn()}>
+        <Story />
+      </TierBoardActionsContext>
+    ),
+  ],
   argTypes: { boardRef: { control: false } },
   render: (args) => {
     const boardRef = useRef<HTMLDivElement>(null);
