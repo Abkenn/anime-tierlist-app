@@ -1,9 +1,10 @@
-import { type ReactElement, type RefObject, use } from 'react';
+import { useAtomValue } from 'jotai';
+import type { ReactElement, RefObject } from 'react';
+import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ContextMenu } from '@/app/_components/ui/context-menu';
 import { ContextMenuContent } from '@/app/_components/ui/context-menu-content';
 import { ContextMenuItem } from '@/app/_components/ui/context-menu-item';
 import { ContextMenuTrigger } from '@/app/_components/ui/context-menu-trigger';
-import { TierBoardSettingsContext } from '@/app/_providers/tier-board-context';
 
 type TierItemMenuProps = {
   trigger: ReactElement;
@@ -26,7 +27,7 @@ export const TierItemMenu = ({
   onEdit,
   onReset,
 }: TierItemMenuProps) => {
-  const mode = use(TierBoardSettingsContext);
+  const mode = useAtomValue(imageModeAtom);
 
   return (
     <ContextMenu

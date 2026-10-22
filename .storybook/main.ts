@@ -19,6 +19,9 @@ const config: StorybookConfig = {
       optimizeDeps: {
         include: [
           'motion/react',
+          'jotai',
+          'jotai/vanilla',
+          'jotai/utils',
           '@base-ui/react/scroll-area',
           '@base-ui/react/context-menu',
           '@base-ui/react/popover',

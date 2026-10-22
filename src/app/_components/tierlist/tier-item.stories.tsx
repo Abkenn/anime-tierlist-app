@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useRef } from 'react';
 import { fn } from 'storybook/test';
-import { TierBoardActionsContext } from '@/app/_providers/tier-board-context';
+import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import { TierItem } from './tier-item';
 
 const meta = {
@@ -21,9 +21,9 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <TierBoardActionsContext value={fn()}>
+      <TierBoardProvider>
         <Story />
-      </TierBoardActionsContext>
+      </TierBoardProvider>
     ),
   ],
   argTypes: { boardRef: { control: false } },

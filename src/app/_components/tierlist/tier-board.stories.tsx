@@ -3,6 +3,7 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { expect, fireEvent, waitFor, within } from 'storybook/test';
 import { tierRanks } from '@/app/_lib/tier-ranks';
+import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import type { TierImageMode, TierRank } from '@/app/_types/tierlist.types';
 import { TierBoard } from './tier-board';
 import { aspectRatioTierItems } from './tier-image.fixtures';
@@ -33,19 +34,39 @@ const RankSandbox = ({
   }, [imageMode]);
 
   return (
-    <TierBoard
-      {...props}
-      ranks={currentRanks}
-      imageMode={currentImageMode}
-      onImageModeChange={(mode) => {
-        setCurrentImageMode(mode);
-        onImageModeChange?.(mode);
-      }}
-      onRanksChange={(nextRanks) => {
-        setCurrentRanks(nextRanks);
-        onRanksChange?.(nextRanks);
-      }}
-    />
+    <TierBoardProvider>
+      <TierBoard
+        {...props}
+        ranks={currentRanks}
+        imageMode={currentImageMode}
+        onImageModeChange={(mode) => {
+          setCurrentImageMode(mode);
+          onImageModeChange?.(mode);
+        }}
+        onRanksChange={(nextRanks) => {
+          setCurrentRanks(nextRanks);
+          onRanksChange?.(nextRanks);
+        }}
+      />
+    </TierBoardProvider>
+  );
+};
+
+const ControlledImageModeSandbox = () => {
+  const [mode, setMode] = useState<TierImageMode>('cover');
+
+  return (
+    <TierBoardProvider>
+      <button
+        type="button"
+        className="min-h-11 underline"
+        onClick={() => setMode('natural')}
+      >
+        Change mode from parent
+      </button>
+
+      <TierBoard imageMode={mode} onImageModeChange={setMode} />
+    </TierBoardProvider>
   );
 };
 
@@ -490,9 +511,13 @@ export const IndependentBoards: Story = {
   },
   render: () => (
     <div className="space-y-8">
-      <TierBoard />
+      <TierBoardProvider>
+        <TierBoard />
+      </TierBoardProvider>
 
-      <TierBoard />
+      <TierBoardProvider>
+        <TierBoard />
+      </TierBoardProvider>
     </div>
   ),
   play: async ({ canvas, userEvent }) => {
@@ -516,6 +541,45 @@ export const IndependentBoards: Story = {
     await expect(item).toHaveAttribute('data-image-mode', 'cover');
     await expect(
       secondBoard.getByRole('button', { name: 'Item 1 in S+' }),
+    ).toHaveAttribute('data-image-mode', 'contain');
+  },
+};
+
+export const ControlledImageMode: Story = {
+  render: () => <ControlledImageModeSandbox />,
+  play: async ({ canvas, userEvent }) => {
+    const item = canvas.getByRole('button', { name: 'Item 1 in S+' });
+
+    await expect(item).toHaveAttribute('data-image-mode', 'cover');
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Change mode from parent' }),
+    );
+    await waitFor(() =>
+      expect(item).toHaveAttribute('data-image-mode', 'natural'),
+    );
+    await userEvent.selectOptions(
+      canvas.getByRole('combobox', { name: 'Image sizing' }),
+      'contain',
+    );
+    await waitFor(() =>
+      expect(item).toHaveAttribute('data-image-mode', 'contain'),
+    );
+  },
+};
+
+export const FixedImageMode: Story = {
+  render: () => (
+    <TierBoardProvider>
+      <TierBoard imageMode="contain" />
+    </TierBoardProvider>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const mode = canvas.getByRole('combobox', { name: 'Image sizing' });
+
+    await userEvent.selectOptions(mode, 'cover');
+    await expect(mode).toHaveValue('contain');
+    await expect(
+      canvas.getByRole('button', { name: 'Item 1 in S+' }),
     ).toHaveAttribute('data-image-mode', 'contain');
   },
 };

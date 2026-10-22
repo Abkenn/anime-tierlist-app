@@ -1,4 +1,6 @@
+import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
+import { editingItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { TierItem } from '@/app/_components/tierlist/tier-item';
 import { TierItemSizing } from '@/app/_components/tierlist/tier-item-sizing';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
@@ -20,14 +22,11 @@ type TierBoardItemsProps = {
     | 'keyboardMove'
     | 'announcement'
   >;
-  editingItemId: string | null;
 };
 
-export const TierBoardItems = ({
-  interaction,
-  editingItemId,
-}: TierBoardItemsProps) => {
-  const dispatch = useTierBoardActions();
+export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
+  const editingItemId = useAtomValue(editingItemIdAtom);
+  const { clearEditingItem } = useTierBoardActions();
 
   return (
     <>
@@ -73,7 +72,7 @@ export const TierBoardItems = ({
               position={position}
               boardRef={interaction.boardRef}
               onStart={(clientX, clientY) => {
-                dispatch({ type: 'clear-editing' });
+                clearEditingItem();
                 interaction.start(item.id, clientX, clientY);
               }}
               onMove={(clientX, clientY) =>

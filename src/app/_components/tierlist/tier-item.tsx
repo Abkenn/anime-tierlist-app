@@ -1,15 +1,16 @@
 'use client';
 
 import { cn } from 'cn';
+import { useAtomValue } from 'jotai';
 import { type HTMLMotionProps, motion } from 'motion/react';
 import {
   type PointerEvent,
   type ReactElement,
   type Ref,
   type RefObject,
-  use,
   useRef,
 } from 'react';
+import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierCropControls } from '@/app/_components/tierlist/tier-crop-controls';
 import { TierCropPreview } from '@/app/_components/tierlist/tier-crop-preview';
 import { TierItemImage } from '@/app/_components/tierlist/tier-item-image';
@@ -19,7 +20,6 @@ import { useTierCrop } from '@/app/_hooks/use-tier-crop';
 import { useTierItemDrag } from '@/app/_hooks/use-tier-item-drag';
 import { useTierItemKeyboard } from '@/app/_hooks/use-tier-item-keyboard';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
-import { TierBoardSettingsContext } from '@/app/_providers/tier-board-context';
 import type {
   TierCrop,
   TierImage,
@@ -66,7 +66,7 @@ const TierItemTrigger = ({
   className,
   ...buttonProps
 }: TierItemTriggerProps) => {
-  const imageMode = use(TierBoardSettingsContext);
+  const imageMode = useAtomValue(imageModeAtom);
 
   return (
     <motion.button
@@ -123,14 +123,14 @@ export const TierItem = ({
   onKeyboardMove,
 }: TierItemProps) => {
   const itemRef = useRef<HTMLButtonElement>(null);
-  const imageMode = use(TierBoardSettingsContext);
-  const dispatch = useTierBoardActions();
+  const imageMode = useAtomValue(imageModeAtom);
+  const { setEditingItem, setKeyboardMode } = useTierBoardActions();
   const cropEditor = useTierCrop({
     image,
     imageMode,
     crop,
     editing: controlledEditing,
-    onEditingChange: (editing) => dispatch({ type: 'edit-item', id, editing }),
+    onEditingChange: (editing) => setEditingItem({ id, editing }),
     onCropChange,
   });
   const drag = useTierItemDrag({
@@ -153,8 +153,7 @@ export const TierItem = ({
       drag.cancel();
     },
     onKeyboardMove,
-    onKeyboardModeChange: (active) =>
-      dispatch({ type: 'keyboard-mode', active }),
+    onKeyboardModeChange: setKeyboardMode,
   });
   const { editing, draftCrop } = cropEditor;
 

@@ -1,16 +1,16 @@
 'use client';
 
-import { use } from 'react';
-import { TierBoardActionsContext } from '@/app/_providers/tier-board-context';
+import { useSetAtom } from 'jotai';
+import {
+  clearEditingItemAtom,
+  keyboardModeAtom,
+  setEditingItemAtom,
+} from '@/app/_atoms/tierlist/interaction.atoms';
 
 export const useTierBoardActions = () => {
-  const dispatch = use(TierBoardActionsContext);
+  const setKeyboardMode = useSetAtom(keyboardModeAtom);
+  const setEditingItem = useSetAtom(setEditingItemAtom);
+  const clearEditingItem = useSetAtom(clearEditingItemAtom);
 
-  if (!dispatch) {
-    throw new Error(
-      'Tier board actions require a TierBoardActionsContext provider.',
-    );
-  }
-
-  return dispatch;
+  return { setKeyboardMode, setEditingItem, clearEditingItem };
 };
