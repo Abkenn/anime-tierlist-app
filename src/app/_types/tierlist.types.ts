@@ -32,3 +32,23 @@ export type TierKeyboardMove = {
   axis: 'row' | 'column';
   direction: -1 | 1;
 };
+
+export type TierImageMode = 'contain' | 'cover' | 'natural';
+
+export type TierCrop = { x: number; y: number };
+
+export type TierImage = {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+};
+
+export type TierItemData = {
+  id: string;
+  label: string;
+  rank: TierRank;
+  image?: TierImage;
+  crop?: TierCrop;
+  rowHeightExpansion?: number;
+};

@@ -1,20 +1,20 @@
-import type { PropsWithChildren, RefObject } from 'react';
+import type { PropsWithChildren, Ref } from 'react';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 
 type TierViewportProps = PropsWithChildren<{
-  viewportRef: RefObject<HTMLElement | null>;
-  twoLine: boolean;
+  ref?: Ref<HTMLElement>;
+  scrollable: boolean;
 }>;
 
 export const TierViewport = ({
   children,
-  viewportRef,
-  twoLine,
+  ref,
+  scrollable,
 }: TierViewportProps) => {
-  if (!twoLine) {
+  if (!scrollable) {
     return (
       <section
-        ref={viewportRef}
+        ref={ref}
         data-tier-viewport=""
         className="min-w-0"
         aria-label="Tierlist board viewport"
@@ -29,11 +29,9 @@ export const TierViewport = ({
       orientation="horizontal"
       className="min-w-0"
       viewportProps={{
-        ref: (element) => {
-          viewportRef.current = element;
-        },
         render: (
           <section
+            ref={ref}
             data-tier-viewport=""
             aria-label="Tierlist horizontal scroll"
           />

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <title>Landscape 4:3 blue gradient crop test</title>
+  <defs>
+    <linearGradient id="poster" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#edf1f7" />
+      <stop offset="0.5" stop-color="#3569ad" />
+      <stop offset="1" stop-color="#000000" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#poster)" />
+</svg>

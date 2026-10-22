@@ -57,6 +57,7 @@
     "prisma": "8.0.0-rc.24",
     "storybook": "11.0.0-alpha.7",
     "tailwindcss": "^4",
+    "types-keyboardevent": "0.0.0",
     "typescript": "7.1.0-beta",
     "vite": "8.3.5",
     "vitest": "5.0.5"

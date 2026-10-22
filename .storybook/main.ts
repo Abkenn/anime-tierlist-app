@@ -16,7 +16,15 @@ const config: StorybookConfig = {
 
     return mergeConfig(config, {
       plugins: [tailwindcss()],
-      optimizeDeps: { include: ['motion/react', '@base-ui/react/scroll-area'] },
+      optimizeDeps: {
+        include: [
+          'motion/react',
+          '@base-ui/react/scroll-area',
+          '@base-ui/react/context-menu',
+          '@base-ui/react/popover',
+          '@base-ui/react/slider',
+        ],
+      },
     });
   },
 };

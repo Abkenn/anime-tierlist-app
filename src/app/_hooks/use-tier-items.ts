@@ -1,7 +1,18 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import type { TierKeyboardMove, TierRank } from '@/app/_types/tierlist.types';
+import {
+  getTierDropIndex,
+  getTwoLineCapacity,
+  layoutTierItems,
+  tierItemGap,
+} from '@/app/_lib/tier-item-layout';
+import type {
+  TierImageMode,
+  TierItemData,
+  TierKeyboardMove,
+  TierRank,
+} from '@/app/_types/tierlist.types';
 
 export type TierItemPosition = {
   x: string;
@@ -9,11 +20,11 @@ export type TierItemPosition = {
   width: string;
   height: string;
 };
-type Item = { id: string; label: string; rank: TierRank };
+type Item = TierItemData;
 type Row = { rank: TierRank; x: number; y: number; size: number };
 type DropSlot = { id: string; rank: TierRank; index: number };
 
-const itemGapRem = 0.125;
+const itemGapRem = tierItemGap;
 
 const getVisibleRank = (item: Item, ranks: TierRank[]) =>
   ranks.includes(item.rank) ? item.rank : ranks[0];
@@ -52,20 +63,34 @@ const projectItems = (
   ];
 };
 
-export const useTierItems = (
-  ranks: TierRank[],
+type TierItemsInput = {
+  ranks: TierRank[];
+  initialItemCount?: number;
+  wrapItems?: boolean;
+  initialItems?: TierItemData[];
+  imageMode?: TierImageMode;
+};
+
+export const useTierItems = ({
+  ranks,
   initialItemCount = 2,
   wrapItems = false,
-) => {
-  const viewportRef = useRef<HTMLElement>(null);
+  initialItems,
+  imageMode = 'contain',
+}: TierItemsInput) => {
+  const [viewportElement, setViewportElement] = useState<HTMLElement | null>(
+    null,
+  );
   const [viewportWidth, setViewportWidth] = useState(344);
   const boardRef = useRef<HTMLDivElement>(null);
-  const [items, setItems] = useState<Item[]>(() =>
-    Array.from({ length: initialItemCount }, (_, index) => ({
-      id: `tier-item-${index + 1}`,
-      label: String(index + 1),
-      rank: 'S+',
-    })),
+  const [items, setItems] = useState<Item[]>(
+    () =>
+      initialItems?.map((item) => ({ ...item })) ??
+      Array.from({ length: initialItemCount }, (_, index) => ({
+        id: `tier-item-${index + 1}`,
+        label: String(index + 1),
+        rank: 'S+',
+      })),
   );
   const [rows, setRows] = useState<Row[]>([]);
   const [slot, setSlot] = useState<DropSlot | null>(null);
@@ -78,21 +103,27 @@ export const useTierItems = (
     ? previewItems.find((item) => item.id === slot.id)
     : undefined;
 
-  const largestRank = Math.max(
+  const labelWidth = rows[0] ? rows[0].x / rem.current : 4.5625;
+  const availableWidth = Math.max(
     0,
-    ...ranks.map(
-      (rank) =>
-        previewItems.filter((item) => getVisibleRank(item, ranks) === rank)
-          .length,
+    viewportWidth / rem.current - labelWidth - itemGapRem * 2 - 1 / rem.current,
+  );
+  const capacity = Math.max(
+    availableWidth,
+    ...ranks.map((rank) =>
+      getTwoLineCapacity({
+        items: previewItems.filter(
+          (item) => getVisibleRank(item, ranks) === rank,
+        ),
+        size: 3.75,
+        mode: imageMode,
+      }),
     ),
   );
-  const visibleColumns = Math.max(
-    1,
-    Math.floor(
-      (viewportWidth / rem.current - 4.5 - itemGapRem) / (3.75 + itemGapRem),
-    ),
+  const viewportRef = useCallback(
+    (element: HTMLElement | null) => setViewportElement(element),
+    [],
   );
-  const columns = Math.max(visibleColumns, Math.ceil(largestRank / 2));
 
   const measure = useCallback((): Row[] => {
     const board = boardRef.current;
@@ -129,6 +160,22 @@ export const useTierItems = (
 
   const visibleRank = (item: Item) => getVisibleRank(item, ranks);
 
+  const boxesFor = (
+    rank: TierRank,
+    currentItems: Item[],
+    currentRows = rows,
+  ) => {
+    const row = currentRows.find((value) => value.rank === rank);
+
+    return layoutTierItems({
+      items: currentItems.filter((item) => visibleRank(item) === rank),
+      size: row ? row.size / rem.current : 3.75,
+      mode: imageMode,
+      capacity,
+      wrap: wrapItems,
+    });
+  };
+
   const positionFor = (
     item: Item,
     currentItems: Item[],
@@ -136,26 +183,39 @@ export const useTierItems = (
   ): TierItemPosition | null => {
     const rank = visibleRank(item);
     const row = currentRows.find((value) => value.rank === rank);
+    const box = rank
+      ? boxesFor(rank, currentItems, currentRows).find(
+          (value) => value.id === item.id,
+        )
+      : undefined;
 
-    if (!row) {
+    if (!row || !box) {
       return null;
     }
 
-    const index = currentItems.findIndex((value) => value.id === item.id);
-    const column = currentItems
-      .slice(0, index)
-      .filter((other) => visibleRank(other) === rank).length;
-
-    const columnIndex = wrapItems ? column % columns : column;
-    const lineIndex = wrapItems ? Math.floor(column / columns) : 0;
-
     return {
-      x: `${String(row.x / rem.current + itemGapRem + columnIndex * (row.size / rem.current + itemGapRem))}rem`,
-      y: `${String(row.y / rem.current + itemGapRem + lineIndex * (row.size / rem.current + itemGapRem))}rem`,
-      width: `${String(row.size / rem.current)}rem`,
-      height: `${String(row.size / rem.current)}rem`,
+      x: `${row.x / rem.current + itemGapRem + box.x}rem`,
+      y: `${row.y / rem.current + itemGapRem + box.line * (row.size / rem.current + itemGapRem)}rem`,
+      width: `${box.width}rem`,
+      height: `${row.size / rem.current}rem`,
     };
   };
+
+  const getCanvasWidth = () =>
+    Math.max(
+      viewportWidth / rem.current,
+      ...rows.map((row) => {
+        const boxes = boxesFor(row.rank, previewItems);
+        const right = Math.max(0, ...boxes.map((box) => box.x + box.width));
+
+        return (
+          row.x / rem.current +
+          Math.max(right, wrapItems ? capacity : 0) +
+          itemGapRem * 2 +
+          1 / rem.current
+        );
+      }),
+    );
 
   const slotAt = (
     id: string,
@@ -186,9 +246,6 @@ export const useTierItems = (
       return null;
     }
 
-    const count = items.filter(
-      (item) => item.id !== id && visibleRank(item) === rank,
-    ).length;
     const x =
       clientX -
       board.getBoundingClientRect().left -
@@ -206,18 +263,12 @@ export const useTierItems = (
           ),
         )
       : 0;
-    const index = Math.max(
-      0,
-      Math.min(
-        count,
-        line * columns +
-          Math.floor(
-            (x + (rem.current * itemGapRem) / 2) /
-              (row.size + rem.current * itemGapRem) +
-              0.5,
-          ),
-      ),
+    const boxes = boxesFor(
+      rank,
+      items.filter((item) => item.id !== id),
+      measure(),
     );
+    const index = getTierDropIndex(boxes, x / rem.current, line);
 
     return { id, rank, index };
   };
@@ -291,9 +342,9 @@ export const useTierItems = (
   };
 
   useLayoutEffect(() => {
-    const viewport = viewportRef.current;
+    const viewport = viewportElement;
 
-    if (!viewport || !wrapItems) {
+    if (!viewport) {
       return;
     }
 
@@ -304,7 +355,7 @@ export const useTierItems = (
     observer.observe(viewport);
 
     return () => observer.disconnect();
-  }, [wrapItems]);
+  }, [viewportElement]);
 
   useLayoutEffect(() => {
     const board = boardRef.current;
@@ -332,21 +383,18 @@ export const useTierItems = (
   return {
     boardRef,
     viewportRef,
-    columns,
+    canvasWidth: `${getCanvasWidth()}rem`,
     lines: (rank: TierRank) =>
-      wrapItems
-        ? Math.min(
-            2,
-            Math.max(
-              1,
-              Math.ceil(
-                previewItems.filter(
-                  (item) => getVisibleRank(item, ranks) === rank,
-                ).length / columns,
-              ),
-            ),
-          )
-        : 1,
+      (boxesFor(rank, previewItems).at(-1)?.line ?? 0) + 1,
+    updateItem: (
+      id: string,
+      changes: Partial<Pick<Item, 'crop' | 'rowHeightExpansion'>>,
+    ) =>
+      setItems((current) =>
+        current.map((item) =>
+          item.id === id ? { ...item, ...changes } : item,
+        ),
+      ),
     items,
     announcement,
     visibleRank,

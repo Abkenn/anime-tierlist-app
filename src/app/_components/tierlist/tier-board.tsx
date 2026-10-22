@@ -7,7 +7,12 @@ import { TierItem } from '@/app/_components/tierlist/tier-item';
 import { TierRow } from '@/app/_components/tierlist/tier-row';
 import { TierViewport } from '@/app/_components/tierlist/tier-viewport';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
-import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
+import type {
+  TierColor,
+  TierImageMode,
+  TierItemData,
+  TierRank,
+} from '@/app/_types/tierlist.types';
 
 const letters = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
 
@@ -52,6 +57,9 @@ const defaultRanks = tierRanks.filter(
 type TierBoardProps = {
   ranks?: TierRank[];
   initialItemCount?: number;
+  initialItems?: TierItemData[];
+  imageMode?: TierImageMode;
+  onImageModeChange?: (mode: TierImageMode) => void;
   layout?: 'single-line' | 'two-line';
   onRanksChange?: (ranks: TierRank[]) => void;
 };
@@ -61,20 +69,30 @@ export const TierBoard = ({
   onRanksChange,
   initialItemCount = 2,
   layout = 'single-line',
+  initialItems,
+  imageMode: controlledImageMode,
+  onImageModeChange,
 }: TierBoardProps = {}) => {
   const optionsId = useId();
   const [localRanks, setLocalRanks] = useState(defaultRanks);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyboardMode, setKeyboardMode] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [localImageMode, setLocalImageMode] =
+    useState<TierImageMode>('contain');
 
+  const imageMode = controlledImageMode ?? localImageMode;
+  const scrollable = layout === 'two-line' || Boolean(initialItems?.length);
   const enabledRanks = controlledRanks ?? localRanks;
   const ranks = tierRanks.filter((rank) => enabledRanks.includes(rank));
 
-  const interaction = useTierItems(
+  const interaction = useTierItems({
     ranks,
     initialItemCount,
-    layout === 'two-line',
-  );
+    wrapItems: layout === 'two-line',
+    initialItems,
+    imageMode,
+  });
 
   const toggleVariant = (rank: TierRank) => {
     const nextRanks = enabledRanks.includes(rank)
@@ -95,7 +113,7 @@ export const TierBoard = ({
       <div className="mb-1 flex items-center justify-between gap-4 text-xs">
         <div className="text-muted-foreground">
           <p>
-            {ranks.length} tiers · {interaction.items.length} placeholders
+            {ranks.length} tiers · {interaction.items.length} items
           </p>
           <p role="status" className="mt-1 text-xs">
             {keyboardMode
@@ -113,6 +131,25 @@ export const TierBoard = ({
           {settingsOpen ? 'close options' : 'tier options'}
         </button>
       </div>
+      <label className="mb-2 flex w-fit items-center gap-2 text-xs text-muted-foreground">
+        Images
+        <select
+          aria-label="Image sizing"
+          value={imageMode}
+          className="min-h-9 border border-divider bg-background px-2 text-foreground"
+          onChange={(event) => {
+            const mode = event.currentTarget.value as TierImageMode;
+
+            setEditingItemId(null);
+            setLocalImageMode(mode);
+            onImageModeChange?.(mode);
+          }}
+        >
+          <option value="contain">Fit squares</option>
+          <option value="cover">Fill squares</option>
+          <option value="natural">Original ratio</option>
+        </select>
+      </label>
       <div
         id={optionsId}
         hidden={!settingsOpen}
@@ -146,16 +183,12 @@ export const TierBoard = ({
       <p role="status" className="sr-only">
         {interaction.announcement}
       </p>
-      <TierViewport
-        viewportRef={interaction.viewportRef}
-        twoLine={layout === 'two-line'}
-      >
-        <div
+      <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
+        <motion.div
           ref={interaction.boardRef}
-          className={cn(
-            'relative',
-            layout === 'two-line' && 'w-max min-w-full',
-          )}
+          animate={scrollable ? { width: interaction.canvasWidth } : undefined}
+          transition={{ duration: 0 }}
+          className={cn('relative', scrollable && 'min-w-full')}
         >
           <ViewTransition
             default="none"
@@ -164,7 +197,7 @@ export const TierBoard = ({
           >
             <ol
               className={cn(
-                'grid min-h-[calc(100svh-12rem)] overflow-hidden border border-ink bg-charcoal text-cloud',
+                'grid overflow-hidden border border-ink bg-charcoal text-cloud',
                 layout === 'two-line' ? 'auto-rows-auto' : 'auto-rows-fr',
               )}
               aria-label="Ranked tiers"
@@ -175,9 +208,7 @@ export const TierBoard = ({
                   rank={rank}
                   color={tierColors[rank]}
                   active={interaction.targetRank === rank}
-                  columns={
-                    layout === 'two-line' ? interaction.columns : undefined
-                  }
+                  fixedItemSize={layout === 'two-line'}
                   lines={interaction.lines(rank)}
                   itemCount={
                     interaction.items.filter(
@@ -208,11 +239,32 @@ export const TierBoard = ({
                   key={item.id}
                   label={item.label}
                   rank={rank}
+                  editing={editingItemId === item.id}
+                  onEditingChange={(editing) =>
+                    setEditingItemId((current) => {
+                      if (editing) {
+                        return item.id;
+                      }
+
+                      return current === item.id ? null : current;
+                    })
+                  }
+                  image={item.image}
+                  imageMode={imageMode}
+                  crop={item.crop}
+                  rowHeightExpansion={item.rowHeightExpansion}
+                  onCropChange={(crop) =>
+                    interaction.updateItem(item.id, { crop })
+                  }
+                  onRowHeightExpansionChange={(rowHeightExpansion) =>
+                    interaction.updateItem(item.id, { rowHeightExpansion })
+                  }
                   position={position}
                   boardRef={interaction.boardRef}
-                  onStart={(clientX, clientY) =>
-                    interaction.start(item.id, clientX, clientY)
-                  }
+                  onStart={(clientX, clientY) => {
+                    setEditingItemId(null);
+                    interaction.start(item.id, clientX, clientY);
+                  }}
                   onMove={(clientX, clientY) =>
                     interaction.move(item.id, clientX, clientY)
                   }
@@ -228,7 +280,7 @@ export const TierBoard = ({
               ) : null;
             })}
           </div>
-        </div>
+        </motion.div>
       </TierViewport>
     </section>
   );
