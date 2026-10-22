@@ -1,6 +1,8 @@
+'use client';
+
 import { motion } from 'motion/react';
-import { TierItemImage } from '@/app/_components/tierlist/tier-item-image';
 import type { TierCrop, TierImage } from '@/app/_types/tierlist.types';
+import { TierItemImage } from './tier-item-image';
 
 type TierCropPreviewProps = {
   image: TierImage;

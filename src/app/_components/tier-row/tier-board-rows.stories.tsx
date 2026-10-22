@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { aspectRatioTierItems } from '@/app/_components/tier-item/tier-image.fixtures';
 import { defaultTierRanks, tierRanks } from '@/app/_lib/tier-ranks';
 import { TierBoardRows } from './tier-board-rows';
-import { aspectRatioTierItems } from './tier-image.fixtures';
 
 const meta = {
   title: 'Tierlist/TierBoardRows',

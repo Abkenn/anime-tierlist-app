@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { TierBoard } from '@/app/_components/tierlist/tier-board';
+import { TierBoard } from '@/app/_components/tierlist';
 import { tierRanks } from '@/app/_lib/tier-ranks';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import { HomeShell } from './home-shell';

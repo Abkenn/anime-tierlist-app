@@ -1,8 +1,10 @@
+'use client';
+
 import { cn } from 'cn';
 import { ViewTransition } from 'react';
-import { TierRow } from '@/app/_components/tierlist/tier-row';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
+import { TierRow } from './tier-row';
 
 type TierBoardRowsProps = {
   ranks: TierRank[];

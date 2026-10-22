@@ -11,10 +11,6 @@ import {
   useRef,
 } from 'react';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
-import { TierCropControls } from '@/app/_components/tierlist/tier-crop-controls';
-import { TierCropPreview } from '@/app/_components/tierlist/tier-crop-preview';
-import { TierItemImage } from '@/app/_components/tierlist/tier-item-image';
-import { TierItemMenu } from '@/app/_components/tierlist/tier-item-menu';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import { useTierCrop } from '@/app/_hooks/use-tier-crop';
 import { useTierItemDrag } from '@/app/_hooks/use-tier-item-drag';
@@ -25,6 +21,10 @@ import type {
   TierImage,
   TierKeyboardMove,
 } from '@/app/_types/tierlist.types';
+import { TierCropControls } from './tier-crop-controls';
+import { TierCropPreview } from './tier-crop-preview';
+import { TierItemImage } from './tier-item-image';
+import { TierItemMenu } from './tier-item-menu';
 
 type TierItemProps = {
   id: string;

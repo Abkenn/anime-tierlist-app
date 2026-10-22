@@ -1,3 +1,5 @@
+'use client';
+
 import { tierLetters } from '@/app/_lib/tier-ranks';
 import type { TierRank } from '@/app/_types/tierlist.types';
 

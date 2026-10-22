@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { motion } from 'motion/react';
+import { aspectRatioTierItems } from '@/app/_components/tier-item/tier-image.fixtures';
+import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
 import { TierBoardItems } from './tier-board-items';
-import { TierBoardRows } from './tier-board-rows';
-import { aspectRatioTierItems } from './tier-image.fixtures';
 import { TierViewport } from './tier-viewport';
 
 type SandboxProps = { imageMode: TierImageMode };

@@ -5,11 +5,9 @@ import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
 import { startTransition, useId, useState } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
-import { TierBoardItems } from '@/app/_components/tierlist/tier-board-items';
-import { TierBoardRows } from '@/app/_components/tierlist/tier-board-rows';
-import { TierBoardToolbar } from '@/app/_components/tierlist/tier-board-toolbar';
-import { TierRankOptions } from '@/app/_components/tierlist/tier-rank-options';
-import { TierViewport } from '@/app/_components/tierlist/tier-viewport';
+import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
+import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-toolbar';
+import { TierRankOptions } from '@/app/_components/tier-settings/tier-rank-options';
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
 import { defaultTierRanks, tierRanks } from '@/app/_lib/tier-ranks';
@@ -18,6 +16,8 @@ import type {
   TierItemData,
   TierRank,
 } from '@/app/_types/tierlist.types';
+import { TierBoardItems } from './tier-board-items';
+import { TierViewport } from './tier-viewport';
 
 type TierBoardProps = {
   ranks?: TierRank[];

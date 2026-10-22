@@ -1,3 +1,5 @@
+'use client';
+
 import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
 import { type RefObject, useMemo } from 'react';

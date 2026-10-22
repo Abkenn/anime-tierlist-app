@@ -1,3 +1,5 @@
+'use client';
+
 import type { PropsWithChildren, Ref } from 'react';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 

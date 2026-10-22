@@ -1,8 +1,10 @@
+'use client';
+
 import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
 import { editingItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
-import { TierItem } from '@/app/_components/tierlist/tier-item';
-import { TierItemSizing } from '@/app/_components/tierlist/tier-item-sizing';
+import { TierItem } from '@/app/_components/tier-item/tier-item';
+import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 

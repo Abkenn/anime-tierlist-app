@@ -1,3 +1,5 @@
+'use client';
+
 import type { TierImageMode } from '@/app/_types/tierlist.types';
 
 type TierBoardToolbarProps = {

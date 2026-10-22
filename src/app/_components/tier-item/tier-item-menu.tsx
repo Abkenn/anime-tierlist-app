@@ -1,3 +1,5 @@
+'use client';
+
 import { useAtomValue } from 'jotai';
 import type { ReactElement, RefObject } from 'react';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';

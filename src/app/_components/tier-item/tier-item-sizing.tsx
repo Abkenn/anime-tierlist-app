@@ -1,3 +1,5 @@
+'use client';
+
 import { Slider } from '@/app/_components/ui/slider';
 import type { TierImage } from '@/app/_types/tierlist.types';
 
