@@ -1,13 +1,20 @@
 'use client';
 
 import { Popover } from '@base-ui/react/popover';
-import { type RefObject, useId } from 'react';
+import { cn } from 'cn';
+import { type HTMLAttributes, type RefObject, useId, useState } from 'react';
 import { useTierImageTrim } from '@/app/_hooks/use-tier-image-trim';
 import { keyboardBehaviors } from '@/app/_lib/keybindings';
 import { fullImageTrim, type TierTrimEdge } from '@/app/_lib/tier-image-trim';
 import type { TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 
 const edges: TierTrimEdge[] = ['left', 'top', 'right', 'bottom'];
+const corners = [
+  { name: 'top left', x: 'left', y: 'top' },
+  { name: 'top right', x: 'right', y: 'top' },
+  { name: 'bottom left', x: 'left', y: 'bottom' },
+  { name: 'bottom right', x: 'right', y: 'bottom' },
+] as const;
 const actionClassName =
   'min-h-11 cursor-pointer px-2 text-muted-foreground underline decoration-transparent underline-offset-4 transition-colors hover:text-foreground hover:decoration-current active:decoration-2 active:opacity-60 focus-visible:outline-1 focus-visible:outline-foreground motion-reduce:transition-none';
 
@@ -27,8 +34,38 @@ export const TierImageTrimEditor = ({
   onCancel,
 }: TierImageTrimEditorProps) => {
   const maskId = useId();
+  const [hoveredEdges, setHoveredEdges] = useState<readonly TierTrimEdge[]>([]);
   const editor = useTierImageTrim({ trim });
   const { draft } = editor;
+  const highlightedEdges = editor.activeEdges.length
+    ? editor.activeEdges
+    : hoveredEdges;
+  const handles = [
+    ...edges.map((edge) => {
+      const horizontal = edge === 'left' || edge === 'right';
+
+      return {
+        name: `${edge} crop edge`,
+        edges: [edge],
+        corner: false,
+        horizontal,
+        x: horizontal ? draft[edge] - 0.018 : draft.left,
+        y: horizontal ? draft.top : draft[edge] - 0.018,
+        width: horizontal ? 0.036 : draft.right - draft.left,
+        height: horizontal ? draft.bottom - draft.top : 0.036,
+      };
+    }),
+    ...corners.map((corner) => ({
+      name: `${corner.name} crop corner`,
+      edges: [corner.x, corner.y],
+      corner: true,
+      horizontal: false,
+      x: draft[corner.x] - 0.035,
+      y: draft[corner.y] - 0.035,
+      width: 0.07,
+      height: 0.07,
+    })),
+  ];
   const width = Math.min(400, (280 * image.width) / image.height);
   const height = (width * image.height) / image.width;
 
@@ -68,17 +105,20 @@ export const TierImageTrimEditor = ({
 
               if (
                 event.code === 'Enter' &&
-                (event.target as Element).getAttribute('role') === 'slider'
+                (event.target as Element).hasAttribute('data-trim-handle')
               ) {
                 event.preventDefault();
                 onSave(draft);
               }
             }}
           >
-            <p className="mb-3">Drag edges · Enter saves · Esc cancels</p>
+            <p className="mb-3">
+              Drag edges or corners · Enter saves · Esc cancels
+            </p>
 
             <fieldset aria-label="Image crop edges">
               <svg
+                data-trim-viewport=""
                 viewBox={`0 0 ${image.width} ${image.height}`}
                 width={width}
                 height={height}
@@ -134,59 +174,107 @@ export const TierImageTrimEditor = ({
                   />
 
                   {edges.map((edge) => {
-                    const horizontal = edge === 'left' || edge === 'right';
-                    const x = horizontal ? draft[edge] - 0.018 : draft.left;
-                    const y = horizontal ? draft.top : draft[edge] - 0.018;
+                    const vertical = edge === 'left' || edge === 'right';
 
                     return (
-                      <rect
+                      <line
                         key={edge}
-                        x={x}
-                        y={y}
-                        width={horizontal ? 0.036 : draft.right - draft.left}
-                        height={horizontal ? draft.bottom - draft.top : 0.036}
-                        role="slider"
-                        tabIndex={0}
-                        aria-label={`${edge} crop edge`}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(draft[edge] * 100)}
-                        aria-orientation={
-                          horizontal ? 'horizontal' : 'vertical'
-                        }
-                        className="cursor-crosshair fill-transparent outline-none focus-visible:fill-white/15"
-                        onPointerDown={(event) => editor.start(event, edge)}
-                        onPointerMove={editor.move}
-                        onPointerUp={editor.end}
-                        onPointerCancel={editor.cancel}
-                        onLostPointerCapture={editor.cancel}
-                        onKeyDown={(event) => {
-                          const negative = horizontal
-                            ? keyboardBehaviors.left.codes
-                            : keyboardBehaviors.up.codes;
-                          const positive = horizontal
-                            ? keyboardBehaviors.right.codes
-                            : keyboardBehaviors.down.codes;
-                          const direction =
-                            Number(
-                              positive.some((code) => code === event.code),
-                            ) -
-                            Number(
-                              negative.some((code) => code === event.code),
-                            );
-
-                          if (direction) {
-                            event.preventDefault();
-                            editor.nudge(
-                              edge,
-                              direction * (event.shiftKey ? 0.1 : 0.01),
-                            );
-                          }
-                        }}
+                        data-crop-border={edge}
+                        x1={vertical ? draft[edge] : draft.left}
+                        y1={vertical ? draft.top : draft[edge]}
+                        x2={vertical ? draft[edge] : draft.right}
+                        y2={vertical ? draft.bottom : draft[edge]}
+                        className={cn(
+                          'pointer-events-none stroke-white',
+                          highlightedEdges.includes(edge)
+                            ? 'opacity-100'
+                            : 'opacity-0',
+                        )}
+                        strokeWidth="0.014"
                       />
                     );
                   })}
                 </svg>
+
+                {handles.map((handle) => {
+                  const handleProps: HTMLAttributes<
+                    SVGRectElement | HTMLButtonElement
+                  > & {
+                    'data-trim-handle': string;
+                  } = {
+                    'data-trim-handle': '',
+                    tabIndex: 0,
+                    'aria-label': handle.name,
+                    className: cn(
+                      'border-0 bg-transparent p-0 fill-transparent outline-none',
+                      handle.corner ? 'cursor-move' : 'cursor-crosshair',
+                    ),
+                    onPointerEnter: () => setHoveredEdges(handle.edges),
+                    onPointerLeave: () => setHoveredEdges([]),
+                    onFocus: () => setHoveredEdges(handle.edges),
+                    onBlur: () => setHoveredEdges([]),
+                    onPointerDown: (event) => editor.start(event, handle.edges),
+                    onPointerMove: editor.move,
+                    onPointerUp: editor.end,
+                    onPointerCancel: editor.cancel,
+                    onLostPointerCapture: editor.cancel,
+                    onKeyDown: (event) => {
+                      const direction = Object.entries(keyboardBehaviors).find(
+                        ([, behavior]) =>
+                          behavior.codes.some((code) => code === event.code),
+                      )?.[0];
+                      const horizontal =
+                        direction === 'left' || direction === 'right';
+                      const edge = handle.edges.find(
+                        (candidate) =>
+                          horizontal ===
+                          (candidate === 'left' || candidate === 'right'),
+                      );
+
+                      if (direction && edge) {
+                        event.preventDefault();
+                        const sign =
+                          direction === 'left' || direction === 'up' ? -1 : 1;
+                        editor.nudge(
+                          edge,
+                          sign * (event.shiftKey ? 0.1 : 0.01),
+                        );
+                      }
+                    },
+                  };
+
+                  return handle.corner ? (
+                    <foreignObject
+                      key={handle.name}
+                      x={handle.x * image.width}
+                      y={handle.y * image.height}
+                      width={handle.width * image.width}
+                      height={handle.height * image.height}
+                    >
+                      <button
+                        {...handleProps}
+                        type="button"
+                        className={cn(handleProps.className, 'block size-full')}
+                      />
+                    </foreignObject>
+                  ) : (
+                    <rect
+                      key={handle.name}
+                      {...handleProps}
+                      x={handle.x * image.width}
+                      y={handle.y * image.height}
+                      width={handle.width * image.width}
+                      height={handle.height * image.height}
+                      role="slider"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(draft[handle.edges[0]] * 100)}
+                      aria-orientation={
+                        handle.horizontal ? 'horizontal' : 'vertical'
+                      }
+                    />
+                  );
+                })}
               </svg>
             </fieldset>
 

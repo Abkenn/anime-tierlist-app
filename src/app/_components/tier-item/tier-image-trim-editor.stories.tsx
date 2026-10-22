@@ -70,10 +70,22 @@ export const Landscape: Story = {
     await expect(right).toHaveAttribute('aria-valuenow', '90');
     await userEvent.hover(right);
     await expect(getComputedStyle(right).stroke).toBe('none');
+    const rightBorder = page
+      .getByRole('dialog')
+      .querySelector('[data-crop-border="right"]');
+    await expect(rightBorder).toHaveClass(/opacity-100/);
+    const corner = page.getByRole('button', { name: 'top right crop corner' });
+    fireEvent.keyDown(corner, { code: 'KeyS', shiftKey: true });
+    fireEvent.keyDown(corner, { code: 'KeyA', shiftKey: true });
+    await expect(
+      page.getByRole('slider', { name: 'top crop edge' }),
+    ).toHaveAttribute('aria-valuenow', '10');
+    await expect(right).toHaveAttribute('aria-valuenow', '80');
     await userEvent.click(page.getByRole('button', { name: 'Done' }));
     await expect(args.onSave).toHaveBeenCalledWith({
       ...fullImageTrim,
-      right: 0.9,
+      top: 0.1,
+      right: 0.8,
     });
     await waitFor(() =>
       expect(
