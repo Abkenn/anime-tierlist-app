@@ -1,16 +1,17 @@
 'use client';
 
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useSearchItemDrag } from '@/app/_hooks/use-search-item-drag';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
 
 type AnimeSearchResultProps = {
   result: AnimeSearchResult;
-  onLoaded: (id: string, image: TierImage) => void;
+  onLoaded: (id: string, image: TierImage | null) => void;
 };
 
 export const AnimeSearchResultCard = ({
@@ -26,6 +27,7 @@ export const AnimeSearchResultCard = ({
       ? { status: 'ready', image: result.image }
       : { status: 'loading' },
   );
+  const reducedMotion = useReducedMotion();
   const image = state.status === 'ready' ? state.image : undefined;
   const drag = useSearchItemDrag({
     id: result.id,
@@ -34,7 +36,13 @@ export const AnimeSearchResultCard = ({
     image,
   });
 
+  const reportFailure = useEffectEvent(() => onLoaded(result.id, null));
+
   useEffect(() => {
+    if (state.status === 'error') {
+      reportFailure();
+    }
+
     if (state.status !== 'loading') {
       return;
     }
@@ -63,9 +71,21 @@ export const AnimeSearchResultCard = ({
         {...drag.triggerProps}
         animate={{ opacity: drag.dragging ? 0 : 1 }}
       >
+        {state.status === 'loading' && (
+          <motion.span
+            aria-hidden="true"
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: reducedMotion ? 0.7 : [0.5, 0.85, 0.5] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 flex min-h-16 items-center justify-center bg-muted text-[0.625rem] text-muted-foreground"
+          >
+            <TerminalText text="Loading..." />
+          </motion.span>
+        )}
+
         {state.status === 'error' ? (
           <span role="status">
-            Image could not be loaded. Check the URL or try another image.
+            <TerminalText text="Image could not be loaded. Check the URL or try another image." />
           </span>
         ) : (
           <Image

@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { useState } from 'react';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { animeSearchConfigAtom } from '@/app/_atoms/tierlist/search.atoms';
+import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
@@ -21,7 +22,9 @@ export const AnimeSearchResults = () => {
   } = useAtomValue(animeSearchConfigAtom);
   const imported = useAtomValue(importedItemIdsAtom);
   const [input, setInput] = useState(initialQuery);
-  const [dimensions, setDimensions] = useState<Record<string, TierImage>>({});
+  const [dimensions, setDimensions] = useState<
+    Record<string, TierImage | null>
+  >({});
   const { search, sentinel, query, url, urlError, waiting } = useAnimeSearch(
     input,
     { initialQuery, initialPage },
@@ -60,6 +63,9 @@ export const AnimeSearchResults = () => {
       all.findIndex((entry) => entry.id === result.id) === index,
   );
   const displacement = useSearchDisplacement(visibleResults);
+  const loadingImages = visibleResults.some(
+    (result) => !result.image && !Object.hasOwn(dimensions, result.id),
+  );
 
   const pageFor = (id: string) => {
     if (curated.some((item) => item.id === id)) {
@@ -73,10 +79,35 @@ export const AnimeSearchResults = () => {
     );
   };
 
-  const loaded = (id: string, image: TierImage) =>
+  const loaded = (id: string, image: TierImage | null) =>
     setDimensions((current) =>
-      current[id]?.src === image.src ? current : { ...current, [id]: image },
+      Object.hasOwn(current, id) && current[id]?.src === image?.src
+        ? current
+        : { ...current, [id]: image },
     );
+
+  const statusMessage = () => {
+    if (waiting) {
+      return 'Waiting...';
+    }
+    if (urlError) {
+      return urlError;
+    }
+    if (!url && search.isError) {
+      return search.error.message;
+    }
+    if (!url && search.isFetching) {
+      return 'Searching...';
+    }
+    if (loadingImages) {
+      return 'Loading images...';
+    }
+    if (query.length >= 2 && !url && results.length === 0) {
+      return 'No images found.';
+    }
+
+    return '';
+  };
 
   return (
     <div className="lg:sticky lg:top-2">
@@ -101,7 +132,7 @@ export const AnimeSearchResults = () => {
           className:
             'max-h-64 overscroll-contain pr-3 lg:max-h-[calc(100dvh-14rem)]',
         }}
-        aria-busy={waiting || search.isFetching}
+        aria-busy={waiting || search.isFetching || loadingImages}
       >
         <div
           ref={displacement.gridRef}
@@ -137,27 +168,8 @@ export const AnimeSearchResults = () => {
             ))}
         </div>
 
-        <p role="status" className="py-2 text-xs text-muted-foreground">
-          {waiting && 'Waiting…'}
-
-          {!waiting && urlError}
-
-          {!waiting &&
-            !urlError &&
-            !url &&
-            search.isError &&
-            search.error.message}
-
-          {!waiting && !urlError && !url && search.isFetching && 'Searching…'}
-
-          {!waiting &&
-            !urlError &&
-            !url &&
-            !search.isFetching &&
-            !search.isError &&
-            query.length >= 2 &&
-            results.length === 0 &&
-            'No images found.'}
+        <p role="status" className="min-h-8 py-2 text-xs text-muted-foreground">
+          <TerminalText text={statusMessage()} />
         </p>
 
         {!waiting && !url && search.isError && (

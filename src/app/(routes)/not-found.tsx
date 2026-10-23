@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import { TerminalText } from '@/app/_components/shell/terminal-text';
 
 const NotFound = () => (
   <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-24 sm:px-12">
-    <h1 className="text-2xl">Page not found</h1>
+    <h1 className="text-2xl">
+      <TerminalText text="Page not found" />
+    </h1>
 
     <Link
       href="/"

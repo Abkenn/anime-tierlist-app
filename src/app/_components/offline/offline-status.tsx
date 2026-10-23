@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useOfflineReconnect } from '@/app/_hooks/use-offline-reconnect';
 
 type OfflineNoticeProps = ReturnType<typeof useOfflineReconnect> & {
@@ -59,9 +60,13 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
 
           <div className="flex items-start justify-between gap-4">
             <div role="status" className="space-y-2">
-              <p className="text-sm font-medium">You’re in offline mode</p>
+              <p className="text-sm font-medium">
+                <TerminalText text="You’re in offline mode" />
+              </p>
 
-              <p className="text-xs leading-5">{descriptions[mode]}</p>
+              <p className="text-xs leading-5">
+                <TerminalText text={descriptions[mode]} pending={false} />
+              </p>
             </div>
 
             <button
@@ -80,7 +85,9 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
             onClick={() => void reconnect()}
             className="mt-3 min-h-9 text-xs underline underline-offset-4 disabled:cursor-wait disabled:no-underline"
           >
-            {checking ? 'Reconnecting…' : 'Retry connection'}
+            <TerminalText
+              text={checking ? 'Reconnecting...' : 'Retry connection'}
+            />
           </button>
         </aside>
       )}
