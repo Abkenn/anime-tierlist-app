@@ -47,7 +47,6 @@ export const TierBoard = ({
     onChange: onImageModeChange,
   });
 
-  const scrollable = layout === 'two-line' || Boolean(initialItems?.length);
   const enabledRanks = controlledRanks ?? localRanks;
   const ranks = tierRanks.filter((rank) => enabledRanks.includes(rank));
 
@@ -58,6 +57,11 @@ export const TierBoard = ({
     initialItems,
     imageMode,
   });
+
+  const scrollable =
+    layout === 'two-line' ||
+    initialItemCount === 0 ||
+    initialItems !== undefined;
 
   const toggleVariant = (rank: TierRank) => {
     const nextRanks = enabledRanks.includes(rank)

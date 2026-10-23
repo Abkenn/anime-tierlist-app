@@ -1,12 +1,31 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
+import {
+  useCallback,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { tierDragRegionAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import {
+  availableRanksAtom,
+  tierItemsAtom,
+} from '@/app/_atoms/tierlist/items.atoms';
+import {
+  draggedSearchItemAtom,
+  searchDragPointAtom,
+  searchDropSlotAtom,
+} from '@/app/_atoms/tierlist/search.atoms';
 import {
   getTierDropIndex,
   getTwoLineCapacity,
   layoutTierItems,
   tierItemGap,
 } from '@/app/_lib/tier-item-layout';
+import { projectTierItems } from '@/app/_lib/tier-item-projection';
 import type {
   TierImageMode,
   TierItemData,
@@ -29,40 +48,6 @@ const itemGapRem = tierItemGap;
 const getVisibleRank = (item: Item, ranks: TierRank[]) =>
   ranks.includes(item.rank) ? item.rank : ranks[0];
 
-const projectItems = (
-  items: Item[],
-  dropSlot: DropSlot,
-  ranks: TierRank[],
-): Item[] => {
-  const item = items.find((value) => value.id === dropSlot.id);
-
-  if (!item) {
-    return items;
-  }
-
-  const remaining = items.filter((value) => value.id !== item.id);
-  const siblings = remaining.filter(
-    (value) => getVisibleRank(value, ranks) === dropSlot.rank,
-  );
-  const next = siblings[dropSlot.index];
-  const previous = siblings.at(-1);
-  let insertion = remaining.length;
-
-  if (previous) {
-    insertion = remaining.indexOf(previous) + 1;
-  }
-
-  if (next) {
-    insertion = remaining.indexOf(next);
-  }
-
-  return [
-    ...remaining.slice(0, insertion),
-    { ...item, rank: dropSlot.rank },
-    ...remaining.slice(insertion),
-  ];
-};
-
 type TierItemsInput = {
   ranks: TierRank[];
   initialItemCount?: number;
@@ -78,29 +63,45 @@ export const useTierItems = ({
   initialItems,
   imageMode = 'natural',
 }: TierItemsInput) => {
+  const externalItem = useAtomValue(draggedSearchItemAtom);
+  const externalPoint = useAtomValue(searchDragPointAtom);
+  const [externalSlot, setExternalSlot] = useAtom(searchDropSlotAtom);
+  const setDragRegion = useSetAtom(tierDragRegionAtom);
   const [viewportElement, setViewportElement] = useState<HTMLElement | null>(
     null,
   );
   const [viewportWidth, setViewportWidth] = useState(344);
   const boardRef = useRef<HTMLDivElement>(null);
-  const [items, setItems] = useState<Item[]>(
-    () =>
+  useHydrateAtoms([
+    [
+      tierItemsAtom,
       initialItems?.map((item) => ({ ...item })) ??
-      Array.from({ length: initialItemCount }, (_, index) => ({
-        id: `tier-item-${index + 1}`,
-        label: String(index + 1),
-        rank: 'S+',
-      })),
-  );
+        Array.from(
+          { length: initialItemCount },
+          (_, index): Item => ({
+            id: `tier-item-${index + 1}`,
+            label: String(index + 1),
+            rank: 'S+',
+          }),
+        ),
+    ],
+  ]);
+  const [items, setItems] = useAtom(tierItemsAtom);
+  const setAvailableRanks = useSetAtom(availableRanksAtom);
   const [rows, setRows] = useState<Row[]>([]);
   const [slot, setSlot] = useState<DropSlot | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const rem = useRef(16);
 
   const rankKey = ranks.join(',');
-  const previewItems = slot ? projectItems(items, slot, ranks) : items;
-  const previewItem = slot
-    ? previewItems.find((item) => item.id === slot.id)
+  const activeSlot = slot ?? (externalItem ? externalSlot : null);
+  const layoutItems =
+    externalItem && externalSlot ? [...items, externalItem] : items;
+  const previewItems = activeSlot
+    ? projectTierItems(layoutItems, activeSlot, ranks)
+    : items;
+  const previewItem = activeSlot
+    ? previewItems.find((item) => item.id === activeSlot.id)
     : undefined;
 
   const labelWidth = rows[0] ? rows[0].x / rem.current : 4.5625;
@@ -274,8 +275,23 @@ export const useTierItems = ({
     return { id, rank, index };
   };
 
+  const outsideBoard = (x: number, y: number) => {
+    const board = boardRef.current;
+    const viewport = board?.closest<HTMLElement>('[data-tier-viewport]');
+    const rectangles = [board, viewport].flatMap((element) =>
+      element ? [element.getBoundingClientRect()] : [],
+    );
+
+    return rectangles.some(
+      (rect) =>
+        x < rect.left || x > rect.right || y < rect.top || y > rect.bottom,
+    );
+  };
+
   const hover = (id: string, clientX: number, clientY: number) => {
-    const next = slotAt(id, clientX, clientY);
+    const outside = outsideBoard(clientX, clientY);
+    setDragRegion(outside ? 'discard' : 'board');
+    const next = outside ? null : slotAt(id, clientX, clientY);
 
     setSlot((current) =>
       current?.id === next?.id &&
@@ -287,7 +303,7 @@ export const useTierItems = ({
   };
 
   const commit = (next: DropSlot) => {
-    const nextItems = projectItems(items, next, ranks);
+    const nextItems = projectTierItems(items, next, ranks);
     const item = nextItems.find((value) => value.id === next.id);
 
     setItems(nextItems);
@@ -341,6 +357,33 @@ export const useTierItems = ({
       });
     }
   };
+
+  const updateExternalSlot = useEffectEvent(
+    (
+      candidate: TierItemData | null,
+      point: { x: number; y: number } | null,
+    ) => {
+      const next =
+        candidate && point && !outsideBoard(point.x, point.y)
+          ? slotAt(candidate.id, point.x, point.y)
+          : null;
+      setExternalSlot((current) =>
+        current?.id === next?.id &&
+        current?.rank === next?.rank &&
+        current?.index === next?.index
+          ? current
+          : next,
+      );
+    },
+  );
+
+  useLayoutEffect(() => {
+    updateExternalSlot(externalItem, externalPoint);
+  }, [externalItem, externalPoint]);
+
+  useLayoutEffect(() => {
+    setAvailableRanks(ranks);
+  }, [ranks, setAvailableRanks]);
 
   useLayoutEffect(() => {
     const viewport = viewportElement;
@@ -398,10 +441,16 @@ export const useTierItems = ({
           item.id === id ? { ...item, ...changes } : item,
         ),
       ),
+    addItem: (item: Item) =>
+      setItems((current) =>
+        current.some((existing) => existing.id === item.id)
+          ? current
+          : [...current, item],
+      ),
     items,
     announcement,
     visibleRank,
-    targetRank: slot?.rank ?? null,
+    targetRank: activeSlot?.rank ?? null,
     dropPosition: previewItem
       ? positionFor(previewItem, previewItems, rows)
       : null,
@@ -410,6 +459,17 @@ export const useTierItems = ({
     start: hover,
     move: hover,
     drop: (id: string, clientX: number, clientY: number) => {
+      setDragRegion(null);
+      if (outsideBoard(clientX, clientY)) {
+        setItems((current) => current.filter((item) => item.id !== id));
+        setSlot(null);
+        setAnnouncement(
+          `Item ${items.find((item) => item.id === id)?.label ?? id} discarded`,
+        );
+
+        return null;
+      }
+
       const next = slotAt(id, clientX, clientY);
 
       if (!next) {
@@ -420,7 +480,10 @@ export const useTierItems = ({
 
       return commit(next);
     },
-    cancel: () => setSlot(null),
+    cancel: () => {
+      setDragRegion(null);
+      setSlot(null);
+    },
     keyboardMove,
   };
 };

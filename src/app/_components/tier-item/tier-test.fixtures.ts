@@ -1,6 +1,6 @@
 import type { TierItemData } from '@/app/_types/tierlist.types';
 
-export const homeTierItems: TierItemData[] = [
+export const testTierItems: TierItemData[] = [
   {
     id: 'sample-square',
     label: 'Square TEST',

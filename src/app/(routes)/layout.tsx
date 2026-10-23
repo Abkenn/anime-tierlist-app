@@ -1,3 +1,4 @@
+import { Toaster } from '@/app/_components/ui/toast';
 import { OfflineSupport } from '@/app/_providers/offline-support';
 import '../_styles/globals.css';
 
@@ -66,6 +67,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
               </ViewTransition>
             </div>
           </ScrollArea>
+
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

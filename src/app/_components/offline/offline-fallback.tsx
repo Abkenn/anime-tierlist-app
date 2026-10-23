@@ -7,5 +7,5 @@ import { markOffline } from '@/app/_services/offline-mode';
 export const OfflineFallback = () => {
   useEffect(markOffline, []);
 
-  return <TierBoard />;
+  return <TierBoard initialItemCount={0} />;
 };

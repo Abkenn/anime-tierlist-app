@@ -52,7 +52,7 @@ export const TierBoardRows = ({
         initial={false}
         animate={{ '--tier-density': density }}
         transition={{ duration: 0 }}
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-base-size:5rem] 2xl:[--tier-base-size:6rem] min-[120rem]:[--tier-base-size:6.6rem] [--tier-size:calc(var(--tier-base-size)*var(--tier-density,1))] [--tier-item-size:calc(4.125rem*var(--tier-density,1))]"
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-base-size:6rem] 2xl:[--tier-base-size:7rem] min-[120rem]:[--tier-base-size:7.5rem] [--tier-size:calc(var(--tier-base-size)*var(--tier-density,1))] [--tier-item-size:calc(5rem*var(--tier-density,1))]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank) => (

@@ -1,0 +1,107 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect, fireEvent, waitFor, within } from 'storybook/test';
+import { testTierItems } from '@/app/_components/tier-item/tier-test.fixtures';
+import { TierBoard } from '@/app/_components/tierlist';
+import { Toaster } from '@/app/_components/ui/toast';
+import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
+import { AnimeSearchDiscard } from './anime-search-discard';
+import { AnimeSearchProvider } from './anime-search-provider';
+import { AnimeSearchResults } from './anime-search-results';
+
+const meta = {
+  title: 'Anime/Search',
+  component: AnimeSearchProvider,
+  args: { curatedImages: [] },
+  render: (args) => (
+    <TierBoardProvider>
+      <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <AnimeSearchProvider {...args}>
+          <AnimeSearchResults />
+        </AnimeSearchProvider>
+
+        <TierBoard initialItemCount={0} />
+
+        <Toaster />
+      </div>
+    </TierBoardProvider>
+  ),
+} satisfies Meta<typeof AnimeSearchProvider>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Playground: Story = {};
+export const DirectImageImport: Story = {
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const input = canvas.getByRole('searchbox');
+    const origin = canvasElement.ownerDocument.location.origin;
+    fireEvent.change(input, {
+      target: { value: `${origin}/tier-samples/portrait.svg` },
+    });
+    const image = await canvas.findByRole('img', { name: 'Custom image' });
+    const card = image.closest('button');
+    await waitFor(() => expect(card).toBeEnabled());
+    if (!card) {
+      throw new Error('Missing image card');
+    }
+    await userEvent.click(card);
+    await canvas.findByRole('button', {
+      name: 'Item Custom image in Watching',
+    });
+    await waitFor(() => expect(card).not.toBeInTheDocument());
+    const page = within(canvasElement.ownerDocument.body);
+    await page.findByText('Custom image added to Watching');
+    await userEvent.click(page.getByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: 'Item Custom image in Watching' }),
+      ).not.toBeInTheDocument(),
+    );
+    fireEvent.change(input, {
+      target: { value: 'https://example.com/not-an-image' },
+    });
+    await canvas.findByText(/Use a direct image URL/);
+  },
+};
+
+export const OfflineImagePlayground: Story = {
+  args: {
+    initialQuery: 'test',
+    catalogSearchEnabled: false,
+    curatedImages: testTierItems.flatMap((item) =>
+      item.image
+        ? [
+            {
+              id: item.id,
+              title: item.label,
+              imageUrl: item.image.src,
+              image: item.image,
+              keywords: ['test', item.label],
+            },
+          ]
+        : [],
+    ),
+  },
+  render: (args) => (
+    <TierBoardProvider>
+      <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside
+          aria-label="Anime search"
+          className="relative min-w-0 lg:self-stretch"
+        >
+          <AnimeSearchProvider {...args}>
+            <AnimeSearchResults />
+          </AnimeSearchProvider>
+
+          <AnimeSearchDiscard />
+        </aside>
+
+        <div className="min-w-0">
+          <TierBoard initialItems={testTierItems} />
+        </div>
+
+        <Toaster />
+      </div>
+    </TierBoardProvider>
+  ),
+};

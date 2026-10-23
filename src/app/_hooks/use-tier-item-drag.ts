@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
+import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
 
 type TierItemDragInput = {
   itemRef: RefObject<HTMLButtonElement | null>;
@@ -133,41 +134,10 @@ export const useTierItemDrag = ({
         return;
       }
 
-      const viewport = boardRef.current?.closest<HTMLElement>(
-        '[data-slot="scroll-area-viewport"]',
-      );
+      const board = boardRef.current;
 
-      if (viewport) {
-        const bounds = viewport.getBoundingClientRect();
-        const edge = rem * 3;
-        const distance =
-          active.y < bounds.top + edge
-            ? active.y - bounds.top - edge
-            : Math.max(0, active.y - bounds.bottom + edge);
-        const elapsed = Math.min(delta, 32) / 1000;
-
-        if (distance) {
-          viewport.scrollTop +=
-            Math.max(-rem * 24, Math.min(rem * 24, distance * 8)) * elapsed;
-        }
-      }
-
-      const horizontal = boardRef.current?.closest<HTMLElement>(
-        '[data-tier-viewport]',
-      );
-
-      if (horizontal && horizontal.scrollWidth > horizontal.clientWidth) {
-        const bounds = horizontal.getBoundingClientRect();
-        const edge = rem * 2;
-        const distance =
-          active.x < bounds.left + edge
-            ? active.x - bounds.left - edge
-            : Math.max(0, active.x - bounds.right + edge);
-
-        horizontal.scrollLeft +=
-          (Math.max(-rem * 20, Math.min(rem * 20, distance * 8)) *
-            Math.min(delta, 32)) /
-          1000;
+      if (board) {
+        scrollTierDrag({ board, x: active.x, y: active.y, delta });
       }
 
       followPointer();
