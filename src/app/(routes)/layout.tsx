@@ -2,7 +2,7 @@ import { Toaster } from '@/app/_components/ui/toast';
 import { OfflineSupport } from '@/app/_providers/offline-support';
 import '../_styles/globals.css';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 import { Suspense, ViewTransition } from 'react';
@@ -10,6 +10,7 @@ import { OfflineStatus } from '@/app/_components/offline/offline-status';
 import { HomeLink } from '@/app/_components/shell/home-link';
 import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
+import { siteAccent, siteUrl } from '@/app/_lib/site-metadata';
 import { ThemeProvider } from '@/app/_providers/theme-provider';
 import type { RootLayoutProps } from '@/app/_types/layout.types';
 
@@ -23,7 +24,11 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+export const viewport: Viewport = { themeColor: siteAccent };
+
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
+  applicationName: 'Anime Tierlist',
   title: 'Anime Tierlist',
   description:
     'A home for your favorite anime. Create your own anime rankings.',

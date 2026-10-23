@@ -1,10 +1,19 @@
 import { AnimeSearch } from '@/app/_components/anime-search/anime-search';
 import { HomeShell } from '@/app/_components/home/home-shell';
 import { TierBoard } from '@/app/_components/tierlist';
+import { discordEmbedUrl, homepageMetadata } from '@/app/_lib/site-metadata';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
+
+export const metadata = homepageMetadata;
 
 const Home = () => (
   <HomeShell>
+    <link
+      rel="discord:component-embed"
+      type="application/vnd.discord.component-embed+json"
+      href={discordEmbedUrl}
+    />
+
     <TierBoardProvider>
       <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <AnimeSearch />
