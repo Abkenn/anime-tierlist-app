@@ -86,7 +86,7 @@ export const AnimeSearchResults = () => {
           type="search"
           value={input}
           maxLength={2048}
-          placeholder="Search anime or paste an image URL"
+          placeholder="Search anime…"
           className="mt-2 min-h-11 w-full border border-divider bg-background px-3 text-sm text-foreground outline-none focus-visible:border-foreground"
           onChange={(event) => setInput(event.currentTarget.value)}
         />
