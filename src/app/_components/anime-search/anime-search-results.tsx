@@ -53,7 +53,7 @@ export const AnimeSearchResults = () => {
       }),
   );
   const results: AnimeSearchResult[] = url
-    ? [{ id: `url-${url}`, title: 'Custom image', imageUrl: url }]
+    ? [{ id: `url-${url}`, title: 'Unknown', imageUrl: url }]
     : [...curated, ...provider];
 
   const reducedMotion = useReducedMotion();

@@ -2,6 +2,11 @@ import type { KeyboardEventCode } from 'types-keyboardevent';
 
 export type KeyboardBehavior = {
   readonly codes: readonly KeyboardEventCode[];
+  readonly modifiers?: {
+    readonly primary?: boolean;
+    readonly alt?: boolean;
+    readonly shift?: boolean;
+  };
 };
 
 export const keyboardBehaviors = {
@@ -9,9 +14,25 @@ export const keyboardBehaviors = {
   right: { codes: ['ArrowRight', 'KeyD'] },
   up: { codes: ['ArrowUp', 'KeyW'] },
   down: { codes: ['ArrowDown', 'KeyS'] },
+  find: { codes: ['KeyF'], modifiers: { primary: true, alt: false } },
 } as const satisfies Record<string, KeyboardBehavior>;
 
 export type KeyboardBehaviorName = keyof typeof keyboardBehaviors;
+
+type KeyboardBehaviorEvent = Pick<
+  KeyboardEvent,
+  'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'
+>;
+
+export const matchesKeyboardBehavior = (
+  event: KeyboardBehaviorEvent,
+  { codes, modifiers }: KeyboardBehavior,
+) =>
+  codes.some((code) => code === event.code) &&
+  (modifiers?.primary === undefined ||
+    (event.ctrlKey || event.metaKey) === modifiers.primary) &&
+  (modifiers?.alt === undefined || event.altKey === modifiers.alt) &&
+  (modifiers?.shift === undefined || event.shiftKey === modifiers.shift);
 
 type KeyboardBehaviorConfig = {
   behavior?: KeyboardBehaviorName;

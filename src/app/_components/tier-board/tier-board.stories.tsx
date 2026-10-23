@@ -894,3 +894,53 @@ export const DenseLibrary: Story = {
     });
   },
 };
+
+export const RenameAndFind: Story = {
+  args: {
+    initialItems: [
+      {
+        ...aspectRatioTierItems[0],
+        id: 'find-one',
+        label: 'Unknown',
+        rank: 'S+',
+      },
+      {
+        ...aspectRatioTierItems[1],
+        id: 'find-two',
+        label: 'Another anime',
+        rank: 'S',
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await canvas.findByRole('button', {
+      name: 'Item Unknown in S+',
+    });
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Rename Label' }),
+    );
+    const label = await page.findByRole('textbox', { name: 'Item label' });
+    await userEvent.clear(label);
+    await userEvent.type(label, 'Your Lie in April');
+    await userEvent.click(page.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(item).toHaveAccessibleName('Item Your Lie in April in S+'),
+    );
+    fireEvent.keyDown(window, { code: 'KeyF', ctrlKey: true });
+    const find = await page.findByRole('textbox', {
+      name: 'Find anime in tierlist',
+    });
+    await userEvent.type(find, 'your lie');
+    await expect(
+      canvas.getByRole('button', { name: 'Item Another anime in S' }),
+    ).toHaveClass('opacity-20');
+    await expect(page.getByText('1 found')).toBeVisible();
+    fireEvent.keyDown(find, { code: 'Escape' });
+    await expect(
+      canvas.getByRole('button', { name: 'Item Another anime in S' }),
+    ).not.toHaveClass('opacity-20');
+  },
+};

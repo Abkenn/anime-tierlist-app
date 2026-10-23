@@ -1,7 +1,8 @@
 'use client';
 
-import { useAtomValue } from 'jotai';
-import type { ReactElement, RefObject } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { type ReactElement, type RefObject, useState } from 'react';
+import { renamingItemIdAtom } from '@/app/_atoms/tierlist/find.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ContextMenu } from '@/app/_components/ui/context-menu';
 import { ContextMenuContent } from '@/app/_components/ui/context-menu-content';
@@ -9,6 +10,7 @@ import { ContextMenuItem } from '@/app/_components/ui/context-menu-item';
 import { ContextMenuTrigger } from '@/app/_components/ui/context-menu-trigger';
 
 type TierItemMenuProps = {
+  itemId?: string;
   trigger: ReactElement;
   finalFocus?: RefObject<HTMLElement | null>;
   hasImage: boolean;
@@ -26,6 +28,7 @@ type TierItemMenuProps = {
 };
 
 export const TierItemMenu = ({
+  itemId,
   trigger,
   finalFocus,
   hasImage,
@@ -42,11 +45,14 @@ export const TierItemMenu = ({
   onText,
 }: TierItemMenuProps) => {
   const mode = useAtomValue(imageModeAtom);
+  const rename = useSetAtom(renamingItemIdAtom);
+  const [renaming, setRenaming] = useState(false);
 
   return (
     <ContextMenu
       onOpenChange={(open) => {
         if (open) {
+          setRenaming(false);
           onOpen();
         }
       }}
@@ -57,7 +63,7 @@ export const TierItemMenu = ({
       />
 
       <ContextMenuContent
-        finalFocus={textEditorOpen ? false : finalFocus}
+        finalFocus={textEditorOpen || renaming ? false : finalFocus}
         className={
           mode === 'natural'
             ? 'max-w-[calc(100vw-2rem)] overflow-visible'
@@ -112,6 +118,18 @@ export const TierItemMenu = ({
         )}
 
         <div role="menu" aria-label="Text actions">
+          <ContextMenuItem
+            disabled={!itemId || editing}
+            onClick={() => {
+              if (itemId) {
+                setRenaming(true);
+                rename(itemId);
+              }
+            }}
+          >
+            Rename Label
+          </ContextMenuItem>
+
           <ContextMenuItem disabled={editing || !onText} onClick={onText}>
             {hasTitle ? 'Edit text' : 'Add text'}
           </ContextMenuItem>

@@ -10,7 +10,7 @@ const providerResponseSchema = z.object({
   data: z.array(
     z.object({
       mal_id: z.number().int().positive(),
-      title: z.string(),
+      title: z.string().nullish(),
       images: z.object({
         jpg: z.object({
           large_image_url: z.url().nullish(),
@@ -49,7 +49,13 @@ export const searchAnimePage = async (
         anime.images?.jpg?.large_image_url ?? anime.images?.jpg?.image_url;
 
       return imageUrl
-        ? [{ id: `mal-${anime.mal_id}`, title: anime.title, imageUrl }]
+        ? [
+            {
+              id: `mal-${anime.mal_id}`,
+              title: anime.title?.trim() || 'Unknown',
+              imageUrl,
+            },
+          ]
         : [];
     }),
     nextPage: result.pagination?.has_next_page ? page + 1 : null,

@@ -37,6 +37,7 @@ import { TierItemTitle } from './tier-item-title';
 import { TierItemTitleEditor } from './tier-item-title-editor';
 
 type TierItemProps = {
+  dimmed?: boolean;
   id: string;
   label: string;
   rank: string;
@@ -153,6 +154,7 @@ const TierItemTrigger = ({
 };
 
 export const TierItem = ({
+  dimmed = false,
   id,
   label,
   image,
@@ -340,6 +342,7 @@ export const TierItem = ({
   return (
     <>
       <TierItemMenu
+        itemId={id}
         finalFocus={itemRef}
         hasImage={Boolean(image)}
         squareImage={Boolean(image && image.width === image.height)}
@@ -359,6 +362,7 @@ export const TierItem = ({
         }
         trigger={
           <TierItemTrigger
+            className={dimmed ? 'opacity-20' : undefined}
             ref={itemRef}
             previewAnchor={itemRef}
             label={label}

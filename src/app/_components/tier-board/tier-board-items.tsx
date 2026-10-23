@@ -2,12 +2,17 @@
 
 import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
+import { tierFindQueryAtom } from '@/app/_atoms/tierlist/find.atoms';
 import { editingItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { TierItem } from '@/app/_components/tier-item/tier-item';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { getTrimmedImage } from '@/app/_lib/tier-image-trim';
+import {
+  getTierItemLabel,
+  matchesTierItemLabel,
+} from '@/app/_lib/tier-item-label';
 
 type TierBoardItemsProps = {
   interaction: Pick<
@@ -29,6 +34,7 @@ type TierBoardItemsProps = {
 
 export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const editingItemId = useAtomValue(editingItemIdAtom);
+  const query = useAtomValue(tierFindQueryAtom);
   const { clearEditingItem } = useTierBoardActions();
 
   return (
@@ -57,7 +63,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
             <TierItem
               key={item.id}
               id={item.id}
-              label={item.label}
+              label={getTierItemLabel(item)}
+              dimmed={
+                Boolean(query.trim()) && !matchesTierItemLabel(item, query)
+              }
               rank={rank}
               editing={editingItemId === item.id}
               image={item.image}

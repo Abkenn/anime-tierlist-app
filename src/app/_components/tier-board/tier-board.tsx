@@ -5,6 +5,7 @@ import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
 import { startTransition, useId, useState } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import { TierItemLabelEditor } from '@/app/_components/tier-item/tier-item-label-editor';
 import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
 import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-toolbar';
 import { TierRankOptions } from '@/app/_components/tier-settings/tier-rank-options';
@@ -16,6 +17,7 @@ import type {
   TierItemData,
   TierRank,
 } from '@/app/_types/tierlist.types';
+import { TierBoardFind } from './tier-board-find';
 import { TierBoardItems } from './tier-board-items';
 import { TierViewport } from './tier-viewport';
 
@@ -79,6 +81,10 @@ export const TierBoard = ({
 
   return (
     <section aria-label="Anime tierlist" className="mt-1">
+      <TierBoardFind />
+
+      <TierItemLabelEditor />
+
       <TierBoardToolbar
         rankCount={ranks.length}
         itemCount={interaction.items.length}
