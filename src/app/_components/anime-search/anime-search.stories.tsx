@@ -15,9 +15,11 @@ const meta = {
   render: (args) => (
     <TierBoardProvider>
       <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <AnimeSearchProvider {...args}>
-          <AnimeSearchResults />
-        </AnimeSearchProvider>
+        <aside className="relative min-w-0 lg:grid lg:min-h-0 lg:grid-rows-[minmax(0,1fr)] lg:self-stretch lg:contain-size">
+          <AnimeSearchProvider {...args}>
+            <AnimeSearchResults />
+          </AnimeSearchProvider>
+        </aside>
 
         <TierBoard initialItemCount={0} />
 
@@ -87,7 +89,7 @@ export const OfflineImagePlayground: Story = {
       <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside
           aria-label="Anime search"
-          className="relative min-w-0 lg:self-stretch"
+          className="relative min-w-0 lg:grid lg:min-h-0 lg:grid-rows-[minmax(0,1fr)] lg:self-stretch lg:contain-size"
         >
           <AnimeSearchProvider {...args}>
             <AnimeSearchResults />
