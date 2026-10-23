@@ -347,10 +347,11 @@ export const LandscapeHeightSlider: Story = {
       name: 'Row height expansion',
     });
 
+    await expect(slider).toHaveValue('100');
     fireEvent.change(slider, { target: { value: '50' } });
     await waitFor(() => {
       expect(item.getBoundingClientRect().width).toBeCloseTo(
-        original.width * 2,
+        (original.width * 2) / 3,
         0,
       );
     });
@@ -359,12 +360,15 @@ export const LandscapeHeightSlider: Story = {
     await waitFor(() => {
       const bounds = item.getBoundingClientRect();
 
-      expect(bounds.width).toBeGreaterThan(original.width * 2.9);
+      expect(bounds.width).toBeCloseTo(original.width, 0);
       expect(bounds.width / bounds.height).toBeCloseTo(3, 1);
     });
     fireEvent.change(slider, { target: { value: '0' } });
     await waitFor(() =>
-      expect(item.getBoundingClientRect().width).toBeCloseTo(original.width, 0),
+      expect(item.getBoundingClientRect().width).toBeCloseTo(
+        original.width / 3,
+        0,
+      ),
     );
     await userEvent.keyboard('{Escape}');
   },
@@ -565,8 +569,9 @@ export const ControlledImageMode: Story = {
     );
     await userEvent.selectOptions(
       canvas.getByRole('combobox', { name: 'Image sizing' }),
-      'contain',
+      'cover',
     );
+    await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
     await waitFor(() =>
       expect(item).toHaveAttribute('data-image-mode', 'contain'),
     );
@@ -583,7 +588,12 @@ export const FixedImageMode: Story = {
     const mode = canvas.getByRole('combobox', { name: 'Image sizing' });
 
     await userEvent.selectOptions(mode, 'cover');
-    await expect(mode).toHaveValue('contain');
+    await expect(mode).toHaveValue('cover');
+    await userEvent.click(canvas.getByRole('button', { name: 'Fill' }));
+    await expect(canvas.getByRole('button', { name: 'Fit' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect(
       canvas.getByRole('button', { name: 'Item 1 in S+' }),
     ).toHaveAttribute('data-image-mode', 'contain');
@@ -829,8 +839,9 @@ export const ItemText: Story = {
     );
     await userEvent.selectOptions(
       canvas.getByRole('combobox', { name: 'Image sizing' }),
-      'contain',
+      'cover',
     );
+    await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
     fireEvent.contextMenu(item);
     await userEvent.click(
       await page.findByRole('menuitem', { name: 'Edit text' }),

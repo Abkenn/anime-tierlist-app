@@ -66,7 +66,7 @@ describe('custom ratio crop', () => {
         size: 4,
         mode: 'natural',
       }),
-    ).toEqual({ width: 4, height: 2.25 });
+    ).toEqual({ width: 64 / 9, height: 4 });
   });
 });
 

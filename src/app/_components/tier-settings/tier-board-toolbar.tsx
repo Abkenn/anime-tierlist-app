@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
 
 type TierBoardToolbarProps = {
@@ -48,22 +49,48 @@ export const TierBoardToolbar = ({
       </button>
     </div>
 
-    <label className="mb-2 flex w-fit items-center gap-2 text-xs text-muted-foreground">
-      Images
-      <select
-        aria-label="Image sizing"
-        value={imageMode}
-        className="min-h-9 border border-divider bg-background px-2 text-foreground"
-        onChange={(event) =>
-          onImageModeChange(event.currentTarget.value as TierImageMode)
-        }
-      >
-        <option value="natural">Custom ratio</option>
+    <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+      <label className="flex items-center gap-2 text-muted-foreground">
+        Images
+        <select
+          aria-label="Image sizing"
+          value={imageMode === 'natural' ? 'natural' : 'cover'}
+          className="min-h-9 border border-divider bg-background px-2 text-foreground"
+          onChange={(event) =>
+            onImageModeChange(
+              event.currentTarget.value === 'natural' ? 'natural' : 'cover',
+            )
+          }
+        >
+          <option value="natural">Custom ratio</option>
 
-        <option value="contain">Fit squares</option>
+          <option value="cover">Square cells</option>
+        </select>
+      </label>
 
-        <option value="cover">Fill squares</option>
-      </select>
-    </label>
+      {imageMode !== 'natural' && (
+        <fieldset
+          aria-label="Square image fit"
+          className="flex border border-divider"
+        >
+          {(['cover', 'contain'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={imageMode === mode}
+              className={cn(
+                'min-h-9 min-w-11 cursor-pointer px-2 underline-offset-4 transition-colors hover:text-foreground active:opacity-60',
+                imageMode === mode
+                  ? 'bg-muted text-foreground underline'
+                  : 'text-muted-foreground',
+              )}
+              onClick={() => onImageModeChange(mode)}
+            >
+              {mode === 'cover' ? 'Fill' : 'Fit'}
+            </button>
+          ))}
+        </fieldset>
+      )}
+    </div>
   </>
 );

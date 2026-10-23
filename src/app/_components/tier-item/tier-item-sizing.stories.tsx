@@ -38,7 +38,7 @@ const meta = {
       height: 9,
       alt: 'Landscape poster',
     },
-    expansion: 0,
+    expansion: 1,
     onChange: fn(),
   },
   render: (args) => <Sandbox {...args} />,

@@ -72,7 +72,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
               sizingControl={
                 <TierItemSizing
                   image={item.image && getTrimmedImage(item.image, item.trim)}
-                  expansion={item.rowHeightExpansion ?? 0}
+                  expansion={item.rowHeightExpansion ?? 1}
                   onChange={(rowHeightExpansion) =>
                     interaction.updateItem(item.id, { rowHeightExpansion })
                   }

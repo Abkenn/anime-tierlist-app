@@ -32,9 +32,9 @@ export const getTierItemSize = ({ item, size, mode }: ItemSizeInput) => {
     return { width: size * ratio, height: size };
   }
 
-  const expansion = Number.isFinite(item.rowHeightExpansion)
-    ? Math.max(0, Math.min(1, item.rowHeightExpansion ?? 0))
-    : 0;
+  const expansion = Number.isFinite(item.rowHeightExpansion ?? 1)
+    ? Math.max(0, Math.min(1, item.rowHeightExpansion ?? 1))
+    : 1;
   const defaultHeight = size / ratio;
   const height = defaultHeight + (size - defaultHeight) * expansion;
 

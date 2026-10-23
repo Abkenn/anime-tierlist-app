@@ -47,6 +47,18 @@ describe('tier item layout', () => {
     expect(pack([landscape])[0].y).toBe(0.875);
   });
 
+  it('defaults custom ratio to full row height while preserving explicit zero', () => {
+    const item = { ...landscape, rowHeightExpansion: undefined };
+
+    expect(getTierItemSize({ item, size: 4, mode: 'natural' })).toEqual({
+      width: 64 / 9,
+      height: 4,
+    });
+    expect(
+      getTierItemSize({ item: landscape, size: 4, mode: 'natural' }),
+    ).toEqual({ width: 4, height: 2.25 });
+  });
+
   it('lets a panorama take three square widths when forced to row height', () => {
     const boxes = pack([panorama, portrait]);
 
