@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
+import { TouchDragHandle } from '@/app/_components/shell/touch-drag-handle';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import { useTierCrop } from '@/app/_hooks/use-tier-crop';
 import { useTierItemDrag } from '@/app/_hooks/use-tier-item-drag';
@@ -103,7 +104,8 @@ const TierItemTrigger = ({
       data-trim-positioning={positioning || undefined}
       data-tier-item={label}
       className={cn(
-        'pointer-events-auto absolute left-0 top-0 flex touch-none items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
+        'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
+        editing ? 'touch-none' : 'touch-auto',
         dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
         editing && 'z-30 cursor-move ring-2 ring-white',
         image ? 'border-0 bg-transparent' : 'bg-gray',
@@ -112,6 +114,8 @@ const TierItemTrigger = ({
       )}
       {...buttonProps}
     >
+      {!editing && <TouchDragHandle />}
+
       {image ? (
         <>
           {editing && (imageMode === 'cover' || positioning) && (
@@ -293,6 +297,17 @@ export const TierItem = ({
     }
 
     if (textEditing) {
+      return;
+    }
+
+    if (
+      !editing &&
+      event.pointerType === 'touch' &&
+      !(
+        event.target instanceof Element &&
+        event.target.closest('[data-touch-drag-handle]')
+      )
+    ) {
       return;
     }
 

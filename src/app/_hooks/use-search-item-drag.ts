@@ -52,8 +52,24 @@ export const useSearchItemDrag = (item: TierItemData) => {
 
   const triggerProps: HTMLMotionProps<'button'> = {
     dragControls,
+    dragListener: false,
     onPointerDown: (event) => {
       dragged.current = false;
+
+      if (
+        event.pointerType === 'touch' &&
+        !(
+          event.target instanceof Element &&
+          event.target.closest('[data-touch-drag-handle]')
+        )
+      ) {
+        return;
+      }
+
+      if (!event.isPrimary || event.button !== 0) {
+        return;
+      }
+
       const rect = event.currentTarget.getBoundingClientRect();
       grab.current = {
         x: event.clientX - rect.left,
@@ -63,6 +79,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
       };
       x.set(event.clientX - grab.current.x);
       y.set(event.clientY - grab.current.y);
+      dragControls.start(event);
     },
     onClick: () => {
       if (!dragged.current && image) {
