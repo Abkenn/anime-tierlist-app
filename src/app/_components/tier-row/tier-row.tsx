@@ -20,7 +20,7 @@ export const TierRow = ({
   lines = 1,
 }: TierRowProps) => (
   <li
-    className="grid grid-cols-[clamp(4.5rem,5vw,6rem)_minmax(0,1fr)] border-ink not-first:border-t"
+    className="grid grid-cols-[var(--tier-size,5rem)_minmax(0,1fr)] border-ink not-first:border-t"
     data-tier-rank={rank}
     aria-label={
       itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
@@ -64,8 +64,8 @@ export const TierRow = ({
         fixedItemSize && 'grid gap-0.5 p-0.5',
         fixedItemSize &&
           (lines === 2
-            ? 'grid-rows-[repeat(2,3.75rem)]'
-            : 'grid-rows-[3.75rem]'),
+            ? 'grid-rows-[repeat(2,var(--tier-item-size,4.125rem))]'
+            : 'grid-rows-(--tier-item-size,4.125rem)'),
       )}
     >
       {fixedItemSize &&

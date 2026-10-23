@@ -149,7 +149,8 @@ export const useTierItems = ({
         x: (cells?.left ?? rect.left) - bounds.left,
         y: (cells?.top ?? rect.top) - bounds.top,
         size: wrapItems
-          ? rem.current * 3.75
+          ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect()
+              .height ?? rem.current * 4.125)
           : Math.max(
               0,
               (cells?.height ?? rect.height) - rem.current * itemGapRem * 2,
@@ -388,7 +389,9 @@ export const useTierItems = ({
       (boxesFor(rank, previewItems).at(-1)?.line ?? 0) + 1,
     updateItem: (
       id: string,
-      changes: Partial<Pick<Item, 'crop' | 'trim' | 'rowHeightExpansion'>>,
+      changes: Partial<
+        Pick<Item, 'crop' | 'trim' | 'rowHeightExpansion' | 'title'>
+      >,
     ) =>
       setItems((current) =>
         current.map((item) =>

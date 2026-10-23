@@ -288,7 +288,9 @@ export const CropEditing: Story = {
       await page.findByRole('menuitem', { name: 'Edit crop' }),
     );
     await expect(item).toHaveAttribute('data-crop-editing', 'true');
-    const preview = item.querySelector('[data-crop-preview]');
+    const preview = canvasElement.ownerDocument.querySelector(
+      '[data-crop-preview]',
+    );
 
     await waitFor(() => {
       expect(preview).not.toBeNull();
@@ -316,7 +318,9 @@ export const CropEditing: Story = {
       expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'),
     );
     await expect(item).not.toHaveAttribute('data-crop-editing');
-    await expect(item.querySelector('[data-crop-preview]')).toBeNull();
+    await expect(
+      canvasElement.ownerDocument.querySelector('[data-crop-preview]'),
+    ).toBeNull();
     await expect(item).toHaveAccessibleName('Item 2 in S+');
     await userEvent.keyboard('{Shift>}[F10]{/Shift}');
     await userEvent.click(
@@ -454,7 +458,9 @@ export const PortraitCropControls: Story = {
 
     const expectBelowImage = async () => {
       await waitFor(() => {
-        const preview = item.querySelector('[data-crop-preview]');
+        const preview = canvasElement.ownerDocument.querySelector(
+          '[data-crop-preview]',
+        );
         const imageBounds = preview?.getBoundingClientRect();
         const controlsBounds = controls.getBoundingClientRect();
         const rem = Number.parseFloat(
@@ -609,7 +615,7 @@ export const OriginalRatioCrop: Story = {
     });
     fireEvent.contextMenu(item);
     await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
+      await page.findByRole('menuitem', { name: 'Edit trim' }),
     );
     const right = await page.findByRole('slider', { name: 'right crop edge' });
     [1, 2, 3, 4, 5].forEach(() => {
@@ -629,12 +635,251 @@ export const OriginalRatioCrop: Story = {
     });
     await expect(expansion).toHaveAttribute('aria-valuenow', '100');
     await expect(expansion).toBeDisabled();
-    await userEvent.click(page.getByRole('menuitem', { name: 'Reset crop' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Reset trim' }));
     await waitFor(() =>
       expect(item.querySelector('svg')).toHaveAttribute(
         'viewBox',
         '0 0 1600 900',
       ),
     );
+  },
+};
+
+export const CustomRatioPosition: Story = {
+  args: {
+    imageMode: 'natural',
+    initialItems: [
+      {
+        id: 'position-test',
+        label: 'Position test',
+        rank: 'S+',
+        trim: { left: 0.25, top: 0.1, right: 0.75, bottom: 0.9 },
+        image: {
+          src: '/tier-samples/landscape.svg',
+          width: 1600,
+          height: 900,
+          alt: 'Landscape TEST',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await canvas.findByRole('button', {
+      name: 'Item Position test in S+',
+    });
+    const originalWidth = item.getBoundingClientRect().width;
+    const image = () => item.querySelector('span > svg');
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit crop' }),
+    );
+    await expect(item).toHaveAttribute('data-trim-positioning', 'true');
+    await expect(
+      canvasElement.ownerDocument.querySelector('[data-crop-preview]'),
+    ).toBeInTheDocument();
+    await expect(
+      page.queryByRole('dialog', { name: 'Edit custom ratio crop' }),
+    ).not.toBeInTheDocument();
+    await waitFor(() => expect(item).toHaveFocus());
+    await userEvent.keyboard('{ArrowRight}');
+    await waitFor(() =>
+      expect(
+        Number(image()?.getAttribute('viewBox')?.split(' ')[0]),
+      ).toBeCloseTo(440),
+    );
+    await expect(item.getBoundingClientRect().width).toBeCloseTo(originalWidth);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(image()).toHaveAttribute('viewBox', '400 90 800 720'),
+    );
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit crop' }),
+    );
+    await waitFor(() => expect(item).toHaveFocus());
+    await userEvent.keyboard('w{Enter}');
+    await waitFor(() =>
+      expect(
+        Number(image()?.getAttribute('viewBox')?.split(' ')[1]),
+      ).toBeCloseTo(67.5),
+    );
+    await expect(item).not.toHaveAttribute('data-trim-positioning');
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit crop' }),
+    );
+    await userEvent.click(page.getByRole('button', { name: 'Center' }));
+    await userEvent.click(page.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(
+        Number(image()?.getAttribute('viewBox')?.split(' ')[1]),
+      ).toBeCloseTo(90),
+    );
+  },
+};
+
+export const TopRowCropOverflow: Story = {
+  args: {
+    imageMode: 'natural',
+    initialItems: [
+      {
+        id: 'top-row',
+        label: 'Top row',
+        rank: 'S+',
+        trim: { left: 0, right: 1, top: 0.25, bottom: 0.75 },
+        image: {
+          src: '/tier-samples/portrait.svg',
+          width: 900,
+          height: 1600,
+          alt: 'Portrait TEST',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await canvas.findByRole('button', {
+      name: 'Item Top row in S+',
+    });
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit crop' }),
+    );
+    await waitFor(() => {
+      const overlay = canvasElement.ownerDocument.querySelector(
+        '[data-crop-overlay]',
+      );
+      const bounds = overlay?.getBoundingClientRect();
+
+      expect(overlay?.parentElement).toBe(canvasElement.ownerDocument.body);
+      expect(bounds?.top).toBeLessThan(item.getBoundingClientRect().top);
+      expect(bounds?.bottom).toBeGreaterThan(
+        item.getBoundingClientRect().bottom,
+      );
+    });
+  },
+};
+
+export const ItemText: Story = {
+  args: {
+    imageMode: 'natural',
+    initialItems: [
+      {
+        id: 'text-test',
+        label: 'Text test',
+        rank: 'S+',
+        image: {
+          src: '/tier-samples/portrait.svg',
+          width: 900,
+          height: 1600,
+          alt: 'Portrait TEST',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await canvas.findByRole('button', {
+      name: 'Item Text test in S+',
+    });
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Add text' }),
+    );
+    const text = await page.findByRole('textbox', { name: 'Title' });
+    await userEvent.type(text, 'Heavenly{Enter}Delusion');
+    const hex = page.getByRole('textbox', { name: 'Hex color' });
+    await userEvent.clear(hex);
+    await userEvent.type(hex, '#ff0');
+    await userEvent.selectOptions(
+      page.getByRole('combobox', { name: 'Position' }),
+      'top',
+    );
+    await userEvent.click(page.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(item.querySelector('[data-tier-title]')).toHaveTextContent(
+        'Heavenly Delusion',
+      ),
+    );
+    const title = () => item.querySelector('[data-tier-title] > span > span');
+    await expect(title()).toHaveClass('top-1');
+    await expect(getComputedStyle(title() as Element).color).toBe(
+      'rgb(255, 255, 0)',
+    );
+    await userEvent.selectOptions(
+      canvas.getByRole('combobox', { name: 'Image sizing' }),
+      'cover',
+    );
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit text' }),
+    );
+    await userEvent.clear(page.getByRole('textbox', { name: 'Title' }));
+    await userEvent.type(
+      page.getByRole('textbox', { name: 'Title' }),
+      'Cancelled',
+    );
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+    await expect(item.querySelector('[data-tier-title]')).toHaveTextContent(
+      'Heavenly Delusion',
+    );
+    await userEvent.selectOptions(
+      canvas.getByRole('combobox', { name: 'Image sizing' }),
+      'contain',
+    );
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit text' }),
+    );
+    await userEvent.click(page.getByRole('checkbox', { name: 'Wrap text' }));
+    await userEvent.selectOptions(
+      page.getByRole('combobox', { name: 'Position' }),
+      'middle',
+    );
+    await userEvent.click(page.getByRole('button', { name: 'Save' }));
+    await expect(title()).toHaveClass('top-1/2');
+    fireEvent.contextMenu(item);
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: 'Edit text' }),
+    );
+    await userEvent.click(page.getByRole('button', { name: 'Remove text' }));
+    await expect(item.querySelector('[data-tier-title]')).toBeNull();
+  },
+};
+
+export const DenseLibrary: Story = {
+  args: {
+    imageMode: 'natural',
+    initialItems: Array.from({ length: 500 }, (_, index) => ({
+      ...aspectRatioTierItems[index % aspectRatioTierItems.length],
+      id: `dense-${index}`,
+      rank: tierRanks[index % tierRanks.length],
+    })),
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => {
+      const list = canvasElement.querySelector('ol');
+      const labels = [
+        ...canvasElement.querySelectorAll('[data-tier-rank] > div:first-child'),
+      ].map((label) => label.getBoundingClientRect().width);
+      const items = [...canvasElement.querySelectorAll('[data-tier-item]')].map(
+        (item) => item.getBoundingClientRect().height,
+      );
+
+      expect(
+        Number(
+          list && getComputedStyle(list).getPropertyValue('--tier-density'),
+        ),
+      ).toBeCloseTo(0.85);
+      expect(labels.length).toBeGreaterThan(1);
+      expect(Math.max(...labels) - Math.min(...labels)).toBeLessThan(0.1);
+      expect(items.length).toBe(500);
+      expect(Math.min(...items)).toBeGreaterThan(0);
+      expect(Math.max(...items) - Math.min(...items)).toBeLessThan(0.1);
+    });
   },
 };

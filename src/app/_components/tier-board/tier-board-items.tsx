@@ -61,6 +61,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
               rank={rank}
               editing={editingItemId === item.id}
               image={item.image}
+              title={item.title}
+              onTitleChange={(title) =>
+                interaction.updateItem(item.id, { title })
+              }
               crop={item.crop}
               trim={item.trim}
               onTrimChange={(trim) => interaction.updateItem(item.id, { trim })}

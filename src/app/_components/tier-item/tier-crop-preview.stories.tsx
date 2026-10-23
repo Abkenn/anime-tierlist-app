@@ -38,3 +38,7 @@ export const Portrait: Story = {
     },
   },
 };
+
+export const CustomRatio: Story = {
+  args: { trim: { left: 0.25, top: 0.1, right: 0.75, bottom: 0.9 } },
+};

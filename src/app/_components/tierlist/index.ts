@@ -8,6 +8,8 @@ export { TierItem } from '../tier-item/tier-item';
 export { TierItemImage } from '../tier-item/tier-item-image';
 export { TierItemMenu } from '../tier-item/tier-item-menu';
 export { TierItemSizing } from '../tier-item/tier-item-sizing';
+export { TierItemTitle } from '../tier-item/tier-item-title';
+export { TierItemTitleEditor } from '../tier-item/tier-item-title-editor';
 export { TierBoardRows } from '../tier-row/tier-board-rows';
 export { TierRow } from '../tier-row/tier-row';
 export { TierBoardToolbar } from '../tier-settings/tier-board-toolbar';

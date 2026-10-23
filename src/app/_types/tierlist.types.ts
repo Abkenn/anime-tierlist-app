@@ -51,6 +51,15 @@ export type TierImage = {
   alt: string;
 };
 
+export type HexColor = `#${string}`;
+
+export type TierItemTitle = {
+  text: string;
+  wrap: boolean;
+  position: 'top' | 'middle' | 'bottom';
+  color: HexColor;
+};
+
 export type TierItemData = {
   id: string;
   label: string;
@@ -59,4 +68,5 @@ export type TierItemData = {
   crop?: TierCrop;
   trim?: TierImageTrim;
   rowHeightExpansion?: number;
+  title?: TierItemTitle;
 };

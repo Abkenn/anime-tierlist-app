@@ -17,7 +17,12 @@ type TierItemMenuProps = {
   sizingControl?: ReactElement;
   onOpen: () => void;
   onEdit: () => void;
+  canPosition?: boolean;
+  onPosition?: () => void;
   onReset: () => void;
+  hasTitle?: boolean;
+  textEditorOpen?: boolean;
+  onText?: () => void;
 };
 
 export const TierItemMenu = ({
@@ -29,7 +34,12 @@ export const TierItemMenu = ({
   sizingControl,
   onOpen,
   onEdit,
+  canPosition = false,
+  onPosition,
   onReset,
+  hasTitle = false,
+  textEditorOpen = false,
+  onText,
 }: TierItemMenuProps) => {
   const mode = useAtomValue(imageModeAtom);
 
@@ -47,7 +57,7 @@ export const TierItemMenu = ({
       />
 
       <ContextMenuContent
-        finalFocus={finalFocus}
+        finalFocus={textEditorOpen ? false : finalFocus}
         className={
           mode === 'natural'
             ? 'max-w-[calc(100vw-2rem)] overflow-visible'
@@ -78,8 +88,17 @@ export const TierItemMenu = ({
               }
               onClick={onEdit}
             >
-              Edit crop
+              {mode === 'natural' ? 'Edit trim' : 'Edit crop'}
             </ContextMenuItem>
+
+            {mode === 'natural' && (
+              <ContextMenuItem
+                disabled={!hasImage || editing || !canPosition}
+                onClick={onPosition}
+              >
+                Edit crop
+              </ContextMenuItem>
+            )}
 
             <ContextMenuItem
               disabled={
@@ -87,10 +106,16 @@ export const TierItemMenu = ({
               }
               onClick={onReset}
             >
-              Reset crop
+              {mode === 'natural' ? 'Reset trim' : 'Reset crop'}
             </ContextMenuItem>
           </div>
         )}
+
+        <div role="menu" aria-label="Text actions">
+          <ContextMenuItem disabled={editing || !onText} onClick={onText}>
+            {hasTitle ? 'Edit text' : 'Add text'}
+          </ContextMenuItem>
+        </div>
 
         {mode === 'natural' && sizingControl}
 

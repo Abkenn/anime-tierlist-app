@@ -3,7 +3,12 @@
 import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
 import { type RefObject, useMemo } from 'react';
-import type { TierCrop, TierImage } from '@/app/_types/tierlist.types';
+import { centerTierTrim, getTierTrimFrame } from '@/app/_lib/tier-image-trim';
+import type {
+  TierCrop,
+  TierImage,
+  TierImageTrim,
+} from '@/app/_types/tierlist.types';
 
 const actionClassName =
   'min-h-11 cursor-pointer text-muted-foreground underline decoration-transparent underline-offset-4 transition-colors duration-150 hover:text-foreground hover:decoration-current active:decoration-2 active:opacity-60 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-reduce:transition-none';
@@ -12,6 +17,7 @@ type TierCropControlsProps = {
   anchor: RefObject<HTMLElement | null>;
   image?: TierImage;
   crop?: TierCrop;
+  trim?: TierImageTrim;
   label: string;
   onSave: () => void;
   onCancel: () => void;
@@ -22,18 +28,30 @@ export const TierCropControls = ({
   anchor,
   image,
   crop,
+  trim,
   label,
   onSave,
   onCancel,
   onReset,
 }: TierCropControlsProps) => {
-  const centered = (crop?.x ?? 0.5) === 0.5 && (crop?.y ?? 0.5) === 0.5;
+  const centeredTrim = trim && centerTierTrim(trim);
+  const centered =
+    trim && centeredTrim
+      ? Math.abs(trim.left - centeredTrim.left) < 0.000001 &&
+        Math.abs(trim.top - centeredTrim.top) < 0.000001
+      : (crop?.x ?? 0.5) === 0.5 && (crop?.y ?? 0.5) === 0.5;
 
   const imageAnchor = useMemo(
     () => ({
       contextElement: anchor.current ?? undefined,
       getBoundingClientRect: () => {
         const bounds = anchor.current?.getBoundingClientRect() ?? new DOMRect();
+        if (image && trim) {
+          const frame = getTierTrimFrame({ bounds, image, trim });
+
+          return new DOMRect(frame.x, frame.y, frame.width, frame.height);
+        }
+
         const ratio =
           image && image.width > 0 && image.height > 0
             ? image.width / image.height
@@ -49,7 +67,7 @@ export const TierCropControls = ({
         );
       },
     }),
-    [anchor, image, crop],
+    [anchor, image, crop, trim],
   );
 
   return (

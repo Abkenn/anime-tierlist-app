@@ -4,7 +4,7 @@ import { cn } from 'cn';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { fullImageTrim, getTrimmedImage } from '@/app/_lib/tier-image-trim';
+import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
 import type {
   TierCrop,
   TierImage,
@@ -28,7 +28,6 @@ export const TierItemImage = ({
   trim = fullImageTrim,
 }: TierItemImageProps) => {
   const [failedSource, setFailedSource] = useState<string | null>(null);
-  const trimmed = getTrimmedImage(image, trim);
 
   if (failedSource === image.src) {
     return <span className="px-1 text-xs">{image.alt}</span>;
@@ -37,7 +36,7 @@ export const TierItemImage = ({
   if (mode === 'natural') {
     return (
       <svg
-        viewBox={`${image.width * trim.left} ${image.height * trim.top} ${trimmed.width} ${trimmed.height}`}
+        viewBox={getTrimViewBox(image, trim)}
         className="pointer-events-none size-full overflow-hidden object-contain select-none"
         role="img"
         aria-label={image.alt}

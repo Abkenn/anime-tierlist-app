@@ -1,8 +1,9 @@
 'use client';
 
-import { cn } from 'cn';
+import { motion } from 'motion/react';
 import { ViewTransition } from 'react';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
+import { getTierDensity } from '@/app/_lib/tier-density';
 import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRow } from './tier-row';
 
@@ -42,30 +43,34 @@ export const TierBoardRows = ({
   ranks,
   layout,
   interaction,
-}: TierBoardRowsProps) => (
-  <ViewTransition default="none" enter="preview-change" exit="preview-change">
-    <ol
-      className={cn(
-        'grid overflow-hidden border border-ink bg-charcoal text-cloud',
-        layout === 'two-line' ? 'auto-rows-auto' : 'auto-rows-fr',
-      )}
-      aria-label="Ranked tiers"
-    >
-      {ranks.map((rank) => (
-        <TierRow
-          key={rank}
-          rank={rank}
-          color={tierColors[rank]}
-          active={interaction.targetRank === rank}
-          fixedItemSize={layout === 'two-line'}
-          lines={interaction.lines(rank)}
-          itemCount={
-            interaction.items.filter(
-              (item) => interaction.visibleRank(item) === rank,
-            ).length
-          }
-        />
-      ))}
-    </ol>
-  </ViewTransition>
-);
+}: TierBoardRowsProps) => {
+  const density = getTierDensity(interaction.items.length);
+
+  return (
+    <ViewTransition default="none" enter="preview-change" exit="preview-change">
+      <motion.ol
+        initial={false}
+        animate={{ '--tier-density': density }}
+        transition={{ duration: 0 }}
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-base-size:5rem] 2xl:[--tier-base-size:6rem] min-[120rem]:[--tier-base-size:6.6rem] [--tier-size:calc(var(--tier-base-size)*var(--tier-density,1))] [--tier-item-size:calc(4.125rem*var(--tier-density,1))]"
+        aria-label="Ranked tiers"
+      >
+        {ranks.map((rank) => (
+          <TierRow
+            key={rank}
+            rank={rank}
+            color={tierColors[rank]}
+            active={interaction.targetRank === rank}
+            fixedItemSize={layout === 'two-line'}
+            lines={interaction.lines(rank)}
+            itemCount={
+              interaction.items.filter(
+                (item) => interaction.visibleRank(item) === rank,
+              ).length
+            }
+          />
+        ))}
+      </motion.ol>
+    </ViewTransition>
+  );
+};
