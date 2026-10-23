@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { HomeShell } from '@/app/_components/home/home-shell';
+import { LocalTierlist } from '@/app/_components/home/local-tierlist';
 import { OfflineFallback } from '@/app/_components/offline/offline-fallback';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { Button } from '@/app/_components/ui/button';
@@ -15,7 +16,9 @@ const RouteError = ({ retry }: RouteErrorProps) => {
     return (
       <HomeShell>
         <TierBoardProvider>
-          <OfflineFallback />
+          <LocalTierlist>
+            <OfflineFallback />
+          </LocalTierlist>
         </TierBoardProvider>
       </HomeShell>
     );

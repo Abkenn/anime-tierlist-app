@@ -1,0 +1,112 @@
+import 'fake-indexeddb/auto';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import {
+  clear,
+  createStore as createDatabaseStore,
+  get,
+  set,
+} from 'idb-keyval';
+import { Provider } from 'jotai';
+import { createStore } from 'jotai/vanilla';
+import { type PropsWithChildren, StrictMode } from 'react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
+import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
+import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
+import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import { loadLocalTierlist, saveLocalTierlist } from './local-tierlist';
+
+const database = createDatabaseStore('anime-tierlist', 'drafts');
+const initial: LocalTierlist = {
+  version: 1,
+  seed: createUserSeed(),
+  revision: 0,
+  items: [],
+  ranks: ['S+', 'Watching'],
+  imageMode: 'natural',
+};
+
+beforeEach(async () => {
+  await clear(database);
+});
+
+describe('local tierlist durability', () => {
+  it('creates one seed and restores the complete saved draft instead of new defaults', async () => {
+    await loadLocalTierlist(initial);
+    const saved: LocalTierlist = {
+      ...initial,
+      revision: 1,
+      imageMode: 'cover',
+      items: [
+        {
+          id: 'poster',
+          label: 'My anime',
+          rank: 'Watching',
+          image: {
+            src: 'https://example.com/poster.jpg',
+            width: 900,
+            height: 1600,
+            alt: 'Poster',
+          },
+          crop: { x: 0.2, y: 0.7 },
+          trim: { left: 0.1, top: 0, right: 0.9, bottom: 1 },
+          rowHeightExpansion: 0.6,
+          title: {
+            text: 'My\ntitle',
+            wrap: true,
+            position: 'bottom',
+            color: '#fff',
+          },
+        },
+      ],
+    };
+    await saveLocalTierlist(saved, 0);
+
+    expect(
+      await loadLocalTierlist({ ...initial, seed: createUserSeed() }),
+    ).toEqual(saved);
+  });
+
+  it('rejects a stale tab write without overwriting the newer draft', async () => {
+    await loadLocalTierlist(initial);
+    await saveLocalTierlist({ ...initial, revision: 1, imageMode: 'cover' }, 0);
+    await expect(
+      saveLocalTierlist({ ...initial, revision: 1 }, 0),
+    ).rejects.toThrow('another tab');
+    expect((await loadLocalTierlist(initial)).imageMode).toBe('cover');
+  });
+
+  it('preserves unreadable data instead of resetting it', async () => {
+    await set(
+      'personal-tierlist',
+      { version: 99, important: 'keep' },
+      database,
+    );
+    await expect(loadLocalTierlist(initial)).rejects.toThrow();
+    expect(await get<unknown>('personal-tierlist', database)).toEqual({
+      version: 99,
+      important: 'keep',
+    });
+  });
+
+  it('restores before subscribing and persists atom edits under Strict Mode', async () => {
+    await loadLocalTierlist({ ...initial, imageMode: 'cover' });
+    const store = createStore();
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <StrictMode>
+        <Provider store={store}>{children}</Provider>
+      </StrictMode>
+    );
+    const hook = renderHook(useLocalTierlist, { wrapper });
+    await waitFor(() => expect(hook.result.current.status).toBe('saved'));
+    expect(store.get(imageModeAtom)).toBe('cover');
+    act(() => {
+      store.set(tierItemsAtom, [{ id: 'new', label: 'New', rank: 'S+' }]);
+    });
+    await waitFor(async () =>
+      expect((await loadLocalTierlist(initial)).items).toHaveLength(1),
+    );
+    hook.unmount();
+    expect((await loadLocalTierlist(initial)).seed).toBe(initial.seed);
+  });
+});

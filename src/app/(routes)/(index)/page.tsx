@@ -1,5 +1,6 @@
 import { AnimeSearch } from '@/app/_components/anime-search/anime-search';
 import { HomeShell } from '@/app/_components/home/home-shell';
+import { LocalTierlist } from '@/app/_components/home/local-tierlist';
 import { TierBoard } from '@/app/_components/tierlist';
 import { discordEmbedUrl, homepageMetadata } from '@/app/_lib/site-metadata';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
@@ -15,13 +16,15 @@ const Home = () => (
     />
 
     <TierBoardProvider>
-      <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <AnimeSearch />
+      <LocalTierlist>
+        <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+          <AnimeSearch />
 
-        <div className="min-w-0">
-          <TierBoard initialItemCount={0} />
+          <div className="min-w-0">
+            <TierBoard initialItemCount={0} />
+          </div>
         </div>
-      </div>
+      </LocalTierlist>
     </TierBoardProvider>
   </HomeShell>
 );

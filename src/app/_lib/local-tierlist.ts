@@ -1,0 +1,52 @@
+import { z } from 'zod';
+import { tierRanks } from './tier-ranks';
+
+const rank = z.enum(tierRanks);
+const fraction = z.number().min(0).max(1);
+const item = z.object({
+  id: z.string().min(1),
+  label: z.string(),
+  rank,
+  image: z
+    .object({
+      src: z.string(),
+      width: z.number().positive(),
+      height: z.number().positive(),
+      alt: z.string(),
+    })
+    .optional(),
+  crop: z.object({ x: fraction, y: fraction }).optional(),
+  trim: z
+    .object({
+      left: fraction,
+      top: fraction,
+      right: fraction,
+      bottom: fraction,
+    })
+    .optional(),
+  rowHeightExpansion: fraction.optional(),
+  title: z
+    .object({
+      text: z.string(),
+      wrap: z.boolean(),
+      position: z.enum(['top', 'middle', 'bottom']),
+      color: z.templateLiteral(['#', z.string()]),
+    })
+    .optional(),
+});
+
+export const localTierlistSchema = z.object({
+  version: z.literal(1),
+  seed: z.string().regex(/^[a-f0-9]{64}$/u),
+  revision: z.number().int().nonnegative(),
+  items: z.array(item),
+  ranks: z.array(rank),
+  imageMode: z.enum(['natural', 'cover', 'contain']),
+});
+
+export type LocalTierlist = z.infer<typeof localTierlistSchema>;
+
+export const createUserSeed = () =>
+  Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');

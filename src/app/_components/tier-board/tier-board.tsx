@@ -1,17 +1,18 @@
 'use client';
 
 import { cn } from 'cn';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
 import { startTransition, useId, useState } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemLabelEditor } from '@/app/_components/tier-item/tier-item-label-editor';
 import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
 import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-toolbar';
 import { TierRankOptions } from '@/app/_components/tier-settings/tier-rank-options';
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
-import { defaultTierRanks, tierRanks } from '@/app/_lib/tier-ranks';
+import { tierRanks } from '@/app/_lib/tier-ranks';
 import type {
   TierImageMode,
   TierItemData,
@@ -41,7 +42,7 @@ export const TierBoard = ({
   onImageModeChange,
 }: TierBoardProps = {}) => {
   const optionsId = useId();
-  const [localRanks, setLocalRanks] = useState(defaultTierRanks);
+  const [localRanks, setLocalRanks] = useAtom(enabledTierRanksAtom);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const keyboardMode = useAtomValue(keyboardModeAtom);
   const { imageMode, changeImageMode } = useTierImageMode({
