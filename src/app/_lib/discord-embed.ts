@@ -21,13 +21,13 @@ export const discordEmbedJson = toComponentEmbedJson(
           url: siteUrl.href,
         }),
       },
-      h(TextDisplay, null, '# Anime Tierlist\nYour anime. Your order.'),
+      h(TextDisplay, null, 'Anime Tierlist'),
     ),
     h(Separator, { spacing: 'small' }),
     h(
       TextDisplay,
       null,
-      '**Find your anime. Make your tierlist.**\nSearch for posters or bring your own image from URL. Drag into the exact spot, trim the image, and add your own title.',
+      '**Find your anime. Make your tierlist.**\nSearch for posters or bring your own image from a URL. Edit your image on the spot and add your own title.',
     ),
   ),
 );

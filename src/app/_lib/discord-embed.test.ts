@@ -13,7 +13,7 @@ describe('homepage link preview', () => {
       new TextEncoder().encode(discordEmbedJson).length,
     ).toBeLessThanOrEqual(3000);
     expect(discordEmbedJson).not.toContain('\u2014');
-    expect(payload.component.accent_color).toBe(0xe68e96);
+    expect(payload.component.accent_color).toBe(0xef596b);
     expect(payload.component.components[0].accessory).toMatchObject({
       label: 'Create a tierlist',
       url: siteUrl.href,

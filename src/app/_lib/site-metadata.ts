@@ -8,7 +8,7 @@ export const siteName = 'Anime Tierlist';
 export const siteTitle = 'Anime Tierlist | Your anime. Your order.';
 export const siteDescription =
   'Create your anime tierlist. Search for posters, drag them into place, and make every image yours with custom crops, ratios, and titles.';
-export const siteAccent = '#e68e96';
+export const siteAccent = '#ef596b';
 export const discordEmbedUrl = new URL('/api/discord-embed?v=1', siteUrl).href;
 export const oembedUrl = new URL(
   `/api/oembed?${new URLSearchParams({ url: siteUrl.href, format: 'json' })}`,
