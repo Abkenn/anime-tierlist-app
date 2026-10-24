@@ -42,6 +42,13 @@ export const localTierlistSchema = z.object({
   items: z.array(item),
   ranks: z.array(rank),
   imageMode: z.enum(['natural', 'cover', 'contain']),
+  sync: z
+    .object({
+      ownerId: z.string(),
+      serverRevision: z.number().int().nonnegative(),
+      syncedLocalRevision: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 
 export type LocalTierlist = z.infer<typeof localTierlistSchema>;

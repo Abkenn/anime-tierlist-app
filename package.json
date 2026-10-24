@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "db:emit": "prisma contract emit",
+    "db:plan": "prisma migration plan",
+    "db:migrate": "prisma db migrate",
+    "db:verify": "prisma db verify",
     "dev": "next dev",
     "build": "next build && tsc -p tsconfig.worker.json --noEmit false --outDir .next/offline-worker && node scripts/build-offline-assets.mts",
     "start": "next start",

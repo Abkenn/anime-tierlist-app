@@ -1,0 +1,249 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import {
+  getSyncDecision,
+  getTierlistDocument,
+  type RemoteTierlist,
+  sameTierlistDocument,
+} from '@/app/_lib/tierlist-sync';
+import { backupRemoteTierlist } from '@/app/_services/local-tierlist';
+import {
+  connectTierlist,
+  syncTierlist,
+} from '@/app/_services/tierlist.actions';
+import type { useLocalTierlist } from './use-local-tierlist';
+
+type SyncScope = {
+  seed: string;
+  remote?: RemoteTierlist;
+  running: boolean;
+  failed: boolean;
+  attempt: number;
+};
+type SyncState = {
+  status: 'connecting' | 'saved' | 'saving' | 'offline' | 'conflict';
+  message?: string;
+  conflict?: RemoteTierlist;
+};
+
+export const useTierlistSync = (
+  storage: ReturnType<typeof useLocalTierlist>,
+  paused: boolean,
+) => {
+  const scope = useRef<SyncScope | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [state, setState] = useState<SyncState>({ status: 'connecting' });
+  const local = storage.snapshot;
+  const seed = local?.seed;
+
+  const retry = () => {
+    if (scope.current) {
+      scope.current.failed = false;
+      scope.current.remote = undefined;
+    }
+
+    setAttempt((value) => value + 1);
+  };
+
+  const keepDeviceChanges = async () => {
+    if (!local || !state.conflict) {
+      return;
+    }
+
+    await backupRemoteTierlist(local.seed, state.conflict);
+    await storage.updateSync(
+      state.conflict,
+      local.sync?.syncedLocalRevision ?? 0,
+    );
+    if (scope.current) {
+      scope.current.remote = state.conflict;
+    }
+    setState({ status: 'saving' });
+    setAttempt((value) => value + 1);
+  };
+
+  const acceptOnlineChanges = async () => {
+    if (!local) {
+      return;
+    }
+
+    const result = await connectTierlist({ seed: local.seed });
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    await storage.replaceRemote(result.value);
+    if (scope.current) {
+      scope.current.remote = result.value;
+    }
+    setState({ status: 'saved' });
+  };
+
+  useEffect(() => {
+    scope.current = seed
+      ? { seed, running: false, failed: false, attempt: -1 }
+      : null;
+    setState({ status: 'connecting' });
+
+    return () => {
+      scope.current = null;
+    };
+  }, [seed]);
+
+  useEffect(() => {
+    const reconnect = () => {
+      if (scope.current) {
+        scope.current.failed = false;
+        scope.current.remote = undefined;
+      }
+
+      setAttempt((value) => value + 1);
+    };
+    window.addEventListener('online', reconnect);
+    window.addEventListener('focus', reconnect);
+    const timer = setInterval(() => {
+      if (!paused && navigator.onLine && scope.current?.failed) {
+        reconnect();
+      }
+    }, 30_000);
+
+    return () => {
+      window.removeEventListener('online', reconnect);
+      window.removeEventListener('focus', reconnect);
+      clearInterval(timer);
+    };
+  }, [paused]);
+
+  useEffect(() => {
+    const active = scope.current;
+
+    if (
+      !local ||
+      !active ||
+      paused ||
+      active.running ||
+      active.failed ||
+      state.status === 'conflict' ||
+      storage.status === 'error'
+    ) {
+      return;
+    }
+
+    if (
+      active.remote &&
+      local.sync?.syncedLocalRevision === local.revision &&
+      local.sync.serverRevision === active.remote.revision &&
+      sameTierlistDocument(getTierlistDocument(local), active.remote.document)
+    ) {
+      return;
+    }
+
+    const synchronize = async () => {
+      active.running = true;
+      active.attempt = attempt;
+
+      try {
+        if (!navigator.onLine) {
+          throw new Error(
+            'Saved on this device. Online saving will resume when connected.',
+          );
+        }
+
+        setState({ status: active.remote ? 'saving' : 'connecting' });
+
+        if (!active.remote) {
+          const result = await connectTierlist({
+            seed: local.seed,
+            document: getTierlistDocument(local),
+          });
+
+          if (!result.ok) {
+            throw new Error(result.message);
+          }
+
+          active.remote = result.value;
+        }
+
+        if (scope.current !== active || active.attempt !== attempt) {
+          return;
+        }
+
+        const decision = getSyncDecision(local, active.remote);
+
+        if (decision === 'conflict') {
+          setState({ status: 'conflict', conflict: active.remote });
+          return;
+        }
+
+        if (decision === 'download') {
+          await storage.replaceRemote(active.remote, local.revision);
+        } else if (decision === 'equal') {
+          await storage.updateSync(active.remote, local.revision);
+        } else {
+          const result = await syncTierlist({
+            ownerId: active.remote.ownerId,
+            revision: active.remote.revision,
+            document: getTierlistDocument(local),
+          });
+
+          if (!result.ok) {
+            throw new Error(result.message);
+          }
+
+          active.remote = result.value.tierlist;
+
+          if (scope.current !== active) {
+            return;
+          }
+
+          if (result.value.status === 'conflict') {
+            setState({ status: 'conflict', conflict: active.remote });
+            return;
+          }
+
+          await storage.updateSync(active.remote, local.revision);
+        }
+
+        if (scope.current === active) {
+          setState({ status: 'saved' });
+        }
+      } catch (error) {
+        active.failed = true;
+
+        if (scope.current === active) {
+          setState({
+            status: 'offline',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Saved locally. Online saving is unavailable.',
+          });
+        }
+      } finally {
+        active.running = false;
+
+        if (scope.current === active && !active.failed) {
+          setAttempt((value) => value + 1);
+        }
+      }
+    };
+
+    const timer = setTimeout(() => {
+      void synchronize();
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [
+    local,
+    attempt,
+    paused,
+    state.status,
+    storage.status,
+    storage.updateSync,
+    storage.replaceRemote,
+  ]);
+
+  return { ...state, retry, keepDeviceChanges, acceptOnlineChanges };
+};

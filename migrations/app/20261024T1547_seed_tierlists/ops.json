@@ -1,0 +1,295 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.TierlistOwner",
+    "label": "Create table \"TierlistOwner\"",
+    "summary": "Creates table \"TierlistOwner\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TierlistOwner"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TierlistOwner\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistOwner\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TierlistOwner\"",
+        "sql": "CREATE TABLE \"public\".\"TierlistOwner\" (\n  \"document\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"revision\" int4 NOT NULL,\n  \"seedHash\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TierlistOwner\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistOwner\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.TierlistRateLimit",
+    "label": "Create table \"TierlistRateLimit\"",
+    "summary": "Creates table \"TierlistRateLimit\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TierlistRateLimit"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TierlistRateLimit\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistRateLimit\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TierlistRateLimit\"",
+        "sql": "CREATE TABLE \"public\".\"TierlistRateLimit\" (\n  \"attempts\" int4 NOT NULL,\n  \"expiresAt\" int8 NOT NULL,\n  \"id\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TierlistRateLimit\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistRateLimit\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.TierlistSession",
+    "label": "Create table \"TierlistSession\"",
+    "summary": "Creates table \"TierlistSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TierlistSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TierlistSession\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TierlistSession\"",
+        "sql": "CREATE TABLE \"public\".\"TierlistSession\" (\n  \"expiresAt\" int8 NOT NULL,\n  \"ownerId\" text NOT NULL,\n  \"tokenHash\" text NOT NULL,\n  PRIMARY KEY (\"tokenHash\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TierlistSession\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.TierlistOwner.TierlistOwner_seedHash_key",
+    "label": "Add unique constraint on \"TierlistOwner\" (seedHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "TierlistOwner_seedHash_key",
+        "table": "TierlistOwner"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"TierlistOwner_seedHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistOwner_seedHash_key",
+          "public",
+          "\"public\".\"TierlistOwner\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"TierlistOwner_seedHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistOwner\" ADD CONSTRAINT \"TierlistOwner_seedHash_key\" UNIQUE (\"seedHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"TierlistOwner_seedHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistOwner_seedHash_key",
+          "public",
+          "\"public\".\"TierlistOwner\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TierlistRateLimit.TierlistRateLimit_expiresAt_idx_6b6b8c10",
+    "label": "Create index \"TierlistRateLimit_expiresAt_idx_6b6b8c10\" on \"TierlistRateLimit\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TierlistRateLimit_expiresAt_idx_6b6b8c10",
+        "table": "TierlistRateLimit"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TierlistRateLimit_expiresAt_idx_6b6b8c10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistRateLimit_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TierlistRateLimit_expiresAt_idx_6b6b8c10\"",
+        "sql": "CREATE INDEX \"TierlistRateLimit_expiresAt_idx_6b6b8c10\" ON \"public\".\"TierlistRateLimit\" (\"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TierlistRateLimit_expiresAt_idx_6b6b8c10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistRateLimit_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TierlistSession.TierlistSession_expiresAt_idx_6b6b8c10",
+    "label": "Create index \"TierlistSession_expiresAt_idx_6b6b8c10\" on \"TierlistSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TierlistSession_expiresAt_idx_6b6b8c10",
+        "table": "TierlistSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TierlistSession_expiresAt_idx_6b6b8c10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TierlistSession_expiresAt_idx_6b6b8c10\"",
+        "sql": "CREATE INDEX \"TierlistSession_expiresAt_idx_6b6b8c10\" ON \"public\".\"TierlistSession\" (\"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TierlistSession_expiresAt_idx_6b6b8c10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TierlistSession.TierlistSession_ownerId_idx_e2d0c1ef",
+    "label": "Create index \"TierlistSession_ownerId_idx_e2d0c1ef\" on \"TierlistSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TierlistSession_ownerId_idx_e2d0c1ef",
+        "table": "TierlistSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TierlistSession_ownerId_idx_e2d0c1ef\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession_ownerId_idx_e2d0c1ef\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TierlistSession_ownerId_idx_e2d0c1ef\"",
+        "sql": "CREATE INDEX \"TierlistSession_ownerId_idx_e2d0c1ef\" ON \"public\".\"TierlistSession\" (\"ownerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TierlistSession_ownerId_idx_e2d0c1ef\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistSession_ownerId_idx_e2d0c1ef\""
+        ]
+      }
+    ]
+  }
+]

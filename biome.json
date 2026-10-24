@@ -14,6 +14,12 @@
       "!dist",
       "!build",
       "!src/prisma/generated",
+      "!src/prisma/contract.json",
+      "!src/prisma/contract.d.ts",
+      "!migrations/snapshots",
+      "!migrations/app/**/ops.json",
+      "!migrations/app/**/migration.json",
+      "!migrations/app/refs",
       "!coverage",
       "!pnpm-lock.yaml"
     ]

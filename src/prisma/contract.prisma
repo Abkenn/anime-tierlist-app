@@ -1,0 +1,26 @@
+// use prisma-8
+
+model TierlistOwner {
+  id       String @id
+  seedHash String @unique
+  revision Int
+  document String
+}
+
+model TierlistSession {
+  tokenHash String @id
+  ownerId   String
+  owner     TierlistOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  expiresAt BigInt
+
+  @@index([ownerId])
+  @@index([expiresAt])
+}
+
+model TierlistRateLimit {
+  id        String @id
+  attempts  Int
+  expiresAt BigInt
+
+  @@index([expiresAt])
+}

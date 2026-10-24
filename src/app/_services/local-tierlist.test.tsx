@@ -14,7 +14,13 @@ import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
-import { loadLocalTierlist, saveLocalTierlist } from './local-tierlist';
+import {
+  activateDeviceTierlist,
+  activateImportedTierlist,
+  getDeviceTierlist,
+  loadLocalTierlist,
+  saveLocalTierlist,
+} from './local-tierlist';
 
 const database = createDatabaseStore('anime-tierlist', 'drafts');
 const initial: LocalTierlist = {
@@ -31,6 +37,38 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('keeps the machine seed and draft while switching between imported identities', async () => {
+    await loadLocalTierlist(initial);
+    const machine = {
+      ...initial,
+      revision: 1,
+      items: [{ id: 'device', label: 'Device list', rank: 'S+' as const }],
+    };
+    await saveLocalTierlist(machine, 0);
+    const seed = createUserSeed();
+    const remote = {
+      ownerId: 'remote',
+      revision: 2,
+      document: {
+        version: 1 as const,
+        items: [],
+        ranks: initial.ranks,
+        imageMode: 'cover' as const,
+      },
+    };
+    await activateImportedTierlist(seed, remote);
+    const imported = await loadLocalTierlist(initial);
+    await saveLocalTierlist(
+      { ...imported, revision: 1, imageMode: 'contain' },
+      0,
+    );
+    expect(await getDeviceTierlist()).toEqual(machine);
+    await activateDeviceTierlist();
+    expect(await loadLocalTierlist(initial)).toEqual(machine);
+    await activateImportedTierlist(seed, remote);
+    expect((await loadLocalTierlist(initial)).imageMode).toBe('contain');
+  });
+
   it('creates one seed and restores the complete saved draft instead of new defaults', async () => {
     await loadLocalTierlist(initial);
     const saved: LocalTierlist = {

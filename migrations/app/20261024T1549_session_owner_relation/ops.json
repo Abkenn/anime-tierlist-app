@@ -1,0 +1,44 @@
+[
+  {
+    "id": "foreignKey.TierlistSession.TierlistSession_ownerId_fkey",
+    "label": "Add foreign key \"TierlistSession_ownerId_fkey\" on \"TierlistSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "TierlistSession_ownerId_fkey",
+        "table": "TierlistSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"TierlistSession_ownerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistSession_ownerId_fkey",
+          "public",
+          "\"public\".\"TierlistSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"TierlistSession_ownerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistSession\"\nADD CONSTRAINT \"TierlistSession_ownerId_fkey\"\nFOREIGN KEY (\"ownerId\")\nREFERENCES \"public\".\"TierlistOwner\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"TierlistSession_ownerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistSession_ownerId_fkey",
+          "public",
+          "\"public\".\"TierlistSession\""
+        ]
+      }
+    ]
+  }
+]
