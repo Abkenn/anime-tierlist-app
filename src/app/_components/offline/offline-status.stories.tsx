@@ -24,6 +24,7 @@ export const Reconnecting: Story = {
     mocked(useOfflineReconnect).mockReturnValue({
       mode: 'offline',
       checking: true,
+      retryAt: undefined,
       reconnect: async () => {},
     });
   },
@@ -33,6 +34,7 @@ export const Online: Story = {
     mocked(useOfflineReconnect).mockReturnValue({
       mode: null,
       checking: false,
+      retryAt: undefined,
       reconnect: async () => {},
     });
   },
@@ -59,6 +61,7 @@ export const Retry: Story = {
     mocked(useOfflineReconnect).mockReturnValue({
       mode: 'offline',
       checking: false,
+      retryAt: Date.now() + 30_000,
       reconnect: retry,
     });
   },

@@ -1,0 +1,125 @@
+[
+  {
+    "id": "table.TierlistGoogleAccount",
+    "label": "Create table \"TierlistGoogleAccount\"",
+    "summary": "Creates table \"TierlistGoogleAccount\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TierlistGoogleAccount"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TierlistGoogleAccount\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TierlistGoogleAccount\"",
+        "sql": "CREATE TABLE \"public\".\"TierlistGoogleAccount\" (\n  \"encryptedSeed\" text NOT NULL,\n  \"ownerId\" text NOT NULL,\n  \"subject\" text NOT NULL,\n  PRIMARY KEY (\"subject\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TierlistGoogleAccount\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.TierlistGoogleAccount.TierlistGoogleAccount_ownerId_key",
+    "label": "Add unique constraint on \"TierlistGoogleAccount\" (ownerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "TierlistGoogleAccount_ownerId_key",
+        "table": "TierlistGoogleAccount"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"TierlistGoogleAccount_ownerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistGoogleAccount_ownerId_key",
+          "public",
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"TierlistGoogleAccount_ownerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistGoogleAccount\" ADD CONSTRAINT \"TierlistGoogleAccount_ownerId_key\" UNIQUE (\"ownerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"TierlistGoogleAccount_ownerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistGoogleAccount_ownerId_key",
+          "public",
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.TierlistGoogleAccount.TierlistGoogleAccount_ownerId_fkey",
+    "label": "Add foreign key \"TierlistGoogleAccount_ownerId_fkey\" on \"TierlistGoogleAccount\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "TierlistGoogleAccount_ownerId_fkey",
+        "table": "TierlistGoogleAccount"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"TierlistGoogleAccount_ownerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistGoogleAccount_ownerId_fkey",
+          "public",
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"TierlistGoogleAccount_ownerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistGoogleAccount\"\nADD CONSTRAINT \"TierlistGoogleAccount_ownerId_fkey\"\nFOREIGN KEY (\"ownerId\")\nREFERENCES \"public\".\"TierlistOwner\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"TierlistGoogleAccount_ownerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistGoogleAccount_ownerId_fkey",
+          "public",
+          "\"public\".\"TierlistGoogleAccount\""
+        ]
+      }
+    ]
+  }
+]

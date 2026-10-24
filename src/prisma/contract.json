@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "TierlistGoogleAccount": {
+      "model": "TierlistGoogleAccount",
+      "namespace": "public"
+    },
     "TierlistOwner": {
       "model": "TierlistOwner",
       "namespace": "public"
@@ -21,6 +25,74 @@
     "namespaces": {
       "public": {
         "models": {
+          "TierlistGoogleAccount": {
+            "fields": {
+              "displayName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "encryptedSeed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "subject": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "owner": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "ownerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "TierlistOwner",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "displayName": {
+                  "column": "displayName"
+                },
+                "encryptedSeed": {
+                  "column": "encryptedSeed"
+                },
+                "ownerId": {
+                  "column": "ownerId"
+                },
+                "subject": {
+                  "column": "subject"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TierlistGoogleAccount"
+            }
+          },
           "TierlistOwner": {
             "fields": {
               "document": {
@@ -180,6 +252,67 @@
       "public": {
         "entries": {
           "table": {
+            "TierlistGoogleAccount": {
+              "columns": {
+                "displayName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "encryptedSeed": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "ownerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "subject": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "unique": [
+                      "ownerId"
+                    ]
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "ownerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistGoogleAccount"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistOwner"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "subject"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "ownerId"
+                  ]
+                }
+              ]
+            },
             "TierlistOwner": {
               "columns": {
                 "document": {
@@ -335,7 +468,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ec39c1289fe74d3942f3ced1bda0f76a9dd142ec12aba578dc1a8ab5b9e1fc0c"
+    "storageHash": "c928ed679c2695cc6c691a1f6acd85d94c761eeb2cdde0e50b3a3392c51996c0"
   },
   "capabilities": {
     "postgres": {

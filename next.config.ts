@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  logging: {
+    serverFunctions: false,
+  },
   headers: async () => [
     {
       source: '/sw.js',

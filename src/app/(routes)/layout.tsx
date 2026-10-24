@@ -3,7 +3,6 @@ import { OfflineSupport } from '@/app/_providers/offline-support';
 import '../_styles/globals.css';
 
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 import { Suspense, ViewTransition } from 'react';
 import { OfflineStatus } from '@/app/_components/offline/offline-status';
@@ -12,17 +11,8 @@ import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { siteAccent, siteUrl } from '@/app/_lib/site-metadata';
 import { ThemeProvider } from '@/app/_providers/theme-provider';
+import { geistMono, geistSans } from '@/app/_styles/fonts';
 import type { RootLayoutProps } from '@/app/_types/layout.types';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 
 export const viewport: Viewport = { themeColor: siteAccent };
 

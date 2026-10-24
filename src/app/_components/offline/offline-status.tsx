@@ -1,6 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { RetryCountdown } from '@/app/_components/shell/retry-countdown';
+import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useOfflineReconnect } from '@/app/_hooks/use-offline-reconnect';
 
@@ -24,15 +26,22 @@ export const OfflineStatus = () => {
   );
 };
 
-const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
+const OfflineNotice = ({
+  mode,
+  checking,
+  reconnect,
+  retryAt,
+}: OfflineNoticeProps) => {
   const [open, setOpen] = useState(true);
   const noticeId = useId();
 
   const descriptions = {
-    offline: 'The server is unreachable. Checking again every 30 seconds.',
+    offline:
+      'Your tierlist still works. Changes stay on this device until you reconnect.',
     dev: 'Offline preview is pinned. Automatic reconnection is paused.',
-    'dev-temporary': 'Offline preview. Checking the server every 30 seconds.',
+    'dev-temporary': 'Offline preview. Reconnect to return to the live app.',
   };
+  const actionText = checking ? 'Checking connection...' : 'Retry connection';
 
   return (
     <div className="relative">
@@ -58,37 +67,54 @@ const OfflineNotice = ({ mode, checking, reconnect }: OfflineNoticeProps) => {
             className="absolute -top-1.5 right-24 size-2.5 rotate-45 border-l border-t border-gold/60 bg-lemon-cream dark:bg-olive sm:right-6"
           />
 
-          <div className="flex items-start justify-between gap-4">
-            <div role="status" className="space-y-2">
-              <p className="text-sm font-medium">
-                <TerminalText text="You’re in offline mode" />
-              </p>
+          <TerminalSequence
+            lines={[
+              'You’re in offline mode',
+              descriptions[mode],
+              mode !== 'dev' ? 'Retrying in 30 seconds...' : '',
+              actionText,
+            ]}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div role="status" className="space-y-2">
+                <p className="text-sm font-medium">
+                  <TerminalText text="You’re in offline mode" />
+                </p>
 
-              <p className="text-xs leading-5">
-                <TerminalText text={descriptions[mode]} pending={false} />
-              </p>
+                <p className="text-xs leading-5">
+                  <TerminalText
+                    text={descriptions[mode]}
+                    pending={false}
+                    line={1}
+                  />
+                </p>
+              </div>
+
+              <button
+                type="button"
+                aria-label="Dismiss offline notice"
+                className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-sm text-lg hover:bg-brown/10 dark:hover:bg-lemon-cream/10"
+                onClick={() => setOpen(false)}
+              >
+                ×
+              </button>
             </div>
+
+            {retryAt && !checking && mode !== 'dev' && (
+              <p className="mt-3 text-xs">
+                <RetryCountdown retryAt={retryAt} line={2} />
+              </p>
+            )}
 
             <button
               type="button"
-              aria-label="Dismiss offline notice"
-              className="-mr-2 -mt-2 flex size-9 shrink-0 items-center justify-center rounded-sm text-lg hover:bg-brown/10 dark:hover:bg-lemon-cream/10"
-              onClick={() => setOpen(false)}
+              disabled={checking}
+              onClick={() => void reconnect()}
+              className="mt-3 min-h-9 text-xs underline underline-offset-4 disabled:cursor-wait disabled:no-underline"
             >
-              ×
+              <TerminalText text={actionText} line={3} />
             </button>
-          </div>
-
-          <button
-            type="button"
-            disabled={checking}
-            onClick={() => void reconnect()}
-            className="mt-3 min-h-9 text-xs underline underline-offset-4 disabled:cursor-wait disabled:no-underline"
-          >
-            <TerminalText
-              text={checking ? 'Reconnecting...' : 'Retry connection'}
-            />
-          </button>
+          </TerminalSequence>
         </aside>
       )}
     </div>

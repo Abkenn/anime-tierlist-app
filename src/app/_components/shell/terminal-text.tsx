@@ -1,48 +1,73 @@
 'use client';
 
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-} from 'motion/react';
-import { useEffect } from 'react';
+import { type MotionValue, motion, useTransform } from 'motion/react';
+import type { ReactNode } from 'react';
+import { useTerminalTyping } from '@/app/_hooks/use-terminal-typing';
 
-type TerminalTextProps = { text: string; pending?: boolean };
+type TerminalSegment = {
+  id: string;
+  text: string;
+  render?: (content: ReactNode) => ReactNode;
+};
+type TerminalTextProps = {
+  pending?: boolean;
+  replaceTail?: boolean;
+  line?: number;
+} & (
+  | { text: string; segments?: never }
+  | { text?: never; segments: readonly TerminalSegment[] }
+);
 
 export const TerminalText = ({
-  text,
-  pending = /(?:\.{3}|…)$/u.test(text),
+  text: plainText,
+  segments,
+  pending: pendingProp,
+  replaceTail = false,
+  line = 0,
 }: TerminalTextProps) => {
-  const reducedMotion = useReducedMotion();
-  const progress = useMotionValue(0);
-  const characters = Array.from(text);
-  const duration = Math.min(0.55, characters.length * 0.025);
-  const typed = useTransform(progress, (value) =>
-    characters.slice(0, Math.floor(value)).join(''),
+  const parts = segments ?? [{ id: 'text', text: plainText ?? '' }];
+  const text = parts.map((part) => part.text).join('');
+  const pending = pendingProp ?? /(?:\.{3}|…)$/u.test(text);
+
+  return (
+    <TypedTerminalText
+      key={replaceTail ? 'editable' : text}
+      text={text}
+      parts={parts}
+      pending={pending}
+      replaceTail={replaceTail}
+      line={line}
+    />
   );
+};
 
-  useEffect(() => {
-    const count = Array.from(text).length;
+type TypedTerminalTextProps = {
+  text: string;
+  parts: readonly TerminalSegment[];
+  pending: boolean;
+  replaceTail: boolean;
+  line: number;
+};
 
-    if (reducedMotion) {
-      progress.set(count);
-      return;
-    }
-    progress.set(0);
-    const animation = animate(progress, count, {
-      duration,
-      ease: 'linear',
-    });
-
-    return () => animation.stop();
-  }, [text, duration, progress, reducedMotion]);
+const TypedTerminalText = ({
+  text,
+  parts,
+  pending,
+  replaceTail,
+  line,
+}: TypedTerminalTextProps) => {
+  const { typed, reducedMotion } = useTerminalTyping({
+    text,
+    replaceTail,
+    line,
+  });
+  const cursor = useTransform(typed, (value): string =>
+    value.length > 0 ? '▍' : '',
+  );
+  let offset = 0;
 
   return (
     <span className="inline-grid max-w-full align-baseline font-mono">
-      <span className="sr-only">{text}</span>
-
       <span
         aria-hidden="true"
         data-text={text}
@@ -51,33 +76,61 @@ export const TerminalText = ({
         {pending && <span className="inline-block w-[1ch]">▍</span>}
       </span>
 
-      <span
-        aria-hidden="true"
-        className="col-start-1 row-start-1 whitespace-pre-wrap"
-      >
-        <motion.span>{typed}</motion.span>
+      <span className="col-start-1 row-start-1 whitespace-pre-wrap">
+        {parts.map((part) => {
+          const start = offset;
+          offset += Array.from(part.text).length;
+
+          return (
+            <TypedSegment
+              key={part.id}
+              part={part}
+              start={start}
+              typed={typed}
+            />
+          );
+        })}
 
         {pending && (
           <motion.span
-            key={text}
+            aria-hidden="true"
             className="inline-block w-[1ch]"
             initial={{ opacity: 0 }}
             animate={{ opacity: reducedMotion ? 1 : [1, 1, 0, 0] }}
             transition={
               reducedMotion
                 ? { duration: 0 }
-                : {
-                    delay: duration,
-                    duration: 0.9,
-                    repeat: Infinity,
-                    times: [0, 0.49, 0.5, 1],
-                  }
+                : { duration: 0.9, repeat: Infinity, times: [0, 0.49, 0.5, 1] }
             }
           >
-            ▍
+            {cursor}
           </motion.span>
         )}
       </span>
     </span>
   );
+};
+
+type TypedSegmentProps = {
+  part: TerminalSegment;
+  start: number;
+  typed: MotionValue<string>;
+};
+
+const TypedSegment = ({ part, start, typed }: TypedSegmentProps) => {
+  const count = Array.from(part.text).length;
+  const visible = useTransform(typed, (value) =>
+    Array.from(value)
+      .slice(start, start + count)
+      .join(''),
+  );
+  const content = (
+    <>
+      <span className="sr-only">{part.text}</span>
+
+      <motion.span aria-hidden="true">{visible}</motion.span>
+    </>
+  );
+
+  return part.render ? part.render(content) : content;
 };

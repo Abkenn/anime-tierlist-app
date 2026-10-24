@@ -4,6 +4,7 @@ import { Toast } from '@base-ui/react/toast';
 import { X } from 'lucide-react';
 import { motion, useAnimationControls, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
+import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 
 export const toast = Toast.createToastManager();
@@ -14,6 +15,11 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
   const controls = useAnimationControls();
   const reducedMotion = useReducedMotion();
   const elapsed = useRef(0);
+  const title = typeof item.title === 'string' ? item.title : '';
+  const action =
+    typeof item.actionProps?.children === 'string'
+      ? item.actionProps.children
+      : '';
 
   useEffect(() => {
     if (paused || reducedMotion) {
@@ -46,22 +52,30 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
       render={<motion.div animate={controls} initial={{ opacity: 1 }} />}
       className="flex items-center gap-3 border border-divider/50 bg-background/75 px-3 py-1 text-xs text-foreground shadow-xs backdrop-blur-md data-limited:hidden"
     >
-      <Toast.Content className="min-w-0 flex-1">
-        <Toast.Title className="wrap-break-word">
-          {typeof item.title === 'string' ? (
-            <TerminalText text={item.title} pending={false} />
-          ) : (
-            item.title
-          )}
-        </Toast.Title>
-      </Toast.Content>
+      <TerminalSequence lines={[title, action]}>
+        <Toast.Content className="min-w-0 flex-1">
+          <Toast.Title className="wrap-break-word">
+            {typeof item.title === 'string' ? (
+              <TerminalText text={item.title} pending={false} />
+            ) : (
+              item.title
+            )}
+          </Toast.Title>
+        </Toast.Content>
 
-      {item.actionProps && (
-        <Toast.Action
-          {...item.actionProps}
-          className="min-h-10 shrink-0 cursor-pointer underline underline-offset-4 hover:opacity-80 active:opacity-60"
-        />
-      )}
+        {item.actionProps && (
+          <Toast.Action
+            {...item.actionProps}
+            className="min-h-10 shrink-0 cursor-pointer underline underline-offset-4 hover:opacity-80 active:opacity-60"
+          >
+            {action ? (
+              <TerminalText text={action} line={1} pending={false} />
+            ) : (
+              item.actionProps.children
+            )}
+          </Toast.Action>
+        )}
+      </TerminalSequence>
 
       <Toast.Close
         aria-label="Dismiss notification"

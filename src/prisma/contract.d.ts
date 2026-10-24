@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ec39c1289fe74d3942f3ced1bda0f76a9dd142ec12aba578dc1a8ab5b9e1fc0c'>;
+  StorageHashBase<'c928ed679c2695cc6c691a1f6acd85d94c761eeb2cdde0e50b3a3392c51996c0'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -233,6 +233,12 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly TierlistGoogleAccount: {
+      readonly displayName: CodecTypes['pg/text@1']['output'] | null;
+      readonly encryptedSeed: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+      readonly subject: CodecTypes['pg/text@1']['output'];
+    };
     readonly TierlistOwner: {
       readonly document: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -253,6 +259,12 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly TierlistGoogleAccount: {
+      readonly displayName: CodecTypes['pg/text@1']['input'] | null;
+      readonly encryptedSeed: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
+      readonly subject: CodecTypes['pg/text@1']['input'];
+    };
     readonly TierlistOwner: {
       readonly document: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -273,6 +285,12 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly TierlistGoogleAccount: {
+      readonly displayName: CodecTypes['pg/text@1']['output'] | null;
+      readonly encryptedSeed: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+      readonly subject: CodecTypes['pg/text@1']['output'];
+    };
     readonly TierlistOwner: {
       readonly document: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -293,6 +311,12 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly TierlistGoogleAccount: {
+      readonly displayName: CodecTypes['pg/text@1']['input'] | null;
+      readonly encryptedSeed: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
+      readonly subject: CodecTypes['pg/text@1']['input'];
+    };
     readonly TierlistOwner: {
       readonly document: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -313,6 +337,14 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_TierlistGoogleAccount = {
+    displayName: CodecTypes['pg/text@1']['output'] | null;
+    encryptedSeed: CodecTypes['pg/text@1']['output'];
+    ownerId: CodecTypes['pg/text@1']['output'];
+    subject: CodecTypes['pg/text@1']['output'];
+    owner: public_TierlistOwner;
+    readonly [RelationKeys]?: 'owner';
+  };
   export type public_TierlistOwner = {
     document: CodecTypes['pg/jsonb@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
@@ -337,6 +369,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    TierlistGoogleAccount: Models.public_TierlistGoogleAccount;
     TierlistOwner: Models.public_TierlistOwner;
     TierlistRateLimit: Models.public_TierlistRateLimit;
     TierlistSession: Models.public_TierlistSession;
@@ -361,6 +394,51 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly TierlistGoogleAccount: {
+              columns: {
+                readonly displayName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly encryptedSeed: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly ownerId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly subject: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['subject'] };
+              uniques: readonly [{ readonly columns: readonly ['ownerId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TierlistGoogleAccount';
+                    readonly columns: readonly ['ownerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TierlistOwner';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly TierlistOwner: {
               columns: {
                 readonly document: {
@@ -497,6 +575,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly TierlistGoogleAccount: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'TierlistGoogleAccount';
+    };
     readonly TierlistOwner: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'TierlistOwner';
@@ -514,6 +596,50 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly TierlistGoogleAccount: {
+            readonly fields: {
+              readonly displayName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly encryptedSeed: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly subject: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly owner: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'TierlistOwner';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['ownerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'TierlistGoogleAccount';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly displayName: { readonly column: 'displayName' };
+                readonly encryptedSeed: { readonly column: 'encryptedSeed' };
+                readonly ownerId: { readonly column: 'ownerId' };
+                readonly subject: { readonly column: 'subject' };
+              };
+            };
+          };
           readonly TierlistOwner: {
             readonly fields: {
               readonly document: {

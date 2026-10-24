@@ -13,24 +13,25 @@ export const useOfflineReconnect = () => {
   const router = useRouter();
   const mode = useOfflineMode();
   const [checking, setChecking] = useState(false);
+  const [retryAt, setRetryAt] = useState<number>();
   const [transitioning, startTransition] = useTransition();
-  const inFlight = useRef(false);
   const controller = useRef<AbortController | null>(null);
   const refreshAfterNavigation = useRef(false);
 
   const reconnect = useCallback(async () => {
-    if (inFlight.current) {
+    if (controller.current) {
       return;
     }
 
-    inFlight.current = true;
     setChecking(true);
+    setRetryAt(undefined);
 
     const request = new AbortController();
 
     controller.current = request;
 
     const timeout = window.setTimeout(() => request.abort(), 5000);
+    let recovered = false;
 
     try {
       const response = await fetch('/api/connection', {
@@ -48,6 +49,7 @@ export const useOfflineReconnect = () => {
       }
 
       refreshAfterNavigation.current = true;
+      recovered = true;
 
       const href = withOfflineMode(new URL(window.location.href), null);
 
@@ -58,14 +60,18 @@ export const useOfflineReconnect = () => {
     } finally {
       window.clearTimeout(timeout);
 
-      if (controller.current === request) {
+      const currentRequest = controller.current === request;
+
+      if (currentRequest) {
         controller.current = null;
+        setChecking(false);
       }
 
-      inFlight.current = false;
-      setChecking(false);
+      if (currentRequest && !recovered && mode !== 'dev') {
+        setRetryAt(Date.now() + OFFLINE_POLL_INTERVAL_MS);
+      }
     }
-  }, [router]);
+  }, [router, mode]);
 
   useEffect(() => {
     if (mode === null && refreshAfterNavigation.current) {
@@ -76,6 +82,7 @@ export const useOfflineReconnect = () => {
 
   useEffect(() => {
     if (mode === null) {
+      setRetryAt(undefined);
       return;
     }
 
@@ -85,25 +92,37 @@ export const useOfflineReconnect = () => {
 
     window.addEventListener(OFFLINE_RECONNECT_EVENT, retry);
 
-    const interval =
-      mode === 'dev'
-        ? undefined
-        : window.setInterval(retry, OFFLINE_POLL_INTERVAL_MS);
-
     if (mode !== 'dev') {
       window.addEventListener('online', retry);
+
+      if (mode === 'dev-temporary') {
+        setRetryAt(Date.now() + OFFLINE_POLL_INTERVAL_MS);
+      } else {
+        retry();
+      }
     }
 
     return () => {
-      if (interval !== undefined) {
-        window.clearInterval(interval);
-      }
-
       window.removeEventListener('online', retry);
       window.removeEventListener(OFFLINE_RECONNECT_EVENT, retry);
-      controller.current?.abort();
+      const request = controller.current;
+      controller.current = null;
+      request?.abort();
     };
   }, [mode, reconnect]);
 
-  return { mode, checking: checking || transitioning, reconnect };
+  useEffect(() => {
+    if (!retryAt || mode === null || mode === 'dev') {
+      return;
+    }
+
+    const timer = window.setTimeout(
+      () => void reconnect(),
+      Math.max(0, retryAt - Date.now()),
+    );
+
+    return () => window.clearTimeout(timer);
+  }, [retryAt, mode, reconnect]);
+
+  return { mode, checking: checking || transitioning, reconnect, retryAt };
 };

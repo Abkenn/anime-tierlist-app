@@ -1,15 +1,23 @@
 'use client';
 
 import { Popover } from '@base-ui/react/popover';
-import { useState } from 'react';
+import { ArrowRight, Check, Copy } from 'lucide-react';
+import { useId, useState } from 'react';
 
 type UserSeedProps = {
   seed: string;
   imported: boolean;
   busy: boolean;
   error?: string;
+  open: boolean;
+  handle: ReturnType<typeof Popover.createHandle>;
+  onOpenChange: (open: boolean) => void;
   onImport: (seed: string) => Promise<void>;
   onUseDevice: () => Promise<void>;
+  googleConnected: boolean;
+  canSignIn: boolean;
+  onGoogleSignIn: () => Promise<void>;
+  onGoogleSignOut: () => Promise<void>;
 };
 
 export const UserSeed = ({
@@ -17,12 +25,20 @@ export const UserSeed = ({
   imported,
   busy,
   error,
+  open,
+  handle,
+  onOpenChange,
   onImport,
   onUseDevice,
+  googleConnected,
+  canSignIn,
+  onGoogleSignIn,
+  onGoogleSignOut,
 }: UserSeedProps) => {
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
+  const importId = useId();
 
   const copySeed = async () => {
     try {
@@ -36,13 +52,19 @@ export const UserSeed = ({
 
   return (
     <Popover.Root
-      onOpenChange={() => {
+      open={open}
+      handle={handle}
+      onOpenChange={(next) => {
+        onOpenChange(next);
         setCopied(false);
         setCopyFailed(false);
       }}
     >
-      <Popover.Trigger className="cursor-pointer text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">
-        User seed
+      <Popover.Trigger
+        disabled={busy}
+        className="hidden min-h-9 cursor-pointer text-xs underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50 sm:inline-flex sm:items-center"
+      >
+        {googleConnected ? 'Account & seed' : 'Sign in or export anonymously'}
       </Popover.Trigger>
 
       <Popover.Portal>
@@ -55,93 +77,127 @@ export const UserSeed = ({
           className="z-50"
         >
           <Popover.Popup
-            aria-label="User seed"
-            className="w-96 max-h-(--available-height) max-w-[calc(100vw-2rem)] overflow-y-auto border border-divider bg-background p-3 text-xs text-muted-foreground shadow-sm"
+            aria-label="Sign in and user seed"
+            className="w-84 max-h-(--available-height) max-w-[calc(100vw-2rem)] overflow-y-auto border border-divider bg-popover p-4 text-xs leading-relaxed text-popover-foreground shadow-md"
           >
-            <p className="mb-2">
-              This seed belongs to your tierlist. Import it on another device to
-              open the same list.
-            </p>
-
-            <input
-              aria-label="Your user seed"
-              readOnly
-              value={seed}
-              onFocus={(event) => event.currentTarget.select()}
-              className="w-full border border-divider bg-transparent p-2 text-foreground"
-            />
-
             <button
               type="button"
-              onClick={copySeed}
-              className="mt-2 cursor-pointer underline underline-offset-4 hover:text-foreground"
+              disabled={busy || (!googleConnected && !canSignIn)}
+              title={
+                !googleConnected && !canSignIn
+                  ? 'Waiting for changes to save'
+                  : undefined
+              }
+              onClick={() => {
+                void (googleConnected ? onGoogleSignOut() : onGoogleSignIn());
+              }}
+              className="flex min-h-11 w-full cursor-pointer items-center justify-center rounded-md border border-transparent bg-foreground px-4 font-sans text-sm font-medium text-background shadow-sm hover:bg-foreground/90 active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-default disabled:opacity-60"
             >
-              {copied ? 'Copied' : 'Copy seed'}
+              {googleConnected ? 'Sign out from Google' : 'Sign in with Google'}
             </button>
 
-            {copyFailed && (
-              <p role="status" className="mt-2">
-                Select the seed above and copy it manually.
+            <section
+              aria-label="Anonymous seed"
+              className="mt-4 border-t border-divider pt-3"
+            >
+              <p className="mb-2 font-medium">
+                {googleConnected
+                  ? 'Or use your seed'
+                  : 'Or stay anonymous. Save your seed.'}
               </p>
-            )}
 
-            <p className="mt-2">
-              Keep it private. Please save a copy somewhere safe. Clearing
-              browser data removes the local copy. Only changes saved online can
-              be recovered with your seed.
-            </p>
+              <div className="group relative">
+                <input
+                  aria-label="Your user seed"
+                  readOnly
+                  value={seed}
+                  spellCheck={false}
+                  onFocus={(event) => event.currentTarget.select()}
+                  className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+                />
+
+                <button
+                  type="button"
+                  aria-label={copied ? 'Seed copied' : 'Copy seed'}
+                  title={copied ? 'Copied' : 'Copy seed'}
+                  onClick={() => void copySeed()}
+                  className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center bg-popover opacity-0 hover:bg-accent focus-visible:opacity-100 focus-visible:outline-2 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
+                >
+                  {copied ? (
+                    <Check className="size-4" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
+                </button>
+              </div>
+
+              <span role="status" className="sr-only">
+                {copied ? 'Seed copied to clipboard.' : ''}
+              </span>
+
+              {copyFailed && (
+                <p role="status" className="mt-2">
+                  Select the seed and copy it manually.
+                </p>
+              )}
+
+              <p className="mt-2 text-muted-foreground">
+                Keep it private. Save it to open this list on another device.
+                Clearing browser data removes this device’s copy.
+              </p>
+            </section>
 
             <form
-              className="mt-4 border-t border-divider pt-3"
+              className="mt-4"
               onSubmit={(event) => {
                 event.preventDefault();
                 void onImport(importSeed).then(() => setImportSeed(''));
               }}
             >
-              <label className="block">
+              <label htmlFor={importId} className="mb-2 block">
                 Import a seed
+              </label>
+
+              <div className="relative">
                 <input
+                  id={importId}
                   aria-label="Seed to import"
-                  type="password"
+                  placeholder="Paste your seed"
+                  type="text"
                   autoComplete="off"
                   spellCheck={false}
                   value={importSeed}
                   maxLength={64}
                   disabled={busy}
                   onChange={(event) => setImportSeed(event.currentTarget.value)}
-                  className="mt-2 w-full border border-divider bg-transparent p-2 text-foreground"
+                  className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
                 />
-              </label>
 
-              <p className="mt-2">
-                Your current tierlist stays on this device. You can switch back
-                anytime.
-              </p>
-
-              <button
-                type="submit"
-                disabled={busy || !importSeed.trim()}
-                className="mt-2 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:cursor-default disabled:opacity-50"
-              >
-                {busy ? 'Opening...' : 'Import seed'}
-              </button>
+                <button
+                  type="submit"
+                  aria-label={busy ? 'Opening tierlist' : 'Import seed'}
+                  title="Import seed"
+                  disabled={busy || !importSeed.trim()}
+                  className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center hover:bg-accent focus-visible:outline-2 disabled:cursor-default disabled:opacity-40"
+                >
+                  <ArrowRight className="size-4" />
+                </button>
+              </div>
             </form>
 
-            {imported && (
+            {imported && !googleConnected && (
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => {
-                  void onUseDevice();
-                }}
-                className="mt-3 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
+                onClick={() => void onUseDevice()}
+                className="mt-3 min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
               >
                 Return to this device’s tierlist
               </button>
             )}
 
             {error && (
-              <p role="status" className="mt-2">
+              <p role="status" className="mt-3">
                 {error}
               </p>
             )}

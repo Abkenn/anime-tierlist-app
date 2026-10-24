@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import {
   getSyncDecision,
   getTierlistDocument,
@@ -25,6 +26,7 @@ type SyncState = {
   status: 'connecting' | 'saved' | 'saving' | 'offline' | 'conflict';
   message?: string;
   conflict?: RemoteTierlist;
+  retryAt?: number;
 };
 
 export const useTierlistSync = (
@@ -44,6 +46,7 @@ export const useTierlistSync = (
     }
 
     setAttempt((value) => value + 1);
+    setState({ status: 'connecting' });
   };
 
   const keepDeviceChanges = async () => {
@@ -103,18 +106,32 @@ export const useTierlistSync = (
     };
     window.addEventListener('online', reconnect);
     window.addEventListener('focus', reconnect);
-    const timer = setInterval(() => {
-      if (!paused && navigator.onLine && scope.current?.failed) {
-        reconnect();
-      }
-    }, 30_000);
-
     return () => {
       window.removeEventListener('online', reconnect);
       window.removeEventListener('focus', reconnect);
-      clearInterval(timer);
     };
-  }, [paused]);
+  }, []);
+
+  useEffect(() => {
+    if (paused || state.status !== 'offline' || !state.retryAt) {
+      return;
+    }
+
+    const timer = setTimeout(
+      () => {
+        if (scope.current) {
+          scope.current.failed = false;
+          scope.current.remote = undefined;
+        }
+
+        setState({ status: 'connecting' });
+        setAttempt((value) => value + 1);
+      },
+      Math.max(0, state.retryAt - Date.now()),
+    );
+
+    return () => clearTimeout(timer);
+  }, [paused, state.status, state.retryAt]);
 
   useEffect(() => {
     const active = scope.current;
@@ -215,10 +232,11 @@ export const useTierlistSync = (
         if (scope.current === active) {
           setState({
             status: 'offline',
-            message:
-              error instanceof Error
-                ? error.message
-                : 'Saved locally. Online saving is unavailable.',
+            message: tierlistErrorMessage(
+              error,
+              'Couldn’t reach your saved tierlist right now.',
+            ),
+            retryAt: Date.now() + 30_000,
           });
         }
       } finally {

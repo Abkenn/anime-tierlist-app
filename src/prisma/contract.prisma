@@ -26,3 +26,11 @@ model TierlistRateLimit {
 
   @@index([expiresAt])
 }
+
+model TierlistGoogleAccount {
+  subject String @id
+  ownerId String @unique
+  owner TierlistOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  encryptedSeed String
+  displayName String?
+}

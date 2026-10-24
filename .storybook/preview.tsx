@@ -69,6 +69,7 @@ const preview: Preview = {
       mode: 'dev',
       checking: false,
       reconnect: async () => {},
+      retryAt: Date.now() + 30_000,
     });
   },
 };
