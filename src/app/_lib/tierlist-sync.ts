@@ -38,10 +38,50 @@ export const getTierlistDocument = (
   imageMode: snapshot.imageMode,
 });
 
+const sameJsonValue = (first: unknown, second: unknown): boolean => {
+  if (first === second) {
+    return true;
+  }
+
+  if (Array.isArray(first) || Array.isArray(second)) {
+    return (
+      Array.isArray(first) &&
+      Array.isArray(second) &&
+      first.length === second.length &&
+      first.every((value: unknown, index) =>
+        sameJsonValue(value, second[index]),
+      )
+    );
+  }
+
+  if (
+    !first ||
+    !second ||
+    typeof first !== 'object' ||
+    typeof second !== 'object'
+  ) {
+    return false;
+  }
+
+  const entries = Object.entries(first).filter(
+    ([, value]) => value !== undefined,
+  );
+  const other = second as Record<string, unknown>;
+
+  return (
+    entries.length ===
+      Object.values(other).filter((value) => value !== undefined).length &&
+    entries.every(
+      ([key, value]) =>
+        Object.hasOwn(other, key) && sameJsonValue(value, other[key]),
+    )
+  );
+};
+
 export const sameTierlistDocument = (
   first: TierlistDocument,
   second: TierlistDocument,
-) => JSON.stringify(first) === JSON.stringify(second);
+) => sameJsonValue(first, second);
 
 export const getSyncDecision = (
   local: LocalTierlist,

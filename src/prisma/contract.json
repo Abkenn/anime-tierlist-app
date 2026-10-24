@@ -26,7 +26,7 @@
               "document": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "pg/jsonb@1",
                   "kind": "scalar"
                 }
               },
@@ -183,8 +183,8 @@
             "TierlistOwner": {
               "columns": {
                 "document": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
                   "nullable": false
                 },
                 "id": {
@@ -204,7 +204,17 @@
                 }
               },
               "foreignKeys": [],
-              "indexes": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "document"
+                  ],
+                  "name": "TierlistOwner_document_idx_c5235d32",
+                  "prefix": "TierlistOwner_document_idx",
+                  "type": "gin",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -325,7 +335,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "78329cc74a7e47617eaaf4001e91dd7d5b5cf206a599f722b13ba6837dc58579"
+    "storageHash": "ec39c1289fe74d3942f3ced1bda0f76a9dd142ec12aba578dc1a8ab5b9e1fc0c"
   },
   "capabilities": {
     "postgres": {

@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'78329cc74a7e47617eaaf4001e91dd7d5b5cf206a599f722b13ba6837dc58579'>;
+  StorageHashBase<'ec39c1289fe74d3942f3ced1bda0f76a9dd142ec12aba578dc1a8ab5b9e1fc0c'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -234,7 +234,7 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 export type FieldOutputTypes = {
   readonly public: {
     readonly TierlistOwner: {
-      readonly document: CodecTypes['pg/text@1']['output'];
+      readonly document: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly revision: CodecTypes['pg/int4@1']['output'];
       readonly seedHash: CodecTypes['pg/text@1']['output'];
@@ -254,7 +254,7 @@ export type FieldOutputTypes = {
 export type FieldInputTypes = {
   readonly public: {
     readonly TierlistOwner: {
-      readonly document: CodecTypes['pg/text@1']['input'];
+      readonly document: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly revision: CodecTypes['pg/int4@1']['input'];
       readonly seedHash: CodecTypes['pg/text@1']['input'];
@@ -274,7 +274,7 @@ export type FieldInputTypes = {
 export type StorageColumnTypes = {
   readonly public: {
     readonly TierlistOwner: {
-      readonly document: CodecTypes['pg/text@1']['output'];
+      readonly document: CodecTypes['pg/jsonb@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly revision: CodecTypes['pg/int4@1']['output'];
       readonly seedHash: CodecTypes['pg/text@1']['output'];
@@ -294,7 +294,7 @@ export type StorageColumnTypes = {
 export type StorageColumnInputTypes = {
   readonly public: {
     readonly TierlistOwner: {
-      readonly document: CodecTypes['pg/text@1']['input'];
+      readonly document: CodecTypes['pg/jsonb@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly revision: CodecTypes['pg/int4@1']['input'];
       readonly seedHash: CodecTypes['pg/text@1']['input'];
@@ -314,7 +314,7 @@ export type StorageColumnInputTypes = {
 
 export namespace Models {
   export type public_TierlistOwner = {
-    document: CodecTypes['pg/text@1']['output'];
+    document: CodecTypes['pg/jsonb@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     revision: CodecTypes['pg/int4@1']['output'];
     seedHash: CodecTypes['pg/text@1']['output'];
@@ -364,8 +364,8 @@ type ContractBase = Omit<
             readonly TierlistOwner: {
               columns: {
                 readonly document: {
-                  readonly dataType: 'pg/text';
-                  readonly codecId: 'pg/text@1';
+                  readonly dataType: 'pg/jsonb';
+                  readonly codecId: 'pg/jsonb@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
@@ -390,7 +390,15 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['seedHash'] }];
-              indexes: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'TierlistOwner_document_idx_c5235d32';
+                  readonly prefix: 'TierlistOwner_document_idx';
+                  readonly columns: readonly ['document'];
+                  readonly unique: false;
+                  readonly type: 'gin';
+                },
+              ];
               foreignKeys: readonly [];
             };
             readonly TierlistRateLimit: {
@@ -510,7 +518,7 @@ type ContractBase = Omit<
             readonly fields: {
               readonly document: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
               };
               readonly id: {
                 readonly nullable: false;

@@ -1,8 +1,17 @@
 import 'server-only';
+import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { db } from '@/prisma/db';
 
-type CreateOwnerInput = { id: string; seedHash: string; document: string };
-type SaveOwnerInput = { id: string; revision: number; document: string };
+type CreateOwnerInput = {
+  id: string;
+  seedHash: string;
+  document: TierlistDocument;
+};
+type SaveOwnerInput = {
+  id: string;
+  revision: number;
+  document: TierlistDocument;
+};
 type CreateSessionInput = {
   tokenHash: string;
   ownerId: string;
@@ -27,7 +36,7 @@ export const saveTierlistOwner = async ({
 }: SaveOwnerInput) => {
   const table = db.sql.public.TierlistOwner;
   const plan = db.raw.sql`
-    UPDATE "TierlistOwner" SET document = ${document}, revision = revision + 1
+    UPDATE "TierlistOwner" SET document = ${JSON.stringify(document)}::jsonb, revision = revision + 1
     WHERE id = ${id} AND revision = ${revision}
     RETURNING id, "seedHash", revision, document
   `

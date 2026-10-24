@@ -1,0 +1,94 @@
+[
+  {
+    "id": "alterType.TierlistOwner.document",
+    "label": "Alter type of \"TierlistOwner\".\"document\" to jsonb",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "document",
+        "table": "TierlistOwner"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"document\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "TierlistOwner",
+          "document"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"document\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistOwner\" ALTER COLUMN \"document\" TYPE jsonb USING \"document\"::jsonb",
+        "meta": {
+          "convertedColumn": {
+            "table": "TierlistOwner",
+            "column": "document",
+            "by": "conversion"
+          }
+        }
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"document\" has type \"jsonb\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "TierlistOwner",
+          "document",
+          "jsonb"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "index.TierlistOwner.TierlistOwner_document_idx_c5235d32",
+    "label": "Create index \"TierlistOwner_document_idx_c5235d32\" on \"TierlistOwner\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TierlistOwner_document_idx_c5235d32",
+        "table": "TierlistOwner"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TierlistOwner_document_idx_c5235d32\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistOwner_document_idx_c5235d32\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TierlistOwner_document_idx_c5235d32\"",
+        "sql": "CREATE INDEX \"TierlistOwner_document_idx_c5235d32\" ON \"public\".\"TierlistOwner\" USING \"gin\" (\"document\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TierlistOwner_document_idx_c5235d32\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistOwner_document_idx_c5235d32\""
+        ]
+      }
+    ]
+  }
+]

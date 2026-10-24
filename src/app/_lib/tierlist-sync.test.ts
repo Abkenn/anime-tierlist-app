@@ -4,9 +4,53 @@ import {
   getSyncDecision,
   getTierlistDocument,
   type RemoteTierlist,
+  sameTierlistDocument,
 } from './tierlist-sync';
 
 describe('tierlist sync decisions', () => {
+  it('ignores JSONB object-key ordering but preserves item ordering and actual edits', () => {
+    const first = {
+      version: 1 as const,
+      items: [
+        {
+          id: 'one',
+          label: 'One',
+          rank: 'S' as const,
+          crop: { x: 0.2, y: 0.8 },
+        },
+        { id: 'two', label: 'Two', rank: 'S' as const },
+      ],
+      ranks: ['S' as const],
+      imageMode: 'natural' as const,
+    };
+    const second = {
+      imageMode: first.imageMode,
+      ranks: first.ranks,
+      items: [
+        {
+          crop: { y: 0.8, x: 0.2 },
+          rank: 'S' as const,
+          label: 'One',
+          id: 'one',
+          title: undefined,
+        },
+        first.items[1],
+      ],
+      version: first.version,
+    };
+
+    expect(sameTierlistDocument(first, second)).toBe(true);
+    expect(
+      sameTierlistDocument(first, {
+        ...second,
+        items: [...second.items].reverse(),
+      }),
+    ).toBe(false);
+    expect(sameTierlistDocument(first, { ...second, imageMode: 'cover' })).toBe(
+      false,
+    );
+  });
+
   const local: LocalTierlist = {
     version: 1,
     seed: 'a'.repeat(64),

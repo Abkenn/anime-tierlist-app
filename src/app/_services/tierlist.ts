@@ -24,11 +24,11 @@ import {
 const toRemote = (owner: {
   id: string;
   revision: number;
-  document: string;
+  document: unknown;
 }): RemoteTierlist => ({
   ownerId: owner.id,
   revision: owner.revision,
-  document: tierlistDocumentSchema.parse(JSON.parse(owner.document)),
+  document: tierlistDocumentSchema.parse(owner.document),
 });
 
 export const connectSeedTierlist = async (
@@ -44,7 +44,7 @@ export const connectSeedTierlist = async (
       (await createTierlistOwner({
         id: randomUUID(),
         seedHash,
-        document: JSON.stringify(document),
+        document,
       })));
 
   if (!owner) {
@@ -68,7 +68,7 @@ export const saveSeedTierlist = async (input: {
   const owner = await saveTierlistOwner({
     id: input.ownerId,
     revision: input.revision,
-    document: JSON.stringify(input.document),
+    document: input.document,
   });
 
   if (owner) {

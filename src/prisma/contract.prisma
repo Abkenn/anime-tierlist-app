@@ -4,7 +4,9 @@ model TierlistOwner {
   id       String @id
   seedHash String @unique
   revision Int
-  document String
+  document Jsonb
+
+  @@index([document], type: "gin")
 }
 
 model TierlistSession {
