@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { normalizeAnimeQuery } from '@/app/_lib/anime-search';
+import { curatedAnimeImages } from '@/app/_lib/curated-anime';
 import { searchAnimePage } from '@/app/_services/anime-search';
 import type { CuratedAnimeImage } from '@/app/_types/anime-search.types';
 import { AnimeSearchDiscard } from './anime-search-discard';
@@ -12,7 +13,7 @@ type AnimeSearchProps = {
 };
 
 export const AnimeSearch = async ({
-  curatedImages = [],
+  curatedImages = curatedAnimeImages,
   initialQuery = '',
 }: AnimeSearchProps) => {
   'use cache';

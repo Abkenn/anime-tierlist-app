@@ -9,7 +9,8 @@ import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
-import { imageSuitability, normalizeAnimeQuery } from '@/app/_lib/anime-search';
+import { imageSuitability } from '@/app/_lib/anime-search';
+import { searchCuratedAnime } from '@/app/_lib/curated-anime-search';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
@@ -32,13 +33,7 @@ export const AnimeSearchResults = () => {
   );
   const curated =
     query.length >= 2 && !url && !urlError
-      ? curatedImages.filter((image) =>
-          image.keywords.some(
-            (keyword) =>
-              normalizeAnimeQuery(keyword).includes(query) ||
-              query.includes(normalizeAnimeQuery(keyword)),
-          ),
-        )
+      ? searchCuratedAnime(curatedImages, query)
       : [];
   const provider = (search.data?.pages ?? []).flatMap((page) =>
     [...page.items]

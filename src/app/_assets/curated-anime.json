@@ -1,0 +1,875 @@
+[
+  {
+    "id": "curated-86",
+    "title": "86 Eighty-Six",
+    "keywords": [
+      "86 Eighty-Six",
+      "86 (Eighty-Six)",
+      "Eighty-Six",
+      "Eighty Six",
+      "86 -Eighty Six-"
+    ],
+    "imageUrl": "/curated/86.jpg",
+    "image": {
+      "src": "/curated/86.jpg",
+      "width": 1900,
+      "height": 2692,
+      "alt": "86 Eighty-Six"
+    },
+    "titleReference": "https://kitsu.app/anime/eighty-six"
+  },
+  {
+    "id": "curated-a-place-further-than-the-universe",
+    "title": "A Place Further Than the Universe",
+    "keywords": [
+      "A Place Further Than the Universe",
+      "Sora yori mo Tooi Basho",
+      "Yorimoi",
+      "Uchuu yori mo Tooi Basho"
+    ],
+    "imageUrl": "/curated/a-place-further-than-the-universe.jpg",
+    "image": {
+      "src": "/curated/a-place-further-than-the-universe.jpg",
+      "width": 1200,
+      "height": 1800,
+      "alt": "A Place Further Than the Universe"
+    },
+    "titleReference": "https://kitsu.app/anime/a-place-further-than-the-universe"
+  },
+  {
+    "id": "curated-agents-of-the-four-seasons",
+    "title": "Agents of the Four Seasons: Dance of Spring",
+    "keywords": [
+      "Agents of the Four Seasons: Dance of Spring",
+      "Shunkashuutou Daikousha: Haru no Mai",
+      "Agents of the Four Seasons",
+      "Shunkashuutou Daikousha",
+      "Shunkashuto Daikosha: Haru no Mai",
+      "Dance of Spring"
+    ],
+    "imageUrl": "/curated/agents-of-the-four-seasons.jpg",
+    "image": {
+      "src": "/curated/agents-of-the-four-seasons.jpg",
+      "width": 460,
+      "height": 650,
+      "alt": "Agents of the Four Seasons: Dance of Spring"
+    },
+    "titleReference": "https://kitsu.app/anime/shunkashuutou-daikousha-haru-no-mai"
+  },
+  {
+    "id": "curated-another",
+    "title": "Another",
+    "keywords": ["Another", "Another (2012)"],
+    "imageUrl": "/curated/another.jpg",
+    "image": {
+      "src": "/curated/another.jpg",
+      "width": 1000,
+      "height": 1500,
+      "alt": "Another"
+    },
+    "titleReference": "https://kitsu.app/anime/another"
+  },
+  {
+    "id": "curated-ascendance-of-a-bookworm",
+    "title": "Ascendance of a Bookworm",
+    "keywords": [
+      "Ascendance of a Bookworm",
+      "Honzuki no Gekokujou: Shisho ni Naru Tame ni wa Shudan wo Erandeiraremasen",
+      "Honzuki no Gekokujou",
+      "Honzuki no Gekokujo",
+      "Bookworm"
+    ],
+    "imageUrl": "/curated/ascendance-of-a-bookworm.webp",
+    "image": {
+      "src": "/curated/ascendance-of-a-bookworm.webp",
+      "width": 1200,
+      "height": 1697,
+      "alt": "Ascendance of a Bookworm"
+    },
+    "titleReference": "https://kitsu.app/anime/honzuki-no-gekujou-shisho-ni-naru-tame-niwa-shudan-o-erandeiramasen"
+  },
+  {
+    "id": "curated-attack-on-titan",
+    "title": "Attack on Titan",
+    "keywords": ["Attack on Titan", "Shingeki no Kyojin", "AOT", "AoT", "SnK"],
+    "imageUrl": "/curated/attack-on-titan.jpg",
+    "image": {
+      "src": "/curated/attack-on-titan.jpg",
+      "width": 1066,
+      "height": 1600,
+      "alt": "Attack on Titan"
+    },
+    "titleReference": "https://kitsu.app/anime/attack-on-titan"
+  },
+  {
+    "id": "curated-bocchi-the-rock",
+    "title": "BOCCHI THE ROCK!",
+    "keywords": [
+      "BOCCHI THE ROCK!",
+      "Bocchi the Rock!",
+      "Bocchi",
+      "Bocchi the Rock"
+    ],
+    "imageUrl": "/curated/bocchi-the-rock.jpg",
+    "image": {
+      "src": "/curated/bocchi-the-rock.jpg",
+      "width": 1287,
+      "height": 1823,
+      "alt": "BOCCHI THE ROCK!"
+    },
+    "titleReference": "https://kitsu.app/anime/bocchi-the-rock"
+  },
+  {
+    "id": "curated-chainsaw-man",
+    "title": "Chainsaw Man",
+    "keywords": ["Chainsaw Man", "CSM", "Chainsawman"],
+    "imageUrl": "/curated/chainsaw-man.png",
+    "image": {
+      "src": "/curated/chainsaw-man.png",
+      "width": 133,
+      "height": 191,
+      "alt": "Chainsaw Man"
+    },
+    "titleReference": "https://kitsu.app/anime/chainsaw-man"
+  },
+  {
+    "id": "curated-code-geass",
+    "title": "Code Geass: Lelouch of the Rebellion",
+    "keywords": [
+      "Code Geass: Lelouch of the Rebellion",
+      "Code Geass: Hangyaku no Lelouch",
+      "Code Geass",
+      "Lelouch of the Rebellion",
+      "Hangyaku no Lelouch"
+    ],
+    "imageUrl": "/curated/code-geass.jpg",
+    "image": {
+      "src": "/curated/code-geass.jpg",
+      "width": 1000,
+      "height": 1426,
+      "alt": "Code Geass: Lelouch of the Rebellion"
+    },
+    "titleReference": "https://kitsu.app/anime/code-geass-lelouch-of-the-rebellion"
+  },
+  {
+    "id": "curated-cowboy-bebop",
+    "title": "Cowboy Bebop",
+    "keywords": ["Cowboy Bebop", "Cowboy Bebop (1998)"],
+    "imageUrl": "/curated/cowboy-bebop.jpg",
+    "image": {
+      "src": "/curated/cowboy-bebop.jpg",
+      "width": 1223,
+      "height": 1531,
+      "alt": "Cowboy Bebop"
+    },
+    "titleReference": "https://kitsu.app/anime/cowboy-bebop"
+  },
+  {
+    "id": "curated-cyberpunk-edgerunners",
+    "title": "CYBERPUNK: EDGERUNNERS",
+    "keywords": [
+      "CYBERPUNK: EDGERUNNERS",
+      "Cyberpunk: Edgerunners",
+      "Edgerunners",
+      "Cyberpunk Edgerunners"
+    ],
+    "imageUrl": "/curated/cyberpunk-edgerunners.jpg",
+    "image": {
+      "src": "/curated/cyberpunk-edgerunners.jpg",
+      "width": 623,
+      "height": 830,
+      "alt": "CYBERPUNK: EDGERUNNERS"
+    },
+    "titleReference": "https://kitsu.app/anime/cyberpunk-edgerunners"
+  },
+  {
+    "id": "curated-daemons-of-the-shadow-realm",
+    "title": "Daemons of the Shadow Realm",
+    "keywords": ["Daemons of the Shadow Realm", "Yomi no Tsugai"],
+    "imageUrl": "/curated/daemons-of-the-shadow-realm.jpg",
+    "image": {
+      "src": "/curated/daemons-of-the-shadow-realm.jpg",
+      "width": 2000,
+      "height": 3000,
+      "alt": "Daemons of the Shadow Realm"
+    },
+    "titleReference": "https://kitsu.app/anime/daemons-of-the-shadow-realm"
+  },
+  {
+    "id": "curated-dandadan",
+    "title": "DAN DA DAN",
+    "keywords": ["DAN DA DAN", "Dandadan", "Dan Da Dan"],
+    "imageUrl": "/curated/dandadan.jpg",
+    "image": {
+      "src": "/curated/dandadan.jpg",
+      "width": 857,
+      "height": 1200,
+      "alt": "DAN DA DAN"
+    },
+    "titleReference": "https://kitsu.app/anime/DAN-DA-DAN"
+  },
+  {
+    "id": "curated-death-note",
+    "title": "Death Note",
+    "keywords": ["Death Note", "Death Note (2006)", "DN"],
+    "imageUrl": "/curated/death-note.png",
+    "image": {
+      "src": "/curated/death-note.png",
+      "width": 569,
+      "height": 825,
+      "alt": "Death Note"
+    },
+    "titleReference": "https://kitsu.app/anime/death-note"
+  },
+  {
+    "id": "curated-delicious-in-dungeon",
+    "title": "Delicious in Dungeon",
+    "keywords": ["Delicious in Dungeon", "Dungeon Meshi", "Dungeon Food"],
+    "imageUrl": "/curated/delicious-in-dungeon.jpg",
+    "image": {
+      "src": "/curated/delicious-in-dungeon.jpg",
+      "width": 1500,
+      "height": 2222,
+      "alt": "Delicious in Dungeon"
+    },
+    "titleReference": "https://kitsu.app/anime/dungeon-meshi"
+  },
+  {
+    "id": "curated-dorohedoro",
+    "title": "Dorohedoro",
+    "keywords": ["Dorohedoro"],
+    "imageUrl": "/curated/dorohedoro.png",
+    "image": {
+      "src": "/curated/dorohedoro.png",
+      "width": 127,
+      "height": 191,
+      "alt": "Dorohedoro"
+    },
+    "titleReference": "https://kitsu.app/anime/dorohedoro"
+  },
+  {
+    "id": "curated-erased",
+    "title": "ERASED",
+    "keywords": [
+      "ERASED",
+      "Boku dake ga Inai Machi",
+      "BokuMachi",
+      "The Town Where Only I Am Missing"
+    ],
+    "imageUrl": "/curated/erased.png",
+    "image": {
+      "src": "/curated/erased.png",
+      "width": 829,
+      "height": 1200,
+      "alt": "ERASED"
+    },
+    "titleReference": "https://kitsu.app/anime/boku-dake-ga-inai-machi"
+  },
+  {
+    "id": "curated-frieren-beyond-journey-s-end",
+    "title": "Frieren: Beyond Journey's End",
+    "keywords": [
+      "Frieren: Beyond Journey's End",
+      "Sousou no Frieren",
+      "Frieren",
+      "Soso no Frieren",
+      "Frieren at the Funeral"
+    ],
+    "imageUrl": "/curated/frieren-beyond-journey-s-end.jpg",
+    "image": {
+      "src": "/curated/frieren-beyond-journey-s-end.jpg",
+      "width": 460,
+      "height": 649,
+      "alt": "Frieren: Beyond Journey's End"
+    },
+    "titleReference": "https://kitsu.app/anime/sousou-no-frieren"
+  },
+  {
+    "id": "curated-shinsekai-yori",
+    "title": "From the New World",
+    "keywords": ["From the New World", "Shinsekai yori", "Shin Sekai Yori"],
+    "imageUrl": "/curated/shinsekai-yori.png",
+    "image": {
+      "src": "/curated/shinsekai-yori.png",
+      "width": 450,
+      "height": 640,
+      "alt": "From the New World"
+    },
+    "titleReference": "https://kitsu.app/anime/shinsekai-yori"
+  },
+  {
+    "id": "curated-fullmetal-alchemist-brotherhood",
+    "title": "Fullmetal Alchemist: Brotherhood",
+    "keywords": [
+      "Fullmetal Alchemist: Brotherhood",
+      "Hagane no Renkinjutsushi: Fullmetal Alchemist",
+      "FMAB",
+      "FMA Brotherhood",
+      "Fullmetal Alchemist (2009)"
+    ],
+    "imageUrl": "/curated/fullmetal-alchemist-brotherhood.jpg",
+    "image": {
+      "src": "/curated/fullmetal-alchemist-brotherhood.jpg",
+      "width": 1185,
+      "height": 1800,
+      "alt": "Fullmetal Alchemist: Brotherhood"
+    },
+    "titleReference": "https://kitsu.app/anime/fullmetal-alchemist-brotherhood"
+  },
+  {
+    "id": "curated-gurren-lagann",
+    "title": "Gurren Lagann",
+    "keywords": ["Gurren Lagann", "Tengen Toppa Gurren Lagann", "TTGL"],
+    "imageUrl": "/curated/gurren-lagann.jpg",
+    "image": {
+      "src": "/curated/gurren-lagann.jpg",
+      "width": 1024,
+      "height": 1536,
+      "alt": "Gurren Lagann"
+    },
+    "titleReference": "https://kitsu.app/anime/tengen-toppa-gurren-lagann"
+  },
+  {
+    "id": "curated-haibane-renmei",
+    "title": "Haibane Renmei",
+    "keywords": ["Haibane Renmei", "Charcoal Feather Federation"],
+    "imageUrl": "/curated/haibane-renmei.png",
+    "image": {
+      "src": "/curated/haibane-renmei.png",
+      "width": 664,
+      "height": 916,
+      "alt": "Haibane Renmei"
+    },
+    "titleReference": "https://kitsu.app/anime/haibane-renmei"
+  },
+  {
+    "id": "curated-heavenly-delusion",
+    "title": "Heavenly Delusion",
+    "keywords": ["Heavenly Delusion", "Tengoku Daimakyou", "Tengoku Daimakyo"],
+    "imageUrl": "/curated/heavenly-delusion.jpg",
+    "image": {
+      "src": "/curated/heavenly-delusion.jpg",
+      "width": 3120,
+      "height": 4356,
+      "alt": "Heavenly Delusion"
+    },
+    "titleReference": "https://kitsu.app/anime/tengoku-daimakyou"
+  },
+  {
+    "id": "curated-hell-s-paradise",
+    "title": "Hell's Paradise",
+    "keywords": [
+      "Hell's Paradise",
+      "Jigokuraku",
+      "Hell's Paradise: Jigokuraku"
+    ],
+    "imageUrl": "/curated/hell-s-paradise.jpg",
+    "image": {
+      "src": "/curated/hell-s-paradise.jpg",
+      "width": 1400,
+      "height": 2000,
+      "alt": "Hell's Paradise"
+    },
+    "titleReference": "https://kitsu.app/anime/jigokuraku"
+  },
+  {
+    "id": "curated-jujutsu-kaisen",
+    "title": "Jujutsu Kaisen",
+    "keywords": ["Jujutsu Kaisen", "JJK", "Sorcery Fight"],
+    "imageUrl": "/curated/jujutsu-kaisen.jpg",
+    "image": {
+      "src": "/curated/jujutsu-kaisen.jpg",
+      "width": 2897,
+      "height": 4096,
+      "alt": "Jujutsu Kaisen"
+    },
+    "titleReference": "https://kitsu.app/anime/jujutsu-kaisen"
+  },
+  {
+    "id": "curated-kaguya-sama-love-is-war",
+    "title": "Kaguya-sama: Love is War",
+    "keywords": [
+      "Kaguya-sama: Love is War",
+      "Kaguya-sama wa Kokurasetai: Tensai-tachi no Renai Zunousen",
+      "Kaguya-sama",
+      "Love Is War",
+      "Kaguya-sama wa Kokurasetai"
+    ],
+    "imageUrl": "/curated/kaguya-sama-love-is-war.png",
+    "image": {
+      "src": "/curated/kaguya-sama-love-is-war.png",
+      "width": 1064,
+      "height": 1596,
+      "alt": "Kaguya-sama: Love is War"
+    },
+    "titleReference": "https://kitsu.app/anime/kaguya-sama-wa-kokurasetai-tensai-tachi-no-renai-zunousen"
+  },
+  {
+    "id": "curated-kowloon-generic-romance",
+    "title": "Kowloon Generic Romance",
+    "keywords": [
+      "Kowloon Generic Romance",
+      "Kowloon Romance",
+      "Kuuroon Generic Romance"
+    ],
+    "imageUrl": "/curated/kowloon-generic-romance.jpg",
+    "image": {
+      "src": "/curated/kowloon-generic-romance.jpg",
+      "width": 460,
+      "height": 654,
+      "alt": "Kowloon Generic Romance"
+    },
+    "titleReference": "https://kitsu.app/anime/Kowloon-Generic-Romance"
+  },
+  {
+    "id": "curated-land-of-the-lustrous",
+    "title": "Land of the Lustrous",
+    "keywords": ["Land of the Lustrous", "Houseki no Kuni", "HNK"],
+    "imageUrl": "/curated/land-of-the-lustrous.jpg",
+    "image": {
+      "src": "/curated/land-of-the-lustrous.jpg",
+      "width": 1723,
+      "height": 2457,
+      "alt": "Land of the Lustrous"
+    },
+    "titleReference": "https://kitsu.app/anime/houseki-no-kuni-tv"
+  },
+  {
+    "id": "curated-made-in-abyss",
+    "title": "Made in Abyss",
+    "keywords": ["Made in Abyss"],
+    "imageUrl": "/curated/made-in-abyss.jpg",
+    "image": {
+      "src": "/curated/made-in-abyss.jpg",
+      "width": 326,
+      "height": 480,
+      "alt": "Made in Abyss"
+    },
+    "titleReference": "https://kitsu.app/anime/made-in-abyss"
+  },
+  {
+    "id": "curated-mob-psycho-100",
+    "title": "Mob Psycho 100",
+    "keywords": [
+      "Mob Psycho 100",
+      "Mob Psycho",
+      "MP100",
+      "Mob Psycho Hyaku",
+      "Mob Psycho One Hundred"
+    ],
+    "imageUrl": "/curated/mob-psycho-100.png",
+    "image": {
+      "src": "/curated/mob-psycho-100.png",
+      "width": 128,
+      "height": 194,
+      "alt": "Mob Psycho 100"
+    },
+    "titleReference": "https://kitsu.app/anime/mob-psycho-100"
+  },
+  {
+    "id": "curated-mushoku-tensei",
+    "title": "Mushoku Tensei: Jobless Reincarnation",
+    "keywords": [
+      "Mushoku Tensei: Jobless Reincarnation",
+      "Mushoku Tensei: Isekai Ittara Honki Dasu",
+      "Mushoku Tensei",
+      "Jobless Reincarnation",
+      "MT"
+    ],
+    "imageUrl": "/curated/mushoku-tensei.jpg",
+    "image": {
+      "src": "/curated/mushoku-tensei.jpg",
+      "width": 2482,
+      "height": 3510,
+      "alt": "Mushoku Tensei: Jobless Reincarnation"
+    },
+    "titleReference": "https://kitsu.app/anime/mushoku-tensei-isekai-ittara-honki-dasu"
+  },
+  {
+    "id": "curated-my-dress-up-darling",
+    "title": "My Dress-Up Darling",
+    "keywords": [
+      "My Dress-Up Darling",
+      "Sono Bisque Doll wa Koi wo Suru",
+      "Dress-Up Darling",
+      "Sono Bisque Doll wa Koi o Suru",
+      "Sono Kisekae Ningyou wa Koi wo Suru",
+      "Kisekoi"
+    ],
+    "imageUrl": "/curated/my-dress-up-darling.jpg",
+    "image": {
+      "src": "/curated/my-dress-up-darling.jpg",
+      "width": 2000,
+      "height": 2824,
+      "alt": "My Dress-Up Darling"
+    },
+    "titleReference": "https://kitsu.app/anime/sono-bisque-doll-wa-koi-wo-suru"
+  },
+  {
+    "id": "curated-neon-genesis-evangelion",
+    "title": "Neon Genesis Evangelion",
+    "keywords": [
+      "Neon Genesis Evangelion",
+      "Shinseiki Evangelion",
+      "Evangelion",
+      "NGE",
+      "Eva"
+    ],
+    "imageUrl": "/curated/neon-genesis-evangelion.jpg",
+    "image": {
+      "src": "/curated/neon-genesis-evangelion.jpg",
+      "width": 1298,
+      "height": 1600,
+      "alt": "Neon Genesis Evangelion"
+    },
+    "titleReference": "https://kitsu.app/anime/neon-genesis-evangelion"
+  },
+  {
+    "id": "curated-odd-taxi",
+    "title": "Odd Taxi",
+    "keywords": ["Odd Taxi", "Oddtaxi", "ODDTAXI"],
+    "imageUrl": "/curated/odd-taxi.jpg",
+    "image": {
+      "src": "/curated/odd-taxi.jpg",
+      "width": 1920,
+      "height": 2668,
+      "alt": "Odd Taxi"
+    },
+    "titleReference": "https://kitsu.app/anime/odd-taxi"
+  },
+  {
+    "id": "curated-orb-on-the-movements-of-the-earth",
+    "title": "Orb: On the Movements of the Earth",
+    "keywords": [
+      "Orb: On the Movements of the Earth",
+      "Chi.: Chikyuu no Undou ni Tsuite",
+      "Orb",
+      "Chi.",
+      "Chi: Chikyuu no Undou ni Tsuite",
+      "Chi: About the Movement of the Earth"
+    ],
+    "imageUrl": "/curated/orb-on-the-movements-of-the-earth.png",
+    "image": {
+      "src": "/curated/orb-on-the-movements-of-the-earth.png",
+      "width": 2732,
+      "height": 3934,
+      "alt": "Orb: On the Movements of the Earth"
+    },
+    "titleReference": "https://kitsu.app/anime/chi-chikyuu-no-undou-ni-tsuite"
+  },
+  {
+    "id": "curated-oshi-no-ko",
+    "title": "Oshi no Ko",
+    "keywords": ["Oshi no Ko", "[Oshi no Ko]", "ONK"],
+    "imageUrl": "/curated/oshi-no-ko.jpg",
+    "image": {
+      "src": "/curated/oshi-no-ko.jpg",
+      "width": 1200,
+      "height": 1708,
+      "alt": "Oshi no Ko"
+    },
+    "titleReference": "https://kitsu.app/anime/oshi-no-ko"
+  },
+  {
+    "id": "curated-parasyte-the-maxim",
+    "title": "Parasyte -the maxim-",
+    "keywords": [
+      "Parasyte -the maxim-",
+      "Kiseijuu: Sei no Kakuritsu",
+      "Parasyte",
+      "Kiseijuu",
+      "Kiseiju: Sei no Kakuritsu"
+    ],
+    "imageUrl": "/curated/parasyte-the-maxim.jpg",
+    "image": {
+      "src": "/curated/parasyte-the-maxim.jpg",
+      "width": 718,
+      "height": 1024,
+      "alt": "Parasyte -the maxim-"
+    },
+    "titleReference": "https://kitsu.app/anime/kiseijuu"
+  },
+  {
+    "id": "curated-pluto",
+    "title": "PLUTO",
+    "keywords": ["PLUTO", "Pluto", "Pluto: Urasawa x Tezuka"],
+    "imageUrl": "/curated/pluto.jpg",
+    "image": {
+      "src": "/curated/pluto.jpg",
+      "width": 412,
+      "height": 600,
+      "alt": "PLUTO"
+    },
+    "titleReference": "https://kitsu.app/anime/pluto"
+  },
+  {
+    "id": "curated-puella-magi-madoka-magica",
+    "title": "Puella Magi Madoka Magica",
+    "keywords": [
+      "Puella Magi Madoka Magica",
+      "Mahou Shoujo Madoka Magica",
+      "Madoka Magica",
+      "Madoka",
+      "PMMM",
+      "Mahou Shoujo Madoka Magika",
+      "Magical Girl Madoka Magica"
+    ],
+    "imageUrl": "/curated/puella-magi-madoka-magica.jpg",
+    "image": {
+      "src": "/curated/puella-magi-madoka-magica.jpg",
+      "width": 1416,
+      "height": 2000,
+      "alt": "Puella Magi Madoka Magica"
+    },
+    "titleReference": "https://kitsu.app/anime/mahou-shoujo-madoka-magica"
+  },
+  {
+    "id": "curated-rascal-does-not-dream-of-bunny-girl-senpai",
+    "title": "Rascal Does Not Dream of Bunny Girl Senpai",
+    "keywords": [
+      "Rascal Does Not Dream of Bunny Girl Senpai",
+      "Seishun Buta Yarou wa Bunny Girl Senpai no Yume wo Minai",
+      "Bunny Girl Senpai",
+      "Rascal Does Not Dream",
+      "Seishun Buta Yarou",
+      "Seishun Buta Yaro",
+      "Aobuta"
+    ],
+    "imageUrl": "/curated/rascal-does-not-dream-of-bunny-girl-senpai.jpg",
+    "image": {
+      "src": "/curated/rascal-does-not-dream-of-bunny-girl-senpai.jpg",
+      "width": 640,
+      "height": 960,
+      "alt": "Rascal Does Not Dream of Bunny Girl Senpai"
+    },
+    "titleReference": "https://kitsu.app/anime/seishun-buta-yarou-wa-bunny-girl-senpai-no-yume-wo-minai"
+  },
+  {
+    "id": "curated-re-zero",
+    "title": "Re:ZERO -Starting Life in Another World-",
+    "keywords": [
+      "Re:ZERO -Starting Life in Another World-",
+      "Re:Zero kara Hajimeru Isekai Seikatsu",
+      "Re:Zero",
+      "ReZero",
+      "Re Zero"
+    ],
+    "imageUrl": "/curated/re-zero.jpg",
+    "image": {
+      "src": "/curated/re-zero.jpg",
+      "width": 400,
+      "height": 600,
+      "alt": "Re:ZERO -Starting Life in Another World-"
+    },
+    "titleReference": "https://kitsu.app/anime/re-zero-kara-hajimeru-isekai-seikatsu"
+  },
+  {
+    "id": "curated-serial-experiments-lain",
+    "title": "Serial Experiments Lain",
+    "keywords": ["Serial Experiments Lain", "Lain", "SEL"],
+    "imageUrl": "/curated/serial-experiments-lain.jpg",
+    "image": {
+      "src": "/curated/serial-experiments-lain.jpg",
+      "width": 2000,
+      "height": 3000,
+      "alt": "Serial Experiments Lain"
+    },
+    "titleReference": "https://kitsu.app/anime/serial-experiments-lain"
+  },
+  {
+    "id": "curated-smoking-behind-the-supermarket-with-you",
+    "title": "Smoking Behind the Supermarket With You",
+    "keywords": [
+      "Smoking Behind the Supermarket With You",
+      "Super no Ura de Yani Suu Futari",
+      "Super no Ura de Yani Suu Hanashi",
+      "Behind the Supermarket, Smoking with You"
+    ],
+    "imageUrl": "/curated/smoking-behind-the-supermarket-with-you.jpg",
+    "image": {
+      "src": "/curated/smoking-behind-the-supermarket-with-you.jpg",
+      "width": 424,
+      "height": 600,
+      "alt": "Smoking Behind the Supermarket With You"
+    },
+    "titleReference": "https://kitsu.app/anime/super-no-ura-de-yani-suu-futari"
+  },
+  {
+    "id": "curated-solo-leveling",
+    "title": "Solo Leveling",
+    "keywords": [
+      "Solo Leveling",
+      "Ore Dake Level Up na Ken",
+      "Ore dake Level Up na Ken",
+      "Na Honjaman Level Up"
+    ],
+    "imageUrl": "/curated/solo-leveling.png",
+    "image": {
+      "src": "/curated/solo-leveling.png",
+      "width": 130,
+      "height": 193,
+      "alt": "Solo Leveling"
+    },
+    "titleReference": "https://kitsu.app/anime/solo-leveling"
+  },
+  {
+    "id": "curated-steins-gate",
+    "title": "Steins;Gate",
+    "keywords": ["Steins;Gate", "Steins Gate", "S;G", "Steins;Gate (2011)"],
+    "imageUrl": "/curated/steins-gate.jpg",
+    "image": {
+      "src": "/curated/steins-gate.jpg",
+      "width": 2000,
+      "height": 3000,
+      "alt": "Steins;Gate"
+    },
+    "titleReference": "https://kitsu.app/anime/steins-gate"
+  },
+  {
+    "id": "curated-summer-time-rendering",
+    "title": "Summer Time Rendering",
+    "keywords": [
+      "Summer Time Rendering",
+      "Summer Time Render",
+      "Summertime Rendering",
+      "Summertime Render"
+    ],
+    "imageUrl": "/curated/summer-time-rendering.png",
+    "image": {
+      "src": "/curated/summer-time-rendering.png",
+      "width": 1200,
+      "height": 1600,
+      "alt": "Summer Time Rendering"
+    },
+    "titleReference": "https://kitsu.app/anime/summertime-render"
+  },
+  {
+    "id": "curated-takopi-s-original-sin",
+    "title": "Takopi's Original Sin",
+    "keywords": [
+      "Takopi's Original Sin",
+      "Takopii no Genzai",
+      "Takopi",
+      "Takopi no Genzai"
+    ],
+    "imageUrl": "/curated/takopi-s-original-sin.jpg",
+    "image": {
+      "src": "/curated/takopi-s-original-sin.jpg",
+      "width": 2000,
+      "height": 3000,
+      "alt": "Takopi's Original Sin"
+    },
+    "titleReference": "https://kitsu.app/anime/takopii-no-genzai"
+  },
+  {
+    "id": "curated-the-apothecary-diaries",
+    "title": "The Apothecary Diaries",
+    "keywords": [
+      "The Apothecary Diaries",
+      "Kusuriya no Hitorigoto",
+      "Apothecary Diaries",
+      "Kusuriya"
+    ],
+    "imageUrl": "/curated/the-apothecary-diaries.jpg",
+    "image": {
+      "src": "/curated/the-apothecary-diaries.jpg",
+      "width": 1920,
+      "height": 2880,
+      "alt": "The Apothecary Diaries"
+    },
+    "titleReference": "https://kitsu.app/anime/kusuriya-no-hitorigoto"
+  },
+  {
+    "id": "curated-vinland-saga",
+    "title": "Vinland Saga",
+    "keywords": ["Vinland Saga"],
+    "imageUrl": "/curated/vinland-saga.jpg",
+    "image": {
+      "src": "/curated/vinland-saga.jpg",
+      "width": 661,
+      "height": 900,
+      "alt": "Vinland Saga"
+    },
+    "titleReference": "https://kitsu.app/anime/vinland-saga"
+  },
+  {
+    "id": "curated-violet-evergarden",
+    "title": "Violet Evergarden",
+    "keywords": ["Violet Evergarden"],
+    "imageUrl": "/curated/violet-evergarden.jpg",
+    "image": {
+      "src": "/curated/violet-evergarden.jpg",
+      "width": 1000,
+      "height": 1471,
+      "alt": "Violet Evergarden"
+    },
+    "titleReference": "https://kitsu.app/anime/violet-evergarden"
+  },
+  {
+    "id": "curated-vivy-fluorite-eye-s-song",
+    "title": "Vivy -Fluorite Eye's Song-",
+    "keywords": [
+      "Vivy -Fluorite Eye's Song-",
+      "Vivy: Fluorite Eye's Song",
+      "Vivy"
+    ],
+    "imageUrl": "/curated/vivy-fluorite-eye-s-song.jpg",
+    "image": {
+      "src": "/curated/vivy-fluorite-eye-s-song.jpg",
+      "width": 2122,
+      "height": 3000,
+      "alt": "Vivy -Fluorite Eye's Song-"
+    },
+    "titleReference": "https://kitsu.app/anime/vivy-fluorite-eye-s-song"
+  },
+  {
+    "id": "curated-witch-hat-atelier",
+    "title": "Witch Hat Atelier",
+    "keywords": [
+      "Witch Hat Atelier",
+      "Tongari Boushi no Atelier",
+      "Witch Hat",
+      "Tongari Boshi no Atelier"
+    ],
+    "imageUrl": "/curated/witch-hat-atelier.jpg",
+    "image": {
+      "src": "/curated/witch-hat-atelier.jpg",
+      "width": 2123,
+      "height": 3000,
+      "alt": "Witch Hat Atelier"
+    },
+    "titleReference": "https://kitsu.app/anime/tongari-boushi-no-atelier"
+  },
+  {
+    "id": "curated-your-lie-in-april",
+    "title": "Your Lie in April",
+    "keywords": ["Your Lie in April", "Shigatsu wa Kimi no Uso", "YLiA"],
+    "imageUrl": "/curated/your-lie-in-april.jpg",
+    "image": {
+      "src": "/curated/your-lie-in-april.jpg",
+      "width": 422,
+      "height": 600,
+      "alt": "Your Lie in April"
+    },
+    "titleReference": "https://kitsu.app/anime/shigatsu-wa-kimi-no-uso"
+  },
+  {
+    "id": "curated-zom-100-bucket-list-of-the-dead",
+    "title": "Zom 100: Bucket List of the Dead",
+    "keywords": [
+      "Zom 100: Bucket List of the Dead",
+      "Zom 100: Zombie ni Naru made ni Shitai 100 no Koto",
+      "Zom 100",
+      "Zombie 100",
+      "Bucket List of the Dead"
+    ],
+    "imageUrl": "/curated/zom-100-bucket-list-of-the-dead.jpg",
+    "image": {
+      "src": "/curated/zom-100-bucket-list-of-the-dead.jpg",
+      "width": 2000,
+      "height": 2826,
+      "alt": "Zom 100: Bucket List of the Dead"
+    },
+    "titleReference": "https://kitsu.app/anime/zom-100-zombie-ni-naru-made-ni-shitai-100-no-koto"
+  }
+]

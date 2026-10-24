@@ -3,6 +3,7 @@ import { expect, fireEvent, waitFor, within } from 'storybook/test';
 import { testTierItems } from '@/app/_components/tier-item/tier-test.fixtures';
 import { TierBoard } from '@/app/_components/tierlist';
 import { Toaster } from '@/app/_components/ui/toast';
+import { curatedAnimeImages } from '@/app/_lib/curated-anime';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import { AnimeSearchDiscard } from './anime-search-discard';
 import { AnimeSearchProvider } from './anime-search-provider';
@@ -106,4 +107,12 @@ export const OfflineImagePlayground: Story = {
       </div>
     </TierBoardProvider>
   ),
+};
+
+export const CuratedPosters: Story = {
+  args: {
+    curatedImages: curatedAnimeImages,
+    initialQuery: 'Frieren',
+    catalogSearchEnabled: false,
+  },
 };
