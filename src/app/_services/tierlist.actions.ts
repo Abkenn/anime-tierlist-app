@@ -6,7 +6,13 @@ import {
   tierlistDocumentSchema,
   userSeedSchema,
 } from '@/app/_lib/tierlist-sync';
-import { connectSeedTierlist, saveSeedTierlist } from './tierlist';
+import {
+  connectAccountTierlist,
+  connectSeedTierlist,
+  replaceAccountTierlist,
+  saveSeedTierlist,
+  shareAccountTierlist,
+} from './tierlist';
 import { endTierlistSession, TierlistAccessError } from './tierlist-identity';
 
 const safely = async <T>(
@@ -46,13 +52,33 @@ const safely = async <T>(
 export const connectTierlist = async (input: unknown) =>
   safely(async () => {
     const parsed = z
+      .union([
+        z.object({ account: z.literal(true) }),
+        z.object({
+          seed: userSeedSchema,
+          document: tierlistDocumentSchema.optional(),
+        }),
+      ])
+      .parse(input);
+
+    return 'account' in parsed
+      ? connectAccountTierlist()
+      : connectSeedTierlist(parsed.seed, parsed.document);
+  });
+
+export const createShareSeed = async () => safely(shareAccountTierlist);
+
+export const replaceAccountFromSeed = async (input: unknown) =>
+  safely(() => {
+    const parsed = z
       .object({
         seed: userSeedSchema,
-        document: tierlistDocumentSchema.optional(),
+        ownerId: z.string().uuid(),
+        revision: z.number().int().nonnegative(),
       })
       .parse(input);
 
-    return connectSeedTierlist(parsed.seed, parsed.document);
+    return replaceAccountTierlist(parsed);
   });
 
 export const syncTierlist = async (input: unknown) =>

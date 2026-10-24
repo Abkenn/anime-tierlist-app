@@ -27,7 +27,9 @@ import {
 } from '@/app/_services/google-auth.actions';
 import {
   connectTierlist,
+  createShareSeed,
   disconnectTierlist,
+  replaceAccountFromSeed,
 } from '@/app/_services/tierlist.actions';
 import { UserSeed } from './user-seed';
 
@@ -35,13 +37,23 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   const storage = useLocalTierlist();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [googleSeed, setGoogleSeed] = useState('');
+  const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
+  const [identityReady, setIdentityReady] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountHandle] = useState(() => Popover.createHandle());
-  const sync = useTierlistSync(storage, busy);
+  const googleConnected = Boolean(
+    storage.snapshot?.accountOwnerId ||
+      (googleProfileKey && googleProfileKey === storage.seed),
+  );
+  const sync = useTierlistSync(
+    storage,
+    busy ||
+      !identityReady ||
+      Boolean(storage.snapshot?.accountOwnerId && !googleConnected),
+    googleConnected,
+  );
   const visibleError = sync.status === 'outdated' ? '' : error;
-  const googleConnected = Boolean(googleSeed && googleSeed === storage.seed);
   const googleLabel = googleName ? `${googleName} (Google)` : 'Google account';
   const backedUp = Boolean(
     storage.snapshot &&
@@ -69,8 +81,9 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       ? 'Saving changes...'
       : messages[storage.status];
   const message = busy ? 'Opening tierlist...' : saveMessage;
-  const controlsBusy = busy || storage.status === 'loading' || !storage.seed;
-  const showIdentity = Boolean(storage.seed && !busy);
+  const controlsBusy =
+    busy || !identityReady || storage.status === 'loading' || !storage.seed;
+  const showIdentity = Boolean(storage.seed && !busy && identityReady);
   const identityLabel = googleConnected ? googleLabel : anonymousLabel;
   const identitySeparator = backedUp ? '' : ' · ';
   const statusText =
@@ -87,11 +100,12 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
 
     try {
       await operation();
+      return true;
     } catch (failure) {
       if (isOutdatedTierlistClient(failure)) {
         sync.requireReload();
         setError('');
-        return;
+        return false;
       }
 
       setError(
@@ -100,6 +114,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           'Couldn’t connect. Your current tierlist is unchanged.',
         ),
       );
+      return false;
     } finally {
       setBusy(false);
     }
@@ -113,7 +128,30 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
         throw new Error('Enter a valid 64-character seed.');
       }
 
-      if (parsed.data === storage.seed) {
+      if (!googleConnected && parsed.data === storage.seed) {
+        return;
+      }
+
+      if (googleConnected) {
+        await storage.flush();
+        const snapshot = storage.snapshot;
+        if (!snapshot?.sync || !backedUp) {
+          throw new Error(
+            'Wait for your changes to save before replacing this tierlist.',
+          );
+        }
+
+        const result = await replaceAccountFromSeed({
+          seed: parsed.data,
+          ownerId: snapshot.sync.ownerId,
+          revision: snapshot.sync.serverRevision,
+        });
+        if (!result.ok) {
+          throw new Error(result.message);
+        }
+
+        await storage.replaceRemote(result.value, snapshot.revision);
+        sync.retry();
         return;
       }
 
@@ -126,6 +164,20 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       await storage.importProfile(parsed.data, result.value);
     });
 
+  const shareSeed = async () => {
+    await storage.flush();
+    if (!backedUp) {
+      throw new Error('Wait for your changes to save before sharing.');
+    }
+
+    const result = await createShareSeed();
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    return result.value;
+  };
+
   const restoreDevice = () =>
     perform(async () => {
       await signOutGoogle().catch(() => {
@@ -133,7 +185,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           'Returned to this device’s tierlist. Google sign-out could not reach the server; retry when online.',
         );
       });
-      setGoogleSeed('');
+      setGoogleProfileKey('');
       setGoogleName('');
       setAccountOpen(false);
       await disconnectTierlist().catch(() => null);
@@ -170,24 +222,24 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       setError(
         'Google sign-in was cancelled or could not be completed. Please try again.',
       );
+      setIdentityReady(true);
       return;
     }
 
     try {
       const account = await readGoogleTierlist();
-      setGoogleSeed(account?.seed ?? '');
+      setGoogleProfileKey(account?.profileKey ?? '');
       setGoogleName(account?.displayName ?? '');
 
-      if (result === 'connected' && account && account.seed !== storage.seed) {
+      if (account && account.profileKey !== storage.seed) {
         await perform(async () => {
-          const connected = await connectTierlist({ seed: account.seed });
-
-          if (!connected.ok) {
-            throw new Error(connected.message);
-          }
-
-          await storage.importProfile(account.seed, connected.value);
+          await storage.importAccountProfile(
+            account.profileKey,
+            account.remote,
+          );
         });
+      } else if (!account && storage.snapshot?.accountOwnerId) {
+        await storage.restoreDeviceProfile();
       }
     } catch (failure) {
       if (isOutdatedTierlistClient(failure)) {
@@ -200,6 +252,8 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           'Unable to open your Google tierlist. Your device’s list is unchanged. Try signing in again.',
         );
       }
+    } finally {
+      setIdentityReady(true);
     }
   });
 
@@ -259,7 +313,11 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           </p>
 
           <UserSeed
-            seed={storage.seed}
+            seed={
+              googleConnected || storage.snapshot?.accountOwnerId
+                ? ''
+                : storage.seed
+            }
             open={accountOpen}
             handle={accountHandle}
             onOpenChange={setAccountOpen}
@@ -272,6 +330,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
             canSignIn={backedUp}
             onGoogleSignIn={signIn}
             onGoogleSignOut={restoreDevice}
+            onShare={shareSeed}
           />
         </div>
 

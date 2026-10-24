@@ -15,6 +15,7 @@ import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import {
+  activateAccountTierlist,
   activateDeviceTierlist,
   activateImportedTierlist,
   getDeviceTierlist,
@@ -37,6 +38,42 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('migrates an account draft to a non-credential profile key without losing unsynced edits or the device list', async () => {
+    await loadLocalTierlist(initial);
+    const accountSeed = createUserSeed();
+    const profileKey = createUserSeed();
+    const remote = {
+      ownerId: '17a123b1-0b05-4702-a749-965faee5a5d4',
+      revision: 2,
+      document: {
+        version: 1 as const,
+        imageMode: 'natural' as const,
+        items: [],
+        ranks: initial.ranks,
+      },
+    };
+    await activateImportedTierlist(accountSeed, remote);
+    const previous = await loadLocalTierlist(initial);
+    await saveLocalTierlist(
+      {
+        ...previous,
+        revision: 1,
+        items: [
+          { id: 'draft', label: 'Unsynced account edit', rank: 'Watching' },
+        ],
+      },
+      0,
+    );
+    await activateAccountTierlist(profileKey, remote);
+    const account = await loadLocalTierlist(initial);
+    expect(account.seed).toBe(profileKey);
+    expect(account.accountOwnerId).toBe(remote.ownerId);
+    expect(account.items[0]?.label).toBe('Unsynced account edit');
+    expect(account.sync?.syncedLocalRevision).toBe(0);
+    await activateDeviceTierlist();
+    expect(await loadLocalTierlist(initial)).toEqual(initial);
+  });
+
   it('keeps the machine seed and draft while switching between imported identities', async () => {
     await loadLocalTierlist(initial);
     const machine = {

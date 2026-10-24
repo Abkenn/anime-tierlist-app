@@ -11,6 +11,7 @@ import {
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
 import {
+  activateAccountTierlist,
   activateDeviceTierlist,
   activateImportedTierlist,
   backupLocalTierlist,
@@ -52,6 +53,11 @@ export const useLocalTierlist = () => {
 
   const importProfile = (seed: string, remote: RemoteTierlist) =>
     changeProfile(seed, () => activateImportedTierlist(seed, remote));
+
+  const importAccountProfile = (profileKey: string, remote: RemoteTierlist) =>
+    changeProfile(profileKey, () =>
+      activateAccountTierlist(profileKey, remote),
+    );
 
   const restoreDeviceProfile = () =>
     changeProfile(deviceSeed, activateDeviceTierlist);
@@ -280,6 +286,7 @@ export const useLocalTierlist = () => {
     snapshot,
     imported: Boolean(snapshot && snapshot.seed !== deviceSeed),
     importProfile,
+    importAccountProfile,
     restoreDeviceProfile,
     updateSync,
     replaceRemote,

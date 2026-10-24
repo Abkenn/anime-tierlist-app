@@ -3,6 +3,8 @@
 import { Popover } from '@base-ui/react/popover';
 import { ArrowRight, Check, Copy } from 'lucide-react';
 import { useId, useState } from 'react';
+import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
 type UserSeedProps = {
   seed: string;
@@ -12,12 +14,13 @@ type UserSeedProps = {
   open: boolean;
   handle: ReturnType<typeof Popover.createHandle>;
   onOpenChange: (open: boolean) => void;
-  onImport: (seed: string) => Promise<void>;
-  onUseDevice: () => Promise<void>;
+  onImport: (seed: string) => Promise<boolean>;
+  onShare: () => Promise<string>;
+  onUseDevice: () => Promise<unknown>;
   googleConnected: boolean;
   canSignIn: boolean;
-  onGoogleSignIn: () => Promise<void>;
-  onGoogleSignOut: () => Promise<void>;
+  onGoogleSignIn: () => Promise<unknown>;
+  onGoogleSignOut: () => Promise<unknown>;
 };
 
 export const UserSeed = ({
@@ -34,15 +37,48 @@ export const UserSeed = ({
   canSignIn,
   onGoogleSignIn,
   onGoogleSignOut,
+  onShare,
 }: UserSeedProps) => {
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
+  const [shareSeed, setShareSeed] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [shareError, setShareError] = useState('');
+  const [confirmReplace, setConfirmReplace] = useState(false);
   const importId = useId();
+  const displayedSeed = googleConnected ? shareSeed : seed;
+  const importLabel = googleConnected ? 'Replace tierlist' : 'Import seed';
+
+  const createShare = async () => {
+    setSharing(true);
+    setShareError('');
+    try {
+      setShareSeed(await onShare());
+      setCopied(false);
+    } catch (failure) {
+      setShareError(
+        tierlistErrorMessage(
+          failure,
+          'Unable to create a share seed. Try again.',
+        ),
+      );
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const submitImport = async () => {
+    if (await onImport(importSeed)) {
+      setImportSeed('');
+      setShareSeed('');
+    }
+    setConfirmReplace(false);
+  };
 
   const copySeed = async () => {
     try {
-      await navigator.clipboard.writeText(seed);
+      await navigator.clipboard.writeText(displayedSeed);
       setCopied(true);
       setCopyFailed(false);
     } catch {
@@ -58,6 +94,8 @@ export const UserSeed = ({
         onOpenChange(next);
         setCopied(false);
         setCopyFailed(false);
+        setShareSeed('');
+        setShareError('');
       }}
     >
       <Popover.Trigger
@@ -102,34 +140,47 @@ export const UserSeed = ({
             >
               <p className="mb-2 font-medium">
                 {googleConnected
-                  ? 'Or use your seed'
+                  ? 'Share seed'
                   : 'Or stay anonymous. Save your seed.'}
               </p>
 
-              <div className="group relative">
-                <input
-                  aria-label="Your user seed"
-                  readOnly
-                  value={seed}
-                  spellCheck={false}
-                  onFocus={(event) => event.currentTarget.select()}
-                  className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
-                />
-
+              {googleConnected && !shareSeed ? (
                 <button
                   type="button"
-                  aria-label={copied ? 'Seed copied' : 'Copy seed'}
-                  title={copied ? 'Copied' : 'Copy seed'}
-                  onClick={() => void copySeed()}
-                  className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center bg-popover opacity-0 hover:bg-accent focus-visible:opacity-100 focus-visible:outline-2 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
+                  disabled={busy || sharing || !canSignIn}
+                  onClick={() => void createShare()}
+                  className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
                 >
-                  {copied ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
+                  {sharing ? 'Creating share seed...' : 'Create share seed'}
                 </button>
-              </div>
+              ) : (
+                <div className="group relative">
+                  <input
+                    aria-label={
+                      googleConnected ? 'Share seed' : 'Your user seed'
+                    }
+                    readOnly
+                    value={displayedSeed}
+                    spellCheck={false}
+                    onFocus={(event) => event.currentTarget.select()}
+                    className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label={copied ? 'Seed copied' : 'Copy seed'}
+                    title={copied ? 'Copied' : 'Copy seed'}
+                    onClick={() => void copySeed()}
+                    className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center bg-popover opacity-0 hover:bg-accent focus-visible:opacity-100 focus-visible:outline-2 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
+                  >
+                    {copied ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <Copy className="size-4" />
+                    )}
+                  </button>
+                </div>
+              )}
 
               <span role="status" className="sr-only">
                 {copied ? 'Seed copied to clipboard.' : ''}
@@ -142,20 +193,33 @@ export const UserSeed = ({
               )}
 
               <p className="mt-2 text-muted-foreground">
-                Keep it private. Save it to open this list on another device.
-                Clearing browser data removes this device’s copy.
+                {googleConnected
+                  ? 'Share a separate copy of your tierlist.'
+                  : 'Keep it private. Save it to open this list on another device. Clearing browser data removes this device’s copy.'}
               </p>
+
+              {shareError && (
+                <p role="status" className="mt-2">
+                  {shareError}
+                </p>
+              )}
             </section>
 
             <form
               className="mt-4"
               onSubmit={(event) => {
                 event.preventDefault();
-                void onImport(importSeed).then(() => setImportSeed(''));
+                if (googleConnected) {
+                  setConfirmReplace(true);
+                } else {
+                  void submitImport();
+                }
               }}
             >
               <label htmlFor={importId} className="mb-2 block">
-                Import a seed
+                {googleConnected
+                  ? 'Replace tierlist from a seed'
+                  : 'Import a seed'}
               </label>
 
               <div className="relative">
@@ -168,22 +232,34 @@ export const UserSeed = ({
                   spellCheck={false}
                   value={importSeed}
                   maxLength={64}
-                  disabled={busy}
+                  disabled={busy || (googleConnected && !canSignIn)}
                   onChange={(event) => setImportSeed(event.currentTarget.value)}
                   className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
                 />
 
                 <button
                   type="submit"
-                  aria-label={busy ? 'Opening tierlist' : 'Import seed'}
-                  title="Import seed"
-                  disabled={busy || !importSeed.trim()}
+                  aria-label={busy ? 'Opening tierlist' : importLabel}
+                  title={googleConnected ? 'Replace tierlist' : 'Import seed'}
+                  disabled={
+                    busy ||
+                    sharing ||
+                    !importSeed.trim() ||
+                    (googleConnected && !canSignIn)
+                  }
                   className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center hover:bg-accent focus-visible:outline-2 disabled:cursor-default disabled:opacity-40"
                 >
                   <ArrowRight className="size-4" />
                 </button>
               </div>
             </form>
+
+            <SeedReplaceConfirmation
+              open={confirmReplace}
+              busy={busy}
+              onOpenChange={setConfirmReplace}
+              onConfirm={submitImport}
+            />
 
             {imported && !googleConnected && (
               <button

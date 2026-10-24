@@ -7,8 +7,10 @@ import {
   deleteTierlistSession,
   pruneTierlistAccessRecords,
 } from '@/app/_data/mutations/tierlist';
+import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
 import { findTierlistSession } from '@/app/_data/queries/tierlist';
 import type { TierlistFailureCode } from '@/app/_lib/tierlist-sync';
+import { getGoogleIdentity } from './google-session';
 
 const cookieName = 'tierlist-session';
 const sessionSeconds = 60 * 60 * 24 * 30;
@@ -77,6 +79,14 @@ export const issueTierlistSession = async (ownerId: string) => {
 };
 
 export const requireTierlistOwner = async (ownerId: string) => {
+  const googleOwner = await findGoogleAccountByOwner(ownerId);
+  if (googleOwner && (await getGoogleIdentity())?.ownerId !== ownerId) {
+    throw new TierlistAccessError(
+      'unauthorized',
+      'Sign in with Google to access this tierlist.',
+    );
+  }
+
   const token = (await cookies()).get(cookieName)?.value;
   const session =
     token && (await findTierlistSession(hashTierlistSecret(token)));

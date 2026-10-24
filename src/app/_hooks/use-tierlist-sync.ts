@@ -43,6 +43,7 @@ type SyncState = {
 export const useTierlistSync = (
   storage: ReturnType<typeof useLocalTierlist>,
   paused: boolean,
+  account = false,
 ) => {
   const scope = useRef<SyncScope | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -95,7 +96,9 @@ export const useTierlistSync = (
       return;
     }
 
-    const result = await connectTierlist({ seed: local.seed });
+    const result = await connectTierlist(
+      account ? { account: true } : { seed: local.seed },
+    );
 
     if (!result.ok) {
       throw new Error(result.message);
@@ -206,10 +209,14 @@ export const useTierlistSync = (
         }
 
         if (!active.remote) {
-          const result = await connectTierlist({
-            seed: local.seed,
-            document: getTierlistDocument(local),
-          });
+          const result = await connectTierlist(
+            account
+              ? { account: true }
+              : {
+                  seed: local.seed,
+                  document: getTierlistDocument(local),
+                },
+          );
 
           if (!result.ok) {
             throw new Error(result.message);
@@ -301,6 +308,7 @@ export const useTierlistSync = (
     storage.status,
     storage.updateSync,
     storage.replaceRemote,
+    account,
   ]);
 
   return {

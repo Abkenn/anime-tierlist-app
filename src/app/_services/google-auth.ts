@@ -8,17 +8,14 @@ import {
   updateGoogleAccountName,
 } from '@/app/_data/mutations/google-account';
 import { findGoogleAccount } from '@/app/_data/queries/google-account';
-import { findOwnerBySeedHash } from '@/app/_data/queries/tierlist';
 import { openAuthValue, sealAuthValue } from '@/app/_lib/auth-envelope';
-import {
-  tierlistDocumentSchema,
-  userSeedSchema,
-} from '@/app/_lib/tierlist-sync';
-import { connectSeedTierlist } from './tierlist';
+import { userSeedSchema } from '@/app/_lib/tierlist-sync';
+import { getGoogleIdentity, googleAccountCookie } from './google-session';
+import { connectAccountTierlist, connectSeedTierlist } from './tierlist';
 import { hashTierlistSecret } from './tierlist-identity';
 
 const flowCookie = 'tierlist-google-flow';
-const accountCookie = 'tierlist-google-account';
+const accountCookie = googleAccountCookie;
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
@@ -32,7 +29,6 @@ const flowSchema = z.object({
   verifier: z.string(),
   expiresAt: z.number(),
 });
-const accountSchema = z.object({ subject: z.string(), expiresAt: z.number() });
 const displayNameSchema = z.string().trim().min(1).max(160);
 
 export class GoogleAuthConfigurationError extends Error {}
@@ -189,53 +185,17 @@ export const finishGoogleSignIn = async (url: URL) => {
 };
 
 export const getGoogleTierlist = async () => {
-  const encrypted = (await cookies()).get(accountCookie)?.value;
-
-  if (!encrypted) {
-    return null;
-  }
-
-  let account: z.infer<typeof accountSchema>;
-
-  try {
-    account = accountSchema.parse(
-      JSON.parse(openAuthValue(encrypted, accountCookie, secret())),
-    );
-  } catch {
-    return null;
-  }
-
-  if (account.expiresAt <= Date.now()) {
-    return null;
-  }
-
-  const identity = await findGoogleAccount(account.subject);
-
+  const identity = await getGoogleIdentity();
   if (!identity) {
     return null;
   }
 
-  const seed = userSeedSchema.parse(
-    openAuthValue(
-      identity.encryptedSeed,
-      `google-seed:${account.subject}`,
-      secret(),
-    ),
-  );
-  const owner = await findOwnerBySeedHash(hashTierlistSecret(seed));
-
-  if (owner?.id !== identity.ownerId) {
-    throw new Error('Unable to open your linked tierlist.');
-  }
+  const remote = await connectAccountTierlist();
 
   return {
-    seed,
+    profileKey: hashTierlistSecret(`google-profile:${identity.ownerId}`),
     displayName: identity.displayName,
-    remote: {
-      ownerId: owner.id,
-      revision: owner.revision,
-      document: tierlistDocumentSchema.parse(owner.document),
-    },
+    remote,
   };
 };
 

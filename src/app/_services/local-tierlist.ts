@@ -1,4 +1,4 @@
-import { createStore, get, set, setMany, update } from 'idb-keyval';
+import { createStore, entries, get, set, setMany, update } from 'idb-keyval';
 import {
   type LocalTierlist,
   localTierlistSchema,
@@ -78,6 +78,56 @@ export const activateImportedTierlist = async (
 
 export const activateDeviceTierlist = async () => {
   await set(activeKey, (await getDeviceTierlist()).seed, storage);
+};
+
+export const activateAccountTierlist = async (
+  profileKey: string,
+  remote: RemoteTierlist,
+) => {
+  const existing = await get<unknown>(`profile:${profileKey}`, storage);
+  const active = await get<string>(activeKey, storage);
+  const profiles = await entries(storage);
+  const previous = profiles
+    .filter(
+      ([key]) =>
+        typeof key === 'string' &&
+        (key === 'personal-tierlist' || key.startsWith('profile:')),
+    )
+    .sort(
+      ([first], [second]) =>
+        Number(second === `profile:${active}`) -
+        Number(first === `profile:${active}`),
+    )
+    .map(([, value]) => localTierlistSchema.safeParse(value))
+    .find(
+      (profile) =>
+        profile.success && profile.data.sync?.ownerId === remote.ownerId,
+    );
+  const snapshot = localTierlistSchema.parse(
+    existing ??
+      (previous?.success
+        ? { ...previous.data, seed: profileKey }
+        : {
+            ...remote.document,
+            seed: profileKey,
+            revision: 0,
+            sync: {
+              ownerId: remote.ownerId,
+              serverRevision: remote.revision,
+              syncedLocalRevision: 0,
+            },
+          }),
+  );
+  await setMany(
+    [
+      [
+        `profile:${profileKey}`,
+        { ...snapshot, accountOwnerId: remote.ownerId },
+      ],
+      [activeKey, profileKey],
+    ],
+    storage,
+  );
 };
 
 export const backupLocalTierlist = async (snapshot: LocalTierlist) => {
