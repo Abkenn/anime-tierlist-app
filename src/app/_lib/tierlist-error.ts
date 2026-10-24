@@ -1,4 +1,17 @@
+export const tierlistUpdateMessage =
+  'This page needs an update. Reload to reconnect.';
+
+export const isOutdatedTierlistClient = (error: unknown) =>
+  error instanceof Error &&
+  /server action.+(?:was not found|not found)|failed to find server action|failed-to-find-server-action/iu.test(
+    error.message,
+  );
+
 export const tierlistErrorMessage = (error: unknown, fallback: string) => {
+  if (isOutdatedTierlistClient(error)) {
+    return tierlistUpdateMessage;
+  }
+
   if (
     !(error instanceof Error) ||
     error instanceof TypeError ||

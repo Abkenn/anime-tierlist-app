@@ -23,17 +23,21 @@ export const useTerminalTyping = ({
   const reducedMotion = useReducedMotion();
   const progress = useMotionValue(0);
   const typed = useMotionValue('');
-  const previousSequence = useRef(sequence);
+  const previousText = useRef<string | undefined>(undefined);
 
   useLayoutEffect(() => {
     const characters = Array.from(text);
-    const old =
-      previousSequence.current === sequence ? Array.from(typed.get()) : [];
+    const old = Array.from(typed.get());
+    const unchanged = previousText.current === text;
     let shared = 0;
     let typing: AnimationPlaybackControls | undefined;
     let delay = 0;
     let scale = 1;
-    previousSequence.current = sequence;
+    previousText.current = text;
+
+    if (typed.get() === text) {
+      return;
+    }
 
     if (reducedMotion) {
       typed.set(text);
@@ -60,7 +64,13 @@ export const useTerminalTyping = ({
       );
     }
 
-    if (replaceTail) {
+    if (unchanged && !replaceTail) {
+      shared = old.length;
+
+      if (shared > 0) {
+        delay = 0;
+      }
+    } else if (replaceTail) {
       while (shared < old.length && old[shared] === characters[shared]) {
         shared += 1;
       }
@@ -82,7 +92,9 @@ export const useTerminalTyping = ({
     };
 
     if (!replaceTail || old.length === 0) {
-      typed.set('');
+      if (!unchanged) {
+        typed.set('');
+      }
       type();
 
       return () => typing?.stop();

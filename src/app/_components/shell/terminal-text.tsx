@@ -126,7 +126,7 @@ const TypedSegment = ({ part, start, typed }: TypedSegmentProps) => {
   );
   const content = (
     <>
-      <span className="sr-only">{part.text}</span>
+      <span className="sr-only select-none">{part.text}</span>
 
       <motion.span aria-hidden="true">{visible}</motion.span>
     </>

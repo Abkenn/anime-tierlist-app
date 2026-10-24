@@ -10,6 +10,7 @@ import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
 import { imageSuitability, normalizeAnimeQuery } from '@/app/_lib/anime-search';
+import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
 import { AnimeSearchResultCard } from './anime-search-result';
@@ -94,7 +95,10 @@ export const AnimeSearchResults = () => {
       return urlError;
     }
     if (!url && search.isError) {
-      return search.error.message;
+      return tierlistErrorMessage(
+        search.error,
+        'Search is unavailable right now. Try again shortly.',
+      );
     }
     if (!url && search.isFetching) {
       return 'Searching...';

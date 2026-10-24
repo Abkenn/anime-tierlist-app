@@ -14,7 +14,11 @@ import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
-import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import {
+  isOutdatedTierlistClient,
+  tierlistErrorMessage,
+  tierlistUpdateMessage,
+} from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import {
   beginGoogleSignIn,
@@ -36,6 +40,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountHandle] = useState(() => Popover.createHandle());
   const sync = useTierlistSync(storage, busy);
+  const visibleError = sync.status === 'outdated' ? '' : error;
   const googleConnected = Boolean(googleSeed && googleSeed === storage.seed);
   const googleLabel = googleName ? `${googleName} (Google)` : 'Google account';
   const backedUp = Boolean(
@@ -51,6 +56,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
     saved: googleConnected ? 'Changes saved in ' : 'Changes saved ',
     offline: 'Saved on this device. Backup paused.',
     conflict: 'Choose which saved version to keep.',
+    outdated: 'Saved on this device.',
   };
   const messages = {
     loading: 'Restoring tierlist...',
@@ -70,6 +76,10 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   const statusText =
     message + (showIdentity ? identitySeparator + identityLabel : '');
   const backupMessage = sync.message ?? 'Couldn’t reach your saved tierlist.';
+  const needsReconnect =
+    sync.status === 'offline' || sync.status === 'outdated';
+  const reconnectLabel =
+    sync.status === 'outdated' ? 'Reload app' : 'Try saving again';
 
   const perform = async (operation: () => Promise<void>) => {
     setBusy(true);
@@ -78,6 +88,12 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
     try {
       await operation();
     } catch (failure) {
+      if (isOutdatedTierlistClient(failure)) {
+        sync.requireReload();
+        setError('');
+        return;
+      }
+
       setError(
         tierlistErrorMessage(
           failure,
@@ -135,6 +151,12 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       window.location.assign(result.url);
     });
 
+  const reloadApp = () =>
+    perform(async () => {
+      await storage.flush();
+      window.location.reload();
+    });
+
   const completeGoogleSignIn = useEffectEvent(async () => {
     const result = new URL(window.location.href).searchParams.get('google');
 
@@ -167,7 +189,12 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           await storage.importProfile(account.seed, connected.value);
         });
       }
-    } catch {
+    } catch (failure) {
+      if (isOutdatedTierlistClient(failure)) {
+        sync.requireReload();
+        return;
+      }
+
       if (result === 'connected') {
         setError(
           'Unable to open your Google tierlist. Your device’s list is unchanged. Try signing in again.',
@@ -185,13 +212,13 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   return (
     <>
       <TerminalSequence
-        identity={`${storage.seed}:${storage.status}:${sync.status}:${busy}:${error}`}
+        identity={`${statusText}:${visibleError}:${sync.status === 'offline' ? backupMessage : ''}`}
         lines={[
           statusText,
-          error && !sync.conflict ? error : '',
-          sync.status === 'offline' ? backupMessage : '',
+          visibleError && !sync.conflict && !accountOpen ? visibleError : '',
+          needsReconnect ? backupMessage : '',
           sync.status === 'offline' ? 'Retrying in 30 seconds...' : '',
-          sync.status === 'offline' ? 'Try saving again' : '',
+          needsReconnect ? reconnectLabel : '',
         ]}
       >
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -238,7 +265,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
             onOpenChange={setAccountOpen}
             imported={storage.imported}
             busy={controlsBusy}
-            error={error}
+            error={visibleError}
             onImport={importSeed}
             onUseDevice={restoreDevice}
             googleConnected={googleConnected}
@@ -248,9 +275,9 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
           />
         </div>
 
-        {error && !sync.conflict && (
+        {visibleError && !sync.conflict && !accountOpen && (
           <p role="status" className="mb-3 text-xs text-muted-foreground">
-            <TerminalText text={error} line={1} />
+            <TerminalText text={visibleError} line={1} />
           </p>
         )}
 
@@ -273,6 +300,23 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
                 <TerminalText text="Try saving again" line={4} />
               </button>
             </div>
+          </div>
+        )}
+
+        {sync.status === 'outdated' && (
+          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <p role="status">
+              <TerminalText text={tierlistUpdateMessage} line={2} />
+            </p>
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void reloadApp()}
+              className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
+            >
+              <TerminalText text="Reload app" line={4} />
+            </button>
           </div>
         )}
       </TerminalSequence>

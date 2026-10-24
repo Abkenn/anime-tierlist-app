@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import {
+  isOutdatedTierlistClient,
+  tierlistErrorMessage,
+  tierlistUpdateMessage,
+} from '@/app/_lib/tierlist-error';
 import {
   getSyncDecision,
   getTierlistDocument,
@@ -21,9 +25,16 @@ type SyncScope = {
   running: boolean;
   failed: boolean;
   attempt: number;
+  outdated: boolean;
 };
 type SyncState = {
-  status: 'connecting' | 'saved' | 'saving' | 'offline' | 'conflict';
+  status:
+    | 'connecting'
+    | 'saved'
+    | 'saving'
+    | 'offline'
+    | 'conflict'
+    | 'outdated';
   message?: string;
   conflict?: RemoteTierlist;
   retryAt?: number;
@@ -40,6 +51,10 @@ export const useTierlistSync = (
   const seed = local?.seed;
 
   const retry = () => {
+    if (scope.current?.outdated) {
+      return;
+    }
+
     if (scope.current) {
       scope.current.failed = false;
       scope.current.remote = undefined;
@@ -47,6 +62,15 @@ export const useTierlistSync = (
 
     setAttempt((value) => value + 1);
     setState({ status: 'connecting' });
+  };
+
+  const requireReload = () => {
+    if (scope.current) {
+      scope.current.outdated = true;
+      scope.current.failed = true;
+    }
+
+    setState({ status: 'outdated', message: tierlistUpdateMessage });
   };
 
   const keepDeviceChanges = async () => {
@@ -86,7 +110,7 @@ export const useTierlistSync = (
 
   useEffect(() => {
     scope.current = seed
-      ? { seed, running: false, failed: false, attempt: -1 }
+      ? { seed, running: false, failed: false, outdated: false, attempt: -1 }
       : null;
     setState({ status: 'connecting' });
 
@@ -97,6 +121,10 @@ export const useTierlistSync = (
 
   useEffect(() => {
     const reconnect = () => {
+      if (scope.current?.running || scope.current?.outdated) {
+        return;
+      }
+
       if (scope.current) {
         scope.current.failed = false;
         scope.current.remote = undefined;
@@ -142,6 +170,7 @@ export const useTierlistSync = (
       paused ||
       active.running ||
       active.failed ||
+      active.outdated ||
       state.status === 'conflict' ||
       storage.status === 'error'
     ) {
@@ -168,7 +197,13 @@ export const useTierlistSync = (
           );
         }
 
-        setState({ status: active.remote ? 'saving' : 'connecting' });
+        const checkingSavedChanges =
+          state.status === 'saved' &&
+          local.sync?.syncedLocalRevision === local.revision;
+
+        if (!checkingSavedChanges) {
+          setState({ status: active.remote ? 'saving' : 'connecting' });
+        }
 
         if (!active.remote) {
           const result = await connectTierlist({
@@ -224,19 +259,24 @@ export const useTierlistSync = (
         }
 
         if (scope.current === active) {
-          setState({ status: 'saved' });
+          if (!active.outdated) {
+            setState({ status: 'saved' });
+          }
         }
       } catch (error) {
         active.failed = true;
+        active.outdated ||= isOutdatedTierlistClient(error);
 
         if (scope.current === active) {
           setState({
-            status: 'offline',
-            message: tierlistErrorMessage(
-              error,
-              'Couldn’t reach your saved tierlist right now.',
-            ),
-            retryAt: Date.now() + 30_000,
+            status: active.outdated ? 'outdated' : 'offline',
+            message: active.outdated
+              ? tierlistUpdateMessage
+              : tierlistErrorMessage(
+                  error,
+                  'Couldn’t reach your saved tierlist right now.',
+                ),
+            retryAt: active.outdated ? undefined : Date.now() + 30_000,
           });
         }
       } finally {
@@ -263,5 +303,11 @@ export const useTierlistSync = (
     storage.replaceRemote,
   ]);
 
-  return { ...state, retry, keepDeviceChanges, acceptOnlineChanges };
+  return {
+    ...state,
+    retry,
+    requireReload,
+    keepDeviceChanges,
+    acceptOnlineChanges,
+  };
 };

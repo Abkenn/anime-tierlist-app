@@ -35,11 +35,15 @@ const flowSchema = z.object({
 const accountSchema = z.object({ subject: z.string(), expiresAt: z.number() });
 const displayNameSchema = z.string().trim().min(1).max(160);
 
+export class GoogleAuthConfigurationError extends Error {}
+
 const secret = () => {
   const value = process.env.AUTH_SECRET;
 
-  if (!value) {
-    throw new Error('Google sign-in is not configured yet.');
+  if (!value || !/^[a-f0-9]{64}$/u.test(value)) {
+    throw new GoogleAuthConfigurationError(
+      'Google sign-in is not configured on this server yet.',
+    );
   }
 
   return value;
@@ -58,7 +62,9 @@ const configuration = async () => {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!id || !clientSecret) {
-    throw new Error('Google sign-in is not configured yet.');
+    throw new GoogleAuthConfigurationError(
+      'Google sign-in is not configured on this server yet.',
+    );
   }
 
   return oidc.discovery(
@@ -69,6 +75,7 @@ const configuration = async () => {
 };
 
 export const startGoogleSignIn = async (input: unknown) => {
+  secret();
   const seed = userSeedSchema.parse(input);
   // Prove ownership before carrying a seed through OAuth. Never put it in a URL.
   await connectSeedTierlist(seed);

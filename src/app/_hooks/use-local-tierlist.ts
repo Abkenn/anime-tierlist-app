@@ -283,5 +283,8 @@ export const useLocalTierlist = () => {
     restoreDeviceProfile,
     updateSync,
     replaceRemote,
+    flush: async () => {
+      await controller.current?.flush();
+    },
   };
 };
