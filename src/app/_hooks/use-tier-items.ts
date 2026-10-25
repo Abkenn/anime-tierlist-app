@@ -288,9 +288,25 @@ export const useTierItems = ({
     );
   };
 
+  const inDiscardZone = (x: number, y: number) => {
+    const scope = boardRef.current?.closest('main') ?? document;
+    const zone = scope.querySelector<HTMLElement>('[data-tier-discard]');
+    const bounds = zone?.getBoundingClientRect();
+
+    return Boolean(
+      bounds &&
+        bounds.width > 0 &&
+        bounds.height > 0 &&
+        x >= bounds.left &&
+        x <= bounds.right &&
+        y >= bounds.top &&
+        y <= bounds.bottom,
+    );
+  };
+
   const hover = (id: string, clientX: number, clientY: number) => {
     const outside = outsideBoard(clientX, clientY);
-    setDragRegion(outside ? 'discard' : 'board');
+    setDragRegion(inDiscardZone(clientX, clientY) ? 'discard' : 'board');
     const next = outside ? null : slotAt(id, clientX, clientY);
 
     setSlot((current) =>
@@ -460,13 +476,18 @@ export const useTierItems = ({
     move: hover,
     drop: (id: string, clientX: number, clientY: number) => {
       setDragRegion(null);
-      if (outsideBoard(clientX, clientY)) {
+      if (inDiscardZone(clientX, clientY)) {
         setItems((current) => current.filter((item) => item.id !== id));
         setSlot(null);
         setAnnouncement(
           `Item ${items.find((item) => item.id === id)?.label ?? id} discarded`,
         );
 
+        return null;
+      }
+
+      if (outsideBoard(clientX, clientY)) {
+        setSlot(null);
         return null;
       }
 

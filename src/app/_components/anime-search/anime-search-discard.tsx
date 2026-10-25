@@ -14,6 +14,7 @@ export const AnimeSearchDiscard = () => {
   return (
     <div
       role="status"
+      data-tier-discard=""
       className={cn(
         'pointer-events-none absolute inset-0 z-40 flex min-h-40 items-center justify-center border border-divider bg-background/70 text-sm text-foreground backdrop-blur-xs transition-colors',
         region === 'discard' && 'bg-muted/80',
