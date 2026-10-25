@@ -31,6 +31,71 @@ model TierlistGoogleAccount {
   subject String @id
   ownerId String @unique
   owner TierlistOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  encryptedSeed String
+
+  encryptedSeed String?
   displayName String?
+}
+
+model AuthUser {
+  id String @id
+  name String
+  email String @unique
+  emailVerified Boolean
+  image String?
+  createdAt TimestampString(3)
+  updatedAt TimestampString(3)
+}
+
+model AuthSession {
+  id String @id
+  token String @unique
+  userId String
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt TimestampString(3)
+  createdAt TimestampString(3)
+  updatedAt TimestampString(3)
+  ipAddress String?
+  userAgent String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuthAccount {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt TimestampString(3)?
+  refreshTokenExpiresAt TimestampString(3)?
+  scope String?
+  password String?
+  createdAt TimestampString(3)
+  updatedAt TimestampString(3)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model AuthVerification {
+  id String @id
+  identifier String
+  value String
+  expiresAt TimestampString(3)
+  createdAt TimestampString(3)
+  updatedAt TimestampString(3)
+
+  @@index([identifier])
+  @@index([expiresAt])
+}
+
+model AuthRateLimit {
+  id String @id
+  key String @unique
+  count Int
+  lastRequest BigInt
 }

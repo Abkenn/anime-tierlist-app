@@ -6,3 +6,6 @@ export const findGoogleAccount = (subject: string) =>
 
 export const findGoogleAccountByOwner = (ownerId: string) =>
   db.orm.public.TierlistGoogleAccount.where({ ownerId }).first();
+
+export const findAuthGoogleAccount = (userId: string) =>
+  db.orm.public.AuthAccount.where({ userId, providerId: 'google' }).first();

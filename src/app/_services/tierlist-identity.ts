@@ -8,12 +8,30 @@ import {
   pruneTierlistAccessRecords,
 } from '@/app/_data/mutations/tierlist';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
-import { findTierlistSession } from '@/app/_data/queries/tierlist';
+import {
+  findOwnerById,
+  findTierlistSession,
+} from '@/app/_data/queries/tierlist';
 import type { TierlistFailureCode } from '@/app/_lib/tierlist-sync';
 import { getGoogleIdentity } from './google-session';
 
 const cookieName = 'tierlist-session';
 const sessionSeconds = 60 * 60 * 24 * 30;
+
+export const readAnonymousTierlistOwner = async () => {
+  const token = (await cookies()).get(cookieName)?.value;
+  const session =
+    token && (await findTierlistSession(hashTierlistSecret(token)));
+  if (
+    !session ||
+    session.expiresAt <= BigInt(Date.now()) ||
+    (await findGoogleAccountByOwner(session.ownerId))
+  ) {
+    return null;
+  }
+
+  return findOwnerById(session.ownerId);
+};
 
 export class TierlistAccessError extends Error {
   constructor(

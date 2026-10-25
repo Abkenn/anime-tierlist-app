@@ -14,17 +14,14 @@ import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
+import { authClient } from '@/app/_lib/auth-client';
 import {
   isOutdatedTierlistClient,
   tierlistErrorMessage,
   tierlistUpdateMessage,
 } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
-import {
-  beginGoogleSignIn,
-  readGoogleTierlist,
-  signOutGoogle,
-} from '@/app/_services/google-auth.actions';
+import { readGoogleTierlist } from '@/app/_services/google-auth.actions';
 import {
   connectTierlist,
   createShareSeed,
@@ -35,11 +32,14 @@ import { UserSeed } from './user-seed';
 
 export const LocalTierlist = ({ children }: PropsWithChildren) => {
   const storage = useLocalTierlist();
+  const session = authClient.useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
-  const [identityReady, setIdentityReady] = useState(false);
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>();
+  const sessionUserId = session.data?.user.id ?? null;
+  const identityReady = !session.isPending && resolvedUserId === sessionUserId;
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountHandle] = useState(() => Popover.createHandle());
   const googleConnected = Boolean(
@@ -180,11 +180,14 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
 
   const restoreDevice = () =>
     perform(async () => {
-      await signOutGoogle().catch(() => {
-        setError(
-          'Returned to this device’s tierlist. Google sign-out could not reach the server; retry when online.',
-        );
-      });
+      if (session.data) {
+        const result = await authClient.signOut();
+        if (result.error) {
+          throw new Error(
+            'Unable to sign out. Check your connection and try again.',
+          );
+        }
+      }
       setGoogleProfileKey('');
       setGoogleName('');
       setAccountOpen(false);
@@ -194,13 +197,18 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
 
   const signIn = () =>
     perform(async () => {
-      const result = await beginGoogleSignIn(storage.seed);
-
-      if (!result.ok) {
-        throw new Error(result.message);
+      const result = await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/?google=connected',
+        errorCallbackURL: '/?google=failed',
+      });
+      if (result.error) {
+        throw new Error(
+          result.error.code === 'PROVIDER_NOT_FOUND'
+            ? 'Google sign-in is not configured on this server yet.'
+            : 'Unable to start Google sign-in. Check your connection and try again.',
+        );
       }
-
-      window.location.assign(result.url);
     });
 
   const reloadApp = () =>
@@ -209,7 +217,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       window.location.reload();
     });
 
-  const completeGoogleSignIn = useEffectEvent(async () => {
+  const completeGoogleSignIn = useEffectEvent(async (userId: string | null) => {
     const result = new URL(window.location.href).searchParams.get('google');
 
     if (result) {
@@ -222,12 +230,15 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       setError(
         'Google sign-in was cancelled or could not be completed. Please try again.',
       );
-      setIdentityReady(true);
+      setResolvedUserId(userId);
       return;
     }
 
     try {
-      const account = await readGoogleTierlist();
+      if (session.error) {
+        throw new Error('Unable to check your account right now.');
+      }
+      const account = session.data ? await readGoogleTierlist() : null;
       setGoogleProfileKey(account?.profileKey ?? '');
       setGoogleName(account?.displayName ?? '');
 
@@ -253,15 +264,15 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
         );
       }
     } finally {
-      setIdentityReady(true);
+      setResolvedUserId(userId);
     }
   });
 
   useEffect(() => {
-    if (storage.seed) {
-      void completeGoogleSignIn();
+    if (storage.seed && !session.isPending && !busy) {
+      void completeGoogleSignIn(sessionUserId);
     }
-  }, [storage.seed]);
+  }, [storage.seed, sessionUserId, session.isPending, busy]);
 
   return (
     <>

@@ -1,22 +1,41 @@
 import 'server-only';
+import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { db } from '@/prisma/db';
+import { findGoogleAccount } from '../queries/google-account';
 
 type CreateGoogleAccountInput = {
   subject: string;
   ownerId: string;
-  encryptedSeed: string;
+  seedHash: string;
+  document: TierlistDocument;
   displayName: string | null;
 };
-
-export const createGoogleAccount = (input: CreateGoogleAccountInput) =>
-  db.orm.public.TierlistGoogleAccount.create(input);
-
-type UpdateGoogleNameInput = { subject: string; displayName: string };
-
-export const updateGoogleAccountName = ({
+export const createGoogleAccount = async ({
   subject,
+  ownerId,
+  seedHash,
+  document,
   displayName,
-}: UpdateGoogleNameInput) =>
-  db.orm.public.TierlistGoogleAccount.where({ subject }).update({
-    displayName,
-  });
+}: CreateGoogleAccountInput) => {
+  try {
+    return await db.transaction(async (tx) => {
+      await tx.orm.public.TierlistOwner.create({
+        id: ownerId,
+        seedHash,
+        document,
+        revision: 0,
+      });
+      return tx.orm.public.TierlistGoogleAccount.create({
+        subject,
+        ownerId,
+        displayName,
+      });
+    });
+  } catch (error) {
+    const existing = await findGoogleAccount(subject);
+    if (existing) {
+      return existing;
+    }
+    throw error;
+  }
+};
