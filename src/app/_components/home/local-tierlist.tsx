@@ -13,6 +13,7 @@ import {
 import { RetryCountdown } from '@/app/_components/shell/retry-countdown';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
+import { useAccountDisplayHint } from '@/app/_hooks/use-account-display-hint';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { usePromiseValue } from '@/app/_hooks/use-promise-value';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
@@ -47,6 +48,7 @@ export const LocalTierlist = ({
   const [error, setError] = useState('');
   const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
+  const accountHint = useAccountDisplayHint();
   const [resolvedUserId, setResolvedUserId] = useState<string | null>();
   const sessionUserId =
     session.isPending && initial?.status === 'ready'
@@ -70,7 +72,20 @@ export const LocalTierlist = ({
     googleConnected,
   );
   const visibleError = sync.status === 'outdated' ? '' : error;
-  const googleLabel = googleName ? `${googleName} (Google)` : 'Google account';
+  const displayName = googleName || (googleConnected ? accountHint.name : '');
+  const googleLabel = displayName
+    ? `${displayName} (Google)`
+    : 'Google account';
+  const cachedAccount = Boolean(
+    googleConnected &&
+      storage.status === 'saved' &&
+      storage.snapshot?.sync?.syncedLocalRevision ===
+        storage.snapshot?.revision,
+  );
+  const restoringAccount =
+    !busy &&
+    (sync.status === 'connecting' || !identityReady) &&
+    (cachedAccount || (storage.status === 'loading' && accountHint.name));
   const backedUp = Boolean(
     storage.snapshot &&
       storage.status === 'saved' &&
@@ -96,12 +111,24 @@ export const LocalTierlist = ({
     storage.status === 'saved' && sync.status === 'saved' && !backedUp
       ? 'Saving changes...'
       : messages[storage.status];
-  const message = busy ? 'Opening tierlist...' : saveMessage;
+  const restoredMessage = cachedAccount ? 'Changes saved in ' : '';
+  const settledMessage = restoringAccount ? restoredMessage : saveMessage;
+  const verifyingIdentity = !identityReady && !busy;
+  const visibleMessage =
+    verifyingIdentity && !restoringAccount ? '' : settledMessage;
+  const message = busy ? 'Opening tierlist...' : visibleMessage;
   const controlsBusy =
     busy || !identityReady || storage.status === 'loading' || !storage.seed;
-  const showIdentity = Boolean(storage.seed && !busy && identityReady);
-  const identityLabel = googleConnected ? googleLabel : anonymousLabel;
-  const identitySeparator = backedUp ? '' : ' · ';
+  const showIdentity = Boolean(
+    restoringAccount || (storage.seed && !busy && identityReady),
+  );
+  const restoredName = displayName || accountHint.name;
+  const restoredLabel = restoredName
+    ? `${restoredName} (Google)`
+    : 'Google account';
+  const verifiedLabel = googleConnected ? googleLabel : anonymousLabel;
+  const identityLabel = restoringAccount ? restoredLabel : verifiedLabel;
+  const identitySeparator = backedUp || restoringAccount ? '' : ' · ';
   const statusText =
     message + (showIdentity ? identitySeparator + identityLabel : '');
   const backupMessage = sync.message ?? 'Couldn’t reach your saved tierlist.';
@@ -212,6 +239,7 @@ export const LocalTierlist = ({
 
       setGoogleProfileKey('');
       setGoogleName('');
+      accountHint.clear();
       setAccountOpen(false);
       try {
         await disconnectTierlist();
@@ -277,6 +305,11 @@ export const LocalTierlist = ({
 
       setGoogleProfileKey(account?.profileKey ?? '');
       setGoogleName(account?.displayName ?? '');
+      if (account) {
+        accountHint.remember(account.displayName);
+      } else {
+        accountHint.clear();
+      }
 
       if (account && account.profileKey !== storage.seed) {
         await perform(async () => {
@@ -348,7 +381,11 @@ export const LocalTierlist = ({
                         id: 'separator',
                         text: identitySeparator,
                         render: (content: ReactNode) => (
-                          <span className={cn(!backedUp && 'sm:hidden')}>
+                          <span
+                            className={cn(
+                              !backedUp && !restoringAccount && 'sm:hidden',
+                            )}
+                          >
                             {content}
                           </span>
                         ),
@@ -362,7 +399,7 @@ export const LocalTierlist = ({
                             handle={accountHandle}
                             className={cn(
                               'max-w-full cursor-pointer wrap-break-word text-left align-baseline underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4',
-                              !backedUp && 'sm:hidden',
+                              !backedUp && !restoringAccount && 'sm:hidden',
                             )}
                           >
                             {content}
@@ -390,7 +427,8 @@ export const LocalTierlist = ({
             error={visibleError}
             onImport={importSeed}
             onUseDevice={restoreDevice}
-            googleConnected={googleConnected}
+            resolvingIdentity={verifyingIdentity}
+            googleConnected={googleConnected || Boolean(restoringAccount)}
             canSignIn={backedUp}
             onGoogleSignIn={signIn}
             onGoogleSignOut={restoreDevice}

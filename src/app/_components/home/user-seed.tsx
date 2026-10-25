@@ -21,6 +21,7 @@ type UserSeedProps = {
   onShare: () => Promise<string>;
   onUseDevice: () => Promise<unknown>;
   googleConnected: boolean;
+  resolvingIdentity?: boolean;
   canSignIn: boolean;
   onGoogleSignIn: () => Promise<unknown>;
   onGoogleSignOut: () => Promise<unknown>;
@@ -38,6 +39,7 @@ export const UserSeed = ({
   onImport,
   onUseDevice,
   googleConnected,
+  resolvingIdentity = false,
   canSignIn,
   onGoogleSignIn,
   onGoogleSignOut,
@@ -141,7 +143,9 @@ export const UserSeed = ({
         disabled={busy}
         className="hidden min-h-9 cursor-pointer text-xs underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50 sm:inline-flex sm:items-center"
       >
-        {googleConnected ? 'Account & seed' : 'Sign in or export anonymously'}
+        {googleConnected || resolvingIdentity
+          ? 'Account & seed'
+          : 'Sign in or export anonymously'}
       </Popover.Trigger>
 
       <Popover.Portal>
