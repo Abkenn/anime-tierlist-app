@@ -163,12 +163,6 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
         event.target.closest('[data-tier-overview]')
       ) {
         event.preventDefault();
-        const unit = [1, 16, viewport.clientHeight][event.deltaMode] ?? 1;
-        viewport.scrollBy({
-          top: event.deltaY * unit,
-          left: event.deltaX * unit,
-          behavior: 'instant',
-        });
       }
     };
 

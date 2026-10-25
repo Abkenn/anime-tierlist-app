@@ -990,12 +990,11 @@ export const ScrollOverview: Story = {
     });
 
     expect(getComputedStyle(preview).overflowY).toBe('clip');
-    fireEvent.wheel(preview, { deltaY: 100 });
-    await waitFor(() => expect(viewport.scrollTop).toBe(300));
-    fireEvent.wheel(preview, { deltaY: -60 });
-    await waitFor(() => expect(viewport.scrollTop).toBe(240));
+    expect(fireEvent.wheel(preview, { deltaY: 100 })).toBe(false);
+    expect(fireEvent.wheel(preview, { deltaY: -60 })).toBe(false);
+    expect(viewport.scrollTop).toBe(200);
     expect(preview.scrollTop).toBe(0);
-    fireEvent.wheel(preview, { deltaY: 100, ctrlKey: true });
-    expect(viewport.scrollTop).toBe(240);
+    expect(fireEvent.wheel(preview, { deltaY: 100, ctrlKey: true })).toBe(true);
+    expect(viewport.scrollTop).toBe(200);
   },
 };
