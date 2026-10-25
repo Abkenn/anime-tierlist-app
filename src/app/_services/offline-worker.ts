@@ -152,6 +152,21 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  if (request.method === 'GET' && request.destination === 'image') {
+    event.respondWith(
+      (async () => {
+        const posters = await caches.open('tierlist-posters-v1');
+
+        return (
+          (await posters.match(request.url, { ignoreVary: true })) ??
+          fetch(request)
+        );
+      })(),
+    );
+
+    return;
+  }
+
   if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return;
   }

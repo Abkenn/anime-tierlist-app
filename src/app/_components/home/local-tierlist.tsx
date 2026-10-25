@@ -12,6 +12,7 @@ import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useTierlistAccount } from '@/app/_hooks/use-tierlist-account';
 import type { AccountSnapshot } from '@/app/_types/account-snapshot';
+import { PosterOfflineCache } from './poster-offline-cache';
 import { TierlistConflict } from './tierlist-conflict';
 import { TierlistSyncFeedback } from './tierlist-sync-feedback';
 import { UserSeed } from './user-seed';
@@ -126,6 +127,8 @@ export const LocalTierlist = ({
           onReload={actions.reloadApp}
         />
       </TerminalSequence>
+
+      <PosterOfflineCache />
 
       {sync.status === 'conflict' && (
         <TierlistConflict
