@@ -41,6 +41,12 @@ describe('tierlist sync decisions', () => {
 
     expect(sameTierlistDocument(first, second)).toBe(true);
     expect(
+      sameTierlistDocument(
+        { ...first, updatedAt: 1000 },
+        { ...second, updatedAt: 2000 },
+      ),
+    ).toBe(true);
+    expect(
       sameTierlistDocument(first, {
         ...second,
         items: [...second.items].reverse(),

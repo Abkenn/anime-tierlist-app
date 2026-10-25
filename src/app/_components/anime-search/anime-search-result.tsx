@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
-import { TouchDragHandle } from '@/app/_components/shell/touch-drag-handle';
 import { useSearchItemDrag } from '@/app/_hooks/use-search-item-drag';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
@@ -65,7 +64,7 @@ export const AnimeSearchResultCard = ({
         type="button"
         disabled={!image}
         title={`${result.title} · Drag to a rank or click to add to Watching`}
-        className="relative block w-full touch-auto cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
+        className="relative block w-full touch-none cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
         drag={Boolean(image)}
         dragSnapToOrigin
         dragMomentum={false}
@@ -73,8 +72,6 @@ export const AnimeSearchResultCard = ({
         {...drag.triggerProps}
         animate={{ opacity: drag.dragging ? 0 : 1 }}
       >
-        {image && <TouchDragHandle />}
-
         {state.status === 'loading' && (
           <motion.span
             aria-hidden="true"

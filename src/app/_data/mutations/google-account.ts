@@ -22,7 +22,7 @@ export const createGoogleAccount = async ({
       await tx.orm.public.TierlistOwner.create({
         id: ownerId,
         seedHash,
-        document,
+        document: { ...document, updatedAt: Date.now() },
         revision: 0,
       });
 

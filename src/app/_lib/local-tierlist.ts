@@ -39,6 +39,12 @@ export const localTierlistSchema = z.object({
   version: z.literal(1),
   seed: z.string().regex(/^[a-f0-9]{64}$/u),
   revision: z.number().int().nonnegative(),
+  updatedAt: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(8_640_000_000_000_000)
+    .optional(),
   accountOwnerId: z.string().uuid().optional(),
   items: z.array(item),
   ranks: z.array(rank),

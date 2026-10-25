@@ -5,7 +5,6 @@ import { useAtomValue } from 'jotai';
 import { type HTMLMotionProps, motion } from 'motion/react';
 import type { Ref, RefObject } from 'react';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
-import { TouchDragHandle } from '@/app/_components/shell/touch-drag-handle';
 import type {
   TierItemTitle as ItemTitle,
   TierCrop,
@@ -63,7 +62,7 @@ export const TierItemButton = ({
       data-tier-item={label}
       className={cn(
         'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
-        editing ? 'touch-none' : 'touch-auto',
+        'touch-none',
         dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
         editing && 'z-30 cursor-move ring-2 ring-white',
         image ? 'border-0 bg-transparent' : 'bg-gray',
@@ -72,8 +71,6 @@ export const TierItemButton = ({
       )}
       {...buttonProps}
     >
-      {!editing && <TouchDragHandle />}
-
       {image ? (
         <>
           {editing && (imageMode === 'cover' || positioning) && (

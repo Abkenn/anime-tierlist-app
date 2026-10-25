@@ -227,17 +227,6 @@ export const TierItem = ({
       return;
     }
 
-    if (
-      !editing &&
-      event.pointerType === 'touch' &&
-      !(
-        event.target instanceof Element &&
-        event.target.closest('[data-touch-drag-handle]')
-      )
-    ) {
-      return;
-    }
-
     if (editing) {
       if (positioning) {
         trimPosition.startPan(event);

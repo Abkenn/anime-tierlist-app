@@ -55,7 +55,7 @@ export const TierViewport = ({
     <div className="relative min-h-0 min-w-0 flex-1">
       <ScrollArea
         orientation="both"
-        className="h-full min-h-0 min-w-0"
+        className="h-full min-h-0 min-w-0 pr-3.5"
         viewportProps={{
           render: (
             <section

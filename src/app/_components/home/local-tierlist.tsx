@@ -78,6 +78,7 @@ export const LocalTierlist = ({
                             handle={accountHandle}
                             className={cn(
                               'max-w-full cursor-pointer wrap-break-word text-left align-baseline underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4',
+                              'max-sm:py-1 max-sm:font-medium max-sm:text-foreground max-sm:decoration-current/75 max-sm:underline-offset-4 max-sm:transition-[color,text-decoration-color,opacity] max-sm:hover:decoration-current max-sm:active:opacity-60 data-popup-open:decoration-current',
                               !status.backedUp &&
                                 !status.restoringAccount &&
                                 'sm:hidden',
@@ -130,6 +131,8 @@ export const LocalTierlist = ({
         <TierlistConflict
           onlineItemCount={sync.conflict.document.items.length}
           localItemCount={storage.snapshot?.items.length ?? 0}
+          localUpdatedAt={storage.snapshot?.updatedAt}
+          onlineUpdatedAt={sync.conflict.document.updatedAt}
           busy={busy}
           error={error}
           onKeepDevice={actions.keepDeviceChanges}

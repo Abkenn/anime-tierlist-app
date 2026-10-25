@@ -24,7 +24,12 @@ export const createTierlistOwner = ({
   document,
 }: CreateOwnerInput) =>
   db.orm.public.TierlistOwner.upsert({
-    create: { id, seedHash, document, revision: 0 },
+    create: {
+      id,
+      seedHash,
+      document: { ...document, updatedAt: Date.now() },
+      revision: 0,
+    },
     update: { seedHash },
     conflictOn: { seedHash },
   });
@@ -36,7 +41,7 @@ export const saveTierlistOwner = async ({
 }: SaveOwnerInput) => {
   const table = db.sql.public.TierlistOwner;
   const plan = db.raw.sql`
-    UPDATE "TierlistOwner" SET document = ${JSON.stringify(document)}::jsonb, revision = revision + 1
+    UPDATE "TierlistOwner" SET document = ${JSON.stringify({ ...document, updatedAt: Date.now() })}::jsonb, revision = revision + 1
     WHERE id = ${id} AND revision = ${revision}
     RETURNING id, "seedHash", revision, document
   `

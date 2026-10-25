@@ -84,6 +84,7 @@ export const useLocalTierlist = () => {
           version: 1,
           seed: createUserSeed(),
           revision: 0,
+          updatedAt: Date.now(),
           items: store.get(tierItemsAtom),
           ranks: store.get(enabledTierRanksAtom),
           imageMode: store.get(imageModeAtom),
@@ -190,6 +191,7 @@ export const useLocalTierlist = () => {
           }
 
           const document = {
+            updatedAt: Date.now(),
             items: store.get(tierItemsAtom),
             ranks: store.get(enabledTierRanksAtom),
             imageMode: store.get(imageModeAtom),

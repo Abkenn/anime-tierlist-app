@@ -56,16 +56,6 @@ export const useSearchItemDrag = (item: TierItemData) => {
     onPointerDown: (event) => {
       dragged.current = false;
 
-      if (
-        event.pointerType === 'touch' &&
-        !(
-          event.target instanceof Element &&
-          event.target.closest('[data-touch-drag-handle]')
-        )
-      ) {
-        return;
-      }
-
       if (!event.isPrimary || event.button !== 0) {
         return;
       }

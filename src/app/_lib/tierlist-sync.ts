@@ -7,7 +7,13 @@ export const userSeedSchema = z
   .toLowerCase()
   .regex(/^[a-f0-9]{64}$/u);
 export const tierlistDocumentSchema = localTierlistSchema
-  .pick({ version: true, items: true, ranks: true, imageMode: true })
+  .pick({
+    version: true,
+    items: true,
+    ranks: true,
+    imageMode: true,
+    updatedAt: true,
+  })
   .refine(
     (document) =>
       new TextEncoder().encode(JSON.stringify(document)).byteLength <=
@@ -37,6 +43,7 @@ export const getTierlistDocument = (
   items: snapshot.items,
   ranks: snapshot.ranks,
   imageMode: snapshot.imageMode,
+  updatedAt: snapshot.updatedAt,
 });
 
 const sameJsonValue = (first: unknown, second: unknown): boolean => {
@@ -82,7 +89,13 @@ const sameJsonValue = (first: unknown, second: unknown): boolean => {
 export const sameTierlistDocument = (
   first: TierlistDocument,
   second: TierlistDocument,
-) => sameJsonValue(first, second);
+) => {
+  // Save timestamps describe versions; they are not edits to the tierlist content.
+  const { updatedAt: _firstUpdatedAt, ...firstContent } = first;
+  const { updatedAt: _secondUpdatedAt, ...secondContent } = second;
+
+  return sameJsonValue(firstContent, secondContent);
+};
 
 export const getSyncDecision = (
   local: LocalTierlist,
