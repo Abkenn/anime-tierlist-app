@@ -55,6 +55,9 @@ export const TierRankLabel = ({
       className={cn(
         'group relative flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-graphite',
         tierColorClasses[color],
+        label.length > 4
+          ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'
+          : 'text-[clamp(1rem,calc(var(--tier-size,6rem)*0.15),1.75rem)]',
       )}
     >
       <button
@@ -92,7 +95,7 @@ export const TierRankLabel = ({
             setDraft(label);
             setEditing(true);
           }}
-          className="w-full cursor-text wrap-break-word px-1 py-3 text-center text-xs hover:underline"
+          className="w-full cursor-text wrap-break-word px-1 py-3 text-center hover:underline"
           aria-label={`Rename ${label}`}
         >
           {label}
