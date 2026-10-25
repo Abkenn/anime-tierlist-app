@@ -153,7 +153,7 @@ export const AnimeSearchResults = () => {
                 layout="position"
                 className={
                   displacement.draggedId === result.id
-                    ? 'outline outline-1 -outline-offset-1 outline-dashed outline-divider'
+                    ? 'outline-1 -outline-offset-1 outline-dashed outline-divider'
                     : undefined
                 }
                 initial={false}
