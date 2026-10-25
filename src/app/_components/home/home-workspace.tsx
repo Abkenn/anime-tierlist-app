@@ -1,7 +1,10 @@
 'use client';
 
+import { ArrowUp } from 'lucide-react';
 import {
+  AnimatePresence,
   motion,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -13,6 +16,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useMobileBoardScroll } from '@/app/_hooks/use-mobile-board-scroll';
 
 export const HomeWorkspace = ({
   search,
@@ -22,10 +26,21 @@ export const HomeWorkspace = ({
   const boardRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>();
   const [mobile, setMobile] = useState(false);
+  const [searchHidden, setSearchHidden] = useState(false);
   const reducedMotion = useReducedMotion();
   const { scrollY } = useScroll({ container: viewportRef });
   const searchY = useTransform(scrollY, (offset) =>
     mobile && !reducedMotion ? offset * 0.15 : 0,
+  );
+
+  const revealSearch = useMobileBoardScroll({
+    enabled: mobile,
+    viewportRef,
+    boardRef,
+  });
+
+  useMotionValueEvent(scrollY, 'change', (offset) =>
+    setSearchHidden(offset > 2),
   );
 
   useLayoutEffect(() => {
@@ -65,49 +80,70 @@ export const HomeWorkspace = ({
   }, []);
 
   return (
-    <div
-      ref={viewportRef}
-      className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none lg:overflow-visible"
-      onScrollCapture={(event) => {
-        const viewport = viewportRef.current;
-        const board = event.target;
-        if (
-          !mobile ||
-          !viewport ||
-          !(board instanceof HTMLElement) ||
-          !board.matches('[data-tier-viewport]')
-        ) {
-          return;
-        }
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <div
+        ref={viewportRef}
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none lg:overflow-visible"
+        onScrollCapture={(event) => {
+          const viewport = viewportRef.current;
+          const board = event.target;
+          if (
+            !mobile ||
+            !viewport ||
+            !(board instanceof HTMLElement) ||
+            !board.matches('[data-tier-viewport]')
+          ) {
+            return;
+          }
 
-        // Consume forward board scrolling with the search reveal first.
-        const remaining =
-          viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
-        const transfer = Math.min(Math.max(0, remaining), board.scrollTop);
-        if (transfer > 0) {
-          viewport.scrollTop += transfer;
-          board.scrollTop -= transfer;
-        }
-      }}
-    >
-      <div className="flex min-h-full min-w-0 flex-col gap-4 lg:h-full lg:flex-row">
-        <div className="shrink-0 overflow-clip lg:flex lg:min-h-0 lg:w-64 lg:overflow-visible">
-          <motion.div
-            style={{ y: searchY }}
-            className="lg:flex lg:min-h-0 lg:flex-1"
+          // Consume forward board scrolling with the search reveal first.
+          const remaining =
+            viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
+          const transfer = Math.min(Math.max(0, remaining), board.scrollTop);
+          if (transfer > 0) {
+            viewport.scrollTop += transfer;
+            board.scrollTop -= transfer;
+          }
+        }}
+      >
+        <div className="flex min-h-full min-w-0 flex-col gap-4 lg:h-full lg:flex-row">
+          <div className="shrink-0 overflow-clip lg:flex lg:min-h-0 lg:w-64 lg:overflow-visible">
+            <motion.div
+              style={{ y: searchY }}
+              className="lg:flex lg:min-h-0 lg:flex-1"
+            >
+              {search}
+            </motion.div>
+          </div>
+
+          <div
+            ref={boardRef}
+            style={{ height: mobile ? height : undefined }}
+            className="flex min-h-0 min-w-0 shrink-0 flex-col lg:h-full lg:flex-1"
           >
-            {search}
-          </motion.div>
-        </div>
-
-        <div
-          ref={boardRef}
-          style={{ height: mobile ? height : undefined }}
-          className="flex min-h-0 min-w-0 shrink-0 flex-col lg:h-full lg:flex-1"
-        >
-          {children}
+            {children}
+          </div>
         </div>
       </div>
+
+      <AnimatePresence initial={false}>
+        {mobile && searchHidden && (
+          <motion.button
+            key="reveal-search"
+            type="button"
+            aria-label="Back to search"
+            title="Back to search"
+            onClick={revealSearch}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.15 }}
+            className="absolute -top-11 right-0 z-40 flex size-10 cursor-pointer items-center justify-center bg-background/95 text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden"
+          >
+            <ArrowUp aria-hidden="true" className="size-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
