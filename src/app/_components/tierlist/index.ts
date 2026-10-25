@@ -5,6 +5,7 @@ export { TierCropControls } from '../tier-item/tier-crop-controls';
 export { TierCropPreview } from '../tier-item/tier-crop-preview';
 export { TierImageTrimEditor } from '../tier-item/tier-image-trim-editor';
 export { TierItem } from '../tier-item/tier-item';
+export { TierItemButton } from '../tier-item/tier-item-button';
 export { TierItemImage } from '../tier-item/tier-item-image';
 export { TierItemMenu } from '../tier-item/tier-item-menu';
 export { TierItemSizing } from '../tier-item/tier-item-sizing';

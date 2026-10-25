@@ -22,11 +22,23 @@ import {
   searchDropSlotAtom,
 } from '@/app/_atoms/tierlist/search.atoms';
 import {
-  getTierDropIndex,
+  type TierDropSlot as DropSlot,
+  findTierDropSlot,
+  getVisibleRank,
+  isInDiscardZone,
+  isOutsideTierBoard,
+  measureTierRows,
+  type TierRow as Row,
+  type TierItemPosition,
+} from '@/app/_lib/tier-board-geometry';
+import {
   getTwoLineCapacity,
   layoutTierItems,
   tierItemGap,
 } from '@/app/_lib/tier-item-layout';
+
+export type { TierItemPosition } from '@/app/_lib/tier-board-geometry';
+
 import { projectTierItems } from '@/app/_lib/tier-item-projection';
 import type {
   TierImageMode,
@@ -35,20 +47,9 @@ import type {
   TierRank,
 } from '@/app/_types/tierlist.types';
 
-export type TierItemPosition = {
-  x: string;
-  y: string;
-  width: string;
-  height: string;
-};
 type Item = TierItemData;
-type Row = { rank: TierRank; x: number; y: number; size: number };
-type DropSlot = { id: string; rank: TierRank; index: number };
 
 const itemGapRem = tierItemGap;
-
-const getVisibleRank = (item: Item, ranks: TierRank[]) =>
-  ranks.includes(item.rank) ? item.rank : ranks[0];
 
 type TierItemsInput = {
   ranks: TierRank[];
@@ -143,27 +144,7 @@ export const useTierItems = ({
       getComputedStyle(document.documentElement).fontSize,
     );
 
-    const bounds = board.getBoundingClientRect();
-
-    return Array.from(
-      board.querySelectorAll<HTMLElement>('[data-tier-rank]'),
-    ).map((row) => {
-      const cells = row.lastElementChild?.getBoundingClientRect();
-      const rect = row.getBoundingClientRect();
-
-      return {
-        rank: row.dataset.tierRank as TierRank,
-        x: (cells?.left ?? rect.left) - bounds.left,
-        y: (cells?.top ?? rect.top) - bounds.top,
-        size: wrapItems
-          ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect()
-              .height ?? rem.current * 4.125)
-          : Math.max(
-              0,
-              (cells?.height ?? rect.height) - rem.current * itemGapRem * 2,
-            ),
-      };
-    });
+    return measureTierRows(board, wrapItems, rem.current);
   }, [wrapItems]);
 
   const visibleRank = (item: Item) => getVisibleRank(item, ranks);
@@ -289,85 +270,23 @@ export const useTierItems = ({
     clientX: number,
     clientY: number,
   ): DropSlot | null => {
-    const board = boardRef.current;
-    const candidates = Array.from(
-      board?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? [],
-    );
-    const first = candidates[0];
-    const last = candidates.at(-1);
-
-    if (!board || !first || !last) {
-      return null;
-    }
-
-    const hit =
-      candidates.find((row) => {
-        const rect = row.getBoundingClientRect();
-
-        return clientY >= rect.top && clientY < rect.bottom;
-      }) ?? (clientY < first.getBoundingClientRect().top ? first : last);
-    const rank = hit.dataset.tierRank as TierRank;
-    const row = measure().find((value) => value.rank === rank);
-
-    if (!row) {
-      return null;
-    }
-
-    const x =
-      clientX -
-      board.getBoundingClientRect().left -
-      row.x -
-      rem.current * itemGapRem;
-    const line = wrapItems
-      ? Math.max(
-          0,
-          Math.min(
-            1,
-            Math.floor(
-              (clientY - board.getBoundingClientRect().top - row.y) /
-                (row.size + rem.current * itemGapRem),
-            ),
-          ),
-        )
-      : 0;
-    const boxes = boxesFor(
-      rank,
-      items.filter((item) => item.id !== id),
-      measure(),
-    );
-    const index = getTierDropIndex(boxes, x / rem.current, line);
-
-    return { id, rank, index };
+    return findTierDropSlot({
+      id,
+      clientX,
+      clientY,
+      board: boardRef.current,
+      rows: measure(),
+      rem: rem.current,
+      wrapItems,
+      items,
+      boxesFor,
+    });
   };
 
-  const outsideBoard = (x: number, y: number) => {
-    const board = boardRef.current;
-    const viewport = board?.closest<HTMLElement>('[data-tier-viewport]');
-    const rectangles = [board, viewport].flatMap((element) =>
-      element ? [element.getBoundingClientRect()] : [],
-    );
-
-    return rectangles.some(
-      (rect) =>
-        x < rect.left || x > rect.right || y < rect.top || y > rect.bottom,
-    );
-  };
-
-  const inDiscardZone = (x: number, y: number) => {
-    const scope = boardRef.current?.closest('main') ?? document;
-    const zone = scope.querySelector<HTMLElement>('[data-tier-discard]');
-    const bounds = zone?.getBoundingClientRect();
-
-    return Boolean(
-      bounds &&
-        bounds.width > 0 &&
-        bounds.height > 0 &&
-        x >= bounds.left &&
-        x <= bounds.right &&
-        y >= bounds.top &&
-        y <= bounds.bottom,
-    );
-  };
+  const outsideBoard = (x: number, y: number) =>
+    isOutsideTierBoard(boardRef.current, x, y);
+  const inDiscardZone = (x: number, y: number) =>
+    isInDiscardZone(boardRef.current, x, y);
 
   const hover = (id: string, clientX: number, clientY: number) => {
     const outside = outsideBoard(clientX, clientY);
@@ -474,9 +393,7 @@ export const useTierItems = ({
     }
 
     const update = () => setViewportWidth(viewport.clientWidth);
-
     const observer = new ResizeObserver(update);
-
     update();
     observer.observe(viewport);
 
@@ -493,11 +410,8 @@ export const useTierItems = ({
     }
 
     const update = () => setRows(measure());
-
     update();
-
     const observer = new ResizeObserver(update);
-
     observer.observe(board);
     board.querySelectorAll('[data-tier-rank]').forEach((row) => {
       observer.observe(row);

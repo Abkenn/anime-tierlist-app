@@ -1,18 +1,15 @@
 'use client';
 
-import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
-import { type HTMLMotionProps, motion } from 'motion/react';
 import {
   type PointerEvent,
   type ReactElement,
-  type Ref,
   type RefObject,
+  useContext,
   useRef,
   useState,
 } from 'react';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
-import { TouchDragHandle } from '@/app/_components/shell/touch-drag-handle';
 import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
 import { useTierCrop } from '@/app/_hooks/use-tier-crop';
 import { useTierItemDrag } from '@/app/_hooks/use-tier-item-drag';
@@ -20,6 +17,7 @@ import { useTierItemKeyboard } from '@/app/_hooks/use-tier-item-keyboard';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
 import { useTierTrimPosition } from '@/app/_hooks/use-tier-trim-position';
 import { centerTierTrim, fullImageTrim } from '@/app/_lib/tier-image-trim';
+import { TierItemActionsContext } from '@/app/_lib/tier-item-actions-context';
 import { defaultTierItemTitle } from '@/app/_lib/tier-item-title';
 import type {
   TierItemTitle as ItemTitle,
@@ -29,11 +27,9 @@ import type {
   TierKeyboardMove,
 } from '@/app/_types/tierlist.types';
 import { TierCropControls } from './tier-crop-controls';
-import { TierCropPreview } from './tier-crop-preview';
 import { TierImageTrimEditor } from './tier-image-trim-editor';
-import { TierItemImage } from './tier-item-image';
+import { TierItemButton } from './tier-item-button';
 import { TierItemMenu } from './tier-item-menu';
-import { TierItemTitle } from './tier-item-title';
 import { TierItemTitleEditor } from './tier-item-title-editor';
 
 type TierItemProps = {
@@ -42,7 +38,7 @@ type TierItemProps = {
   label: string;
   rank: string;
   position: TierItemPosition;
-  boardRef: RefObject<HTMLDivElement | null>;
+  boardRef?: RefObject<HTMLDivElement | null>;
   image?: TierImage;
   title?: ItemTitle;
   editing?: boolean;
@@ -52,105 +48,11 @@ type TierItemProps = {
   onTrimChange?: (trim: TierImageTrim) => void;
   sizingControl?: ReactElement;
   onCropChange?: (crop: TierCrop) => void;
-  onStart: (clientX: number, clientY: number) => void;
-  onMove: (clientX: number, clientY: number) => void;
-  onDrop: (clientX: number, clientY: number) => TierItemPosition | null;
-  onCancel: () => void;
-  onKeyboardMove: (move: TierKeyboardMove) => void;
-};
-
-type TierItemTriggerProps = HTMLMotionProps<'button'> & {
-  ref?: Ref<HTMLButtonElement>;
-  label: string;
-  rank: string;
-  image?: TierImage;
-  itemTitle?: ItemTitle;
-  crop: TierCrop;
-  trim?: TierImageTrim;
-  editing: boolean;
-  dragging: boolean;
-  pointerFocus: boolean;
-  positioning?: boolean;
-  previewAnchor: RefObject<HTMLButtonElement | null>;
-};
-
-const TierItemTrigger = ({
-  label,
-  rank,
-  image,
-  itemTitle,
-  crop,
-  trim,
-  editing,
-  dragging,
-  pointerFocus,
-  positioning,
-  previewAnchor,
-  className,
-  ...buttonProps
-}: TierItemTriggerProps) => {
-  const imageMode = useAtomValue(imageModeAtom);
-
-  return (
-    <motion.button
-      type="button"
-      aria-label={`Item ${label} in ${rank}`}
-      aria-description={
-        editing
-          ? 'Crop editing. Drag the image or use arrows/WASD. Enter saves; Escape cancels.'
-          : 'Tab to select, or press Enter after clicking. Up/Down or W/S move between tiers; Left/Right or A/D reorder within a tier. Shift+F10 opens image options. Escape exits keyboard mode or cancels a drag.'
-      }
-      data-image-mode={imageMode}
-      data-crop-editing={editing || undefined}
-      data-trim-positioning={positioning || undefined}
-      data-tier-item={label}
-      className={cn(
-        'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
-        editing ? 'touch-none' : 'touch-auto',
-        dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
-        editing && 'z-30 cursor-move ring-2 ring-white',
-        image ? 'border-0 bg-transparent' : 'bg-gray',
-        pointerFocus && 'focus-visible:outline-none!',
-        className,
-      )}
-      {...buttonProps}
-    >
-      {!editing && <TouchDragHandle />}
-
-      {image ? (
-        <>
-          {editing && (imageMode === 'cover' || positioning) && (
-            <TierCropPreview
-              anchor={previewAnchor}
-              image={image}
-              crop={crop}
-              trim={positioning ? trim : undefined}
-            />
-          )}
-
-          <span className="relative block size-full overflow-hidden">
-            <TierItemImage
-              image={image}
-              mode={imageMode}
-              crop={crop}
-              trim={trim}
-            />
-          </span>
-        </>
-      ) : (
-        label
-      )}
-
-      {itemTitle?.text && (
-        <TierItemTitle
-          title={itemTitle}
-          image={image}
-          mode={imageMode}
-          trim={trim}
-        />
-      )}
-    </motion.button>
-  );
+  onStart?: (clientX: number, clientY: number) => void;
+  onMove?: (clientX: number, clientY: number) => void;
+  onDrop?: (clientX: number, clientY: number) => TierItemPosition | null;
+  onCancel?: () => void;
+  onKeyboardMove?: (move: TierKeyboardMove) => void;
 };
 
 export const TierItem = ({
@@ -159,26 +61,49 @@ export const TierItem = ({
   label,
   image,
   title,
-  onTitleChange,
+  onTitleChange: providedOnTitleChange,
   editing: controlledEditing,
   crop = { x: 0.5, y: 0.5 },
   sizingControl,
   trim = fullImageTrim,
-  onTrimChange,
-  onCropChange,
+  onTrimChange: providedOnTrimChange,
+  onCropChange: providedOnCropChange,
   rank,
   position,
-  boardRef,
-  onStart,
-  onMove,
-  onDrop,
-  onCancel,
-  onKeyboardMove,
+  boardRef: providedBoardRef,
+  onStart: providedOnStart,
+  onMove: providedOnMove,
+  onDrop: providedOnDrop,
+  onCancel: providedOnCancel,
+  onKeyboardMove: providedOnKeyboardMove,
 }: TierItemProps) => {
+  const actions = useContext(TierItemActionsContext);
+  const fallbackBoardRef = useRef<HTMLDivElement>(null);
   const itemRef = useRef<HTMLButtonElement>(null);
   const [titleDraft, setTitleDraft] = useState<ItemTitle | null>(null);
   const [localTrimEditing, setLocalTrimEditing] = useState(false);
   const [localPositioning, setLocalPositioning] = useState(false);
+  const boardRef = providedBoardRef ?? actions?.boardRef ?? fallbackBoardRef;
+  const onStart =
+    providedOnStart ?? ((x: number, y: number) => actions?.start(id, x, y));
+  const onMove =
+    providedOnMove ?? ((x: number, y: number) => actions?.move(id, x, y));
+  const onDrop =
+    providedOnDrop ??
+    ((x: number, y: number) => actions?.drop(id, x, y) ?? null);
+  const onCancel = providedOnCancel ?? (() => actions?.cancel());
+  const onKeyboardMove =
+    providedOnKeyboardMove ??
+    ((move: TierKeyboardMove) => actions?.keyboardMove(id, move));
+  const onTitleChange =
+    providedOnTitleChange ??
+    ((title: ItemTitle | undefined) => actions?.updateItem(id, { title }));
+  const onTrimChange =
+    providedOnTrimChange ??
+    ((trim: TierImageTrim) => actions?.updateItem(id, { trim }));
+  const onCropChange =
+    providedOnCropChange ??
+    ((crop: TierCrop) => actions?.updateItem(id, { crop }));
   const textEditing = titleDraft !== null && controlledEditing !== false;
   const imageMode = useAtomValue(imageModeAtom);
   const { setEditingItem, setKeyboardMode } = useTierBoardActions();
@@ -361,7 +286,7 @@ export const TierItem = ({
             : onCropChange?.({ x: 0.5, y: 0.5 })
         }
         trigger={
-          <TierItemTrigger
+          <TierItemButton
             data-tier-item-id={id}
             className={dimmed ? 'opacity-20' : undefined}
             ref={itemRef}

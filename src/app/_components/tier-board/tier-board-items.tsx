@@ -13,10 +13,11 @@ import {
 } from '@/app/_atoms/tierlist/interaction.atoms';
 import { TierItem } from '@/app/_components/tier-item/tier-item';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
-import { useTierBoardActions } from '@/app/_hooks/use-tier-board-actions';
+import { useTierItemActions } from '@/app/_hooks/use-tier-item-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
 import { getTrimmedImage } from '@/app/_lib/tier-image-trim';
+import { TierItemActionsContext } from '@/app/_lib/tier-item-actions-context';
 import {
   getTierItemLabel,
   matchesTierItemLabel,
@@ -52,10 +53,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const renamingItemId = useAtomValue(renamingItemIdAtom);
   const editingItemId = useAtomValue(editingItemIdAtom);
   const query = useDeferredValue(useAtomValue(tierFindQueryAtom));
-  const { clearEditingItem } = useTierBoardActions();
+  const actions = useTierItemActions(interaction);
 
   return (
-    <>
+    <TierItemActionsContext value={actions}>
       <p role="status" className="sr-only">
         {interaction.announcement}
       </p>
@@ -125,17 +126,8 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                 editing={editingItemId === item.id}
                 image={item.image}
                 title={item.title}
-                onTitleChange={(title) =>
-                  interaction.updateItem(item.id, { title })
-                }
                 crop={item.crop}
                 trim={item.trim}
-                onTrimChange={(trim) =>
-                  interaction.updateItem(item.id, { trim })
-                }
-                onCropChange={(crop) =>
-                  interaction.updateItem(item.id, { crop })
-                }
                 sizingControl={
                   <TierItemSizing
                     image={item.image && getTrimmedImage(item.image, item.trim)}
@@ -146,25 +138,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                   />
                 }
                 position={position}
-                boardRef={interaction.boardRef}
-                onStart={(clientX, clientY) => {
-                  clearEditingItem();
-                  interaction.start(item.id, clientX, clientY);
-                }}
-                onMove={(clientX, clientY) =>
-                  interaction.move(item.id, clientX, clientY)
-                }
-                onDrop={(clientX, clientY) =>
-                  interaction.drop(item.id, clientX, clientY)
-                }
-                onCancel={interaction.cancel}
-                onKeyboardMove={(move) =>
-                  interaction.keyboardMove(item.id, move)
-                }
               />
             ) : null;
           })}
       </div>
-    </>
+    </TierItemActionsContext>
   );
 };
