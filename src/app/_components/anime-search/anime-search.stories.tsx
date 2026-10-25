@@ -116,3 +116,25 @@ export const CuratedPosters: Story = {
     catalogSearchEnabled: false,
   },
 };
+
+export const CuratedBlending: Story = {
+  args: {
+    initialQuery: 'oshi',
+    catalogSearchEnabled: false,
+    curatedImages: curatedAnimeImages,
+    initialPage: {
+      items: [1, 2, 3, 4, 5].map((id) => ({
+        id: `fetched-${id}`,
+        title: `Oshi no Ko poster ${id}`,
+        imageUrl: '/tier-samples/portrait.svg',
+        image: {
+          src: '/tier-samples/portrait.svg',
+          width: 200,
+          height: 400,
+          alt: `Oshi no Ko poster ${id}`,
+        },
+      })),
+      nextPage: null,
+    },
+  },
+};

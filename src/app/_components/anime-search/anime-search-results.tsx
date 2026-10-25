@@ -10,17 +10,20 @@ import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
 import { imageSuitability } from '@/app/_lib/anime-search';
+import { blendAnimeSearchResults } from '@/app/_lib/anime-search-results';
 import { searchCuratedAnime } from '@/app/_lib/curated-anime-search';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
 import { AnimeSearchResultCard } from './anime-search-result';
+import { AnimeSearchSkeleton } from './anime-search-skeleton';
 
 export const AnimeSearchResults = () => {
   const {
     curatedImages,
     initialQuery = '',
     initialPage,
+    catalogSearchEnabled = true,
   } = useAtomValue(animeSearchConfigAtom);
   const imported = useAtomValue(importedItemIdsAtom);
   const [input, setInput] = useState(initialQuery);
@@ -35,9 +38,9 @@ export const AnimeSearchResults = () => {
     query.length >= 2 && !url && !urlError
       ? searchCuratedAnime(curatedImages, query)
       : [];
-  const provider = (search.data?.pages ?? []).flatMap((page) =>
+  const provider = (search.data?.pages ?? []).map((page) =>
     [...page.items]
-      .filter((item) => !curated.some((custom) => custom.id === item.id))
+      .filter((item) => !imported.has(item.id))
       .sort((a, b) => {
         const first = dimensions[a.id];
         const second = dimensions[b.id];
@@ -50,7 +53,12 @@ export const AnimeSearchResults = () => {
   );
   const results: AnimeSearchResult[] = url
     ? [{ id: `url-${url}`, title: 'Unknown', imageUrl: url }]
-    : [...curated, ...provider];
+    : blendAnimeSearchResults(
+        provider,
+        search.isPending && catalogSearchEnabled
+          ? []
+          : curated.filter((item) => !imported.has(item.id)),
+      );
 
   const reducedMotion = useReducedMotion();
   const visibleResults = results.filter(
@@ -171,6 +179,10 @@ export const AnimeSearchResults = () => {
           <TerminalText text={statusMessage()} />
         </p>
 
+        {(waiting || search.isFetching || loadingImages) && !urlError && (
+          <AnimeSearchSkeleton />
+        )}
+
         {!waiting && !url && search.isError && (
           <button
             type="button"
@@ -187,16 +199,21 @@ export const AnimeSearchResults = () => {
 
         <div ref={sentinel} />
 
-        {!url && search.hasNextPage && (
-          <button
-            type="button"
-            disabled={search.isFetching || waiting}
-            className="min-h-11 text-xs underline underline-offset-4 disabled:opacity-40"
-            onClick={() => void search.fetchNextPage()}
-          >
-            Load more
-          </button>
-        )}
+        {!waiting &&
+          !url &&
+          !search.isFetching &&
+          !loadingImages &&
+          Boolean(search.data?.pages.some((page) => page.items.length > 0)) &&
+          search.hasNextPage && (
+            <button
+              type="button"
+              disabled={search.isFetching || waiting}
+              className="min-h-11 text-xs underline underline-offset-4 disabled:opacity-40"
+              onClick={() => void search.fetchNextPage()}
+            >
+              Load more
+            </button>
+          )}
       </ScrollArea>
     </div>
   );

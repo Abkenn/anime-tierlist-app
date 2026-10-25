@@ -6,6 +6,27 @@ const titles = (query: string) =>
   searchCuratedAnime(curatedAnimeImages, query).map(({ title }) => title);
 
 describe('curated anime matching', () => {
+  it('matches short title prefixes only at word boundaries and requires the whole query', () => {
+    ['oshi', 'oshi no', 'oshi no ko', 'oshi no ko season 2'].forEach(
+      (query) => {
+        expect(titles(query)).toEqual(['Oshi no Ko']);
+      },
+    );
+    expect(titles('oshi frieren')).toEqual([]);
+    const oshi = curatedAnimeImages.find(
+      (image) => image.title === 'Oshi no Ko',
+    );
+    if (!oshi) {
+      throw new Error('Missing curated fixture');
+    }
+    expect(
+      searchCuratedAnime(
+        [{ ...oshi, title: 'Oshi no Ko Season 4' }],
+        'oshi no ko season 2',
+      ),
+    ).toEqual([]);
+  });
+
   it('finds partial titles, romanized aliases and small typos', () => {
     ['Frieren', 'friren', 'sousou no friren', 'soso no frieren'].forEach(
       (query) => {
