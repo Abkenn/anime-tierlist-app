@@ -21,7 +21,7 @@ export const discordEmbedJson = toComponentEmbedJson(
           url: siteUrl.href,
         }),
       },
-      h(TextDisplay, null, 'Anime Tierlist'),
+      h(TextDisplay, null, '# **Anime Tierlist**'),
     ),
     h(Separator, { spacing: 'small' }),
     h(

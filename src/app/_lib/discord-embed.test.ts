@@ -18,6 +18,10 @@ describe('homepage link preview', () => {
       label: 'Create a tierlist',
       url: siteUrl.href,
     });
+    expect(payload.component.components[0].components[0]).toMatchObject({
+      type: 10,
+      content: '# **Anime Tierlist**',
+    });
     expect(discordEmbedJson).not.toContain('/#');
     expect(homepageMetadata.openGraph).toMatchObject({
       type: 'website',
