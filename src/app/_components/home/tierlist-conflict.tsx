@@ -53,8 +53,9 @@ export const TierlistConflict = ({
           }}
           className="cursor-pointer underline underline-offset-4 disabled:opacity-50"
         >
-          This device · {localItemCount} items (
-          {formatRelativeTime(localUpdatedAt, now)})
+          This device · {localItemCount} items
+          {localUpdatedAt !== undefined &&
+            ` (${formatRelativeTime(localUpdatedAt, now)})`}
         </button>
 
         <button
@@ -70,8 +71,9 @@ export const TierlistConflict = ({
           }}
           className="cursor-pointer underline underline-offset-4 disabled:opacity-50"
         >
-          Saved online · {onlineItemCount} items (
-          {formatRelativeTime(onlineUpdatedAt, now)})
+          Saved online · {onlineItemCount} items
+          {onlineUpdatedAt !== undefined &&
+            ` (${formatRelativeTime(onlineUpdatedAt, now)})`}
         </button>
       </div>
 

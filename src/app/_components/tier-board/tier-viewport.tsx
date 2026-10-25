@@ -65,7 +65,7 @@ export const TierViewport = ({
               aria-label="Tierlist board scroll"
             />
           ),
-          className: 'overscroll-contain',
+          className: 'lg:overscroll-contain',
           tabIndex: 0,
         }}
       >
