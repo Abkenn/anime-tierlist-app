@@ -32,7 +32,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <body className="flex h-dvh flex-col overflow-hidden">
         <ThemeProvider>
           <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
-            <header className="mx-auto flex w-full max-w-480 shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
+            <header className="flex w-full shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-6">
               <Suspense
                 fallback={
                   <Link href="/" className="text-xs text-muted-foreground">

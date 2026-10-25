@@ -4,6 +4,7 @@ import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Input } from '@base-ui/react/input';
 import { cn } from 'cn';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { Plus, SwatchBook, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
@@ -33,6 +34,8 @@ export const TierRankLabel = ({
   const [draft, setDraft] = useState('');
   const [confirming, setConfirming] = useState(false);
   const label = details[rank]?.label ?? rank;
+  const addRankButtonClass =
+    'absolute left-1/2 z-20 flex h-5 w-1/2 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40';
   const commit = () => {
     setEditing(false);
     if (!draft.trim()) {
@@ -64,9 +67,18 @@ export const TierRankLabel = ({
         type="button"
         aria-label={`Add tier above ${label}`}
         onClick={() => add(rank)}
-        className="absolute top-0 left-0 z-20 h-5 w-full cursor-pointer text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40"
+        className={cn(addRankButtonClass, 'top-0')}
       >
-        +
+        <Plus aria-hidden="true" className="size-4" />
+      </button>
+
+      <button
+        type="button"
+        aria-label={`Delete ${label}`}
+        onClick={() => setConfirming(true)}
+        className="absolute top-1 right-1 z-30 flex size-4 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+      >
+        <Trash2 aria-hidden="true" className="size-4" />
       </button>
 
       {editing ? (
@@ -102,27 +114,30 @@ export const TierRankLabel = ({
         </button>
       )}
 
-      <input
-        type="color"
-        aria-label={`Color for ${label}`}
-        value={details[rank]?.color ?? '#e68e8e'}
-        onChange={(event) =>
-          setDetails({
-            ...details,
-            [rank]: { label, color: event.target.value as HexColor },
-          })
-        }
-        className="absolute bottom-1 right-1 size-4 cursor-pointer border-0 bg-transparent p-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
-      />
+      <div className="absolute right-1 bottom-1 flex size-4 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
+        <SwatchBook aria-hidden="true" className="size-4" />
+        <input
+          type="color"
+          aria-label={`Color for ${label}`}
+          value={details[rank]?.color ?? '#e68e8e'}
+          onChange={(event) =>
+            setDetails({
+              ...details,
+              [rank]: { label, color: event.target.value as HexColor },
+            })
+          }
+          className="absolute inset-0 size-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
+        />
+      </div>
 
       {rank === ranks.at(-1) && (
         <button
           type="button"
           aria-label="Add tier below"
           onClick={() => add()}
-          className="absolute bottom-0 left-0 h-5 w-1/2 cursor-pointer text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40"
+          className={cn(addRankButtonClass, 'bottom-0')}
         >
-          +
+          <Plus aria-hidden="true" className="size-4" />
         </button>
       )}
 
