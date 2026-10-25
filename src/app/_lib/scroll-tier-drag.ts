@@ -1,3 +1,5 @@
+const DRAG_SCROLL_SPEED_MULTIPLIER = 3;
+
 type ScrollTierDragInput = {
   board: HTMLElement;
   x: number;
@@ -19,7 +21,14 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
         ? position - start - edge
         : Math.max(0, position - end + edge);
 
-    return Math.max(-rem * 48, Math.min(rem * 48, distance * 16)) * elapsed;
+    const limit = rem * 24 * DRAG_SCROLL_SPEED_MULTIPLIER;
+
+    return (
+      Math.max(
+        -limit,
+        Math.min(limit, distance * 8 * DRAG_SCROLL_SPEED_MULTIPLIER),
+      ) * elapsed
+    );
   };
 
   document
@@ -30,6 +39,19 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
       }
 
       const bounds = viewport.getBoundingClientRect();
+      const tiers = viewport.querySelector<HTMLElement>(
+        '[aria-label="Ranked tiers"]',
+      );
+      const content = tiers?.getBoundingClientRect();
+      const maxTop = content
+        ? Math.max(
+            0,
+            content.bottom -
+              bounds.top +
+              viewport.scrollTop -
+              viewport.clientHeight,
+          )
+        : Math.max(0, viewport.scrollHeight - viewport.clientHeight);
       const previousX = viewport.scrollLeft;
       const previousY = viewport.scrollTop;
 
@@ -38,7 +60,13 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
         x <= bounds.right &&
         viewport.scrollHeight > viewport.clientHeight
       ) {
-        viewport.scrollTop += speed(y, bounds.top, bounds.bottom);
+        viewport.scrollTop = Math.max(
+          0,
+          Math.min(
+            maxTop,
+            viewport.scrollTop + speed(y, bounds.top, bounds.bottom),
+          ),
+        );
       }
 
       if (

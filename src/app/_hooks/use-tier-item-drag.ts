@@ -30,6 +30,8 @@ type DragSession = {
   y: number;
   grabX: number;
   grabY: number;
+  width: number;
+  height: number;
   stopFrame: (() => void) | null;
 };
 
@@ -94,9 +96,13 @@ export const useTierItemDrag = ({
     );
     const bounds = board.getBoundingClientRect();
 
+    // A transformed poster must not extend the scrollable board's bounds.
+    const maxX = Math.max(0, bounds.width - active.width) / rem;
+    const maxY = Math.max(0, bounds.height - active.height) / rem;
+
     controls.set({
-      x: `${String((active.x - bounds.left) / rem - active.grabX)}rem`,
-      y: `${String((active.y - bounds.top) / rem - active.grabY)}rem`,
+      x: `${Math.min(maxX, (active.x - bounds.left) / rem - active.grabX)}rem`,
+      y: `${Math.min(maxY, (active.y - bounds.top) / rem - active.grabY)}rem`,
     });
     onMove(active.x, active.y);
   };
@@ -122,6 +128,8 @@ export const useTierItemDrag = ({
       y: event.clientY,
       grabX: (event.clientX - rect.left) / rem,
       grabY: (event.clientY - rect.top) / rem,
+      width: rect.width,
+      height: rect.height,
       stopFrame: null,
     };
     setDragging(true);
