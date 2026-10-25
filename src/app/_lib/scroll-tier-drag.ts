@@ -19,7 +19,7 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
         ? position - start - edge
         : Math.max(0, position - end + edge);
 
-    return Math.max(-rem * 24, Math.min(rem * 24, distance * 8)) * elapsed;
+    return Math.max(-rem * 48, Math.min(rem * 48, distance * 16)) * elapsed;
   };
 
   document
