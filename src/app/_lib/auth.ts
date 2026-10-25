@@ -9,15 +9,25 @@ const baseURL =
   (process.env.NODE_ENV === 'production'
     ? 'https://anime-tierlist-app.vercel.app'
     : 'http://localhost:3000');
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL_POOLED ??
-    process.env.DATABASE_URL ??
-    process.env.DATABASE_POSTGRES_URL,
-  max: 5,
-  connectionTimeoutMillis: 8000,
-  idleTimeoutMillis: 30000,
-});
+const authGlobal = globalThis as typeof globalThis & {
+  tierlistAuthPool?: Pool;
+};
+const pool =
+  authGlobal.tierlistAuthPool ??
+  new Pool({
+    connectionString:
+      process.env.DATABASE_URL_POOLED ??
+      process.env.DATABASE_URL ??
+      process.env.DATABASE_POSTGRES_URL,
+    max: 5,
+    connectionTimeoutMillis: 8000,
+    idleTimeoutMillis: 30000,
+  });
+
+if (process.env.NODE_ENV !== 'production') {
+  authGlobal.tierlistAuthPool = pool;
+}
+
 export const auth = betterAuth({
   appName: 'Anime Tierlist',
   baseURL,
