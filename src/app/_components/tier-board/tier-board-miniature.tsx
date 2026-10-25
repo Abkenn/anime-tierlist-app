@@ -12,16 +12,17 @@ import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 type TierBoardMiniatureProps = {
   overview: ReturnType<typeof useTierOverview>;
   scale: number;
-  scaleX: number;
+  cropWidth: number;
 };
 
 export const TierBoardMiniature = ({
   overview,
   scale,
-  scaleX,
+  cropWidth,
 }: TierBoardMiniatureProps) => {
   const items = useAtomValue(tierItemsAtom);
   const mode = useAtomValue(imageModeAtom);
+  const posters = overview.posters.filter((poster) => poster.x < cropWidth);
   const byId = new Map(items.map((item) => [item.id, item]));
 
   return (
@@ -31,9 +32,9 @@ export const TierBoardMiniature = ({
       data-tier-miniature=""
       className="pointer-events-none absolute left-0 top-0 origin-top-left overflow-hidden grayscale-20 border border-ink bg-charcoal text-cloud"
       style={{
-        width: overview.canvasWidth,
+        width: cropWidth,
         height: overview.canvasHeight,
-        transform: `scale(${scaleX}, ${scale})`,
+        transform: `scale(${scale})`,
       }}
     >
       {overview.rows.map((row) => (
@@ -54,7 +55,7 @@ export const TierBoardMiniature = ({
         </div>
       ))}
 
-      {overview.posters.length > 400 && (
+      {posters.length > 400 && (
         <svg
           aria-hidden="true"
           width={overview.canvasWidth}
@@ -62,7 +63,7 @@ export const TierBoardMiniature = ({
           className="absolute inset-0 fill-cloud/25"
         >
           <path
-            d={overview.posters
+            d={posters
               .map(
                 (poster) =>
                   `M${poster.x},${poster.y}h${poster.width}v${poster.height}h${-poster.width}Z`,
@@ -72,10 +73,10 @@ export const TierBoardMiniature = ({
         </svg>
       )}
 
-      {overview.posters
+      {posters
         .filter(
           (_, index) =>
-            index % Math.max(1, Math.ceil(overview.posters.length / 400)) === 0,
+            index % Math.max(1, Math.ceil(posters.length / 400)) === 0,
         )
         .map((poster) => {
           const item = byId.get(poster.id);

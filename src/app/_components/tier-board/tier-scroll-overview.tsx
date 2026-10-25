@@ -17,12 +17,21 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     overview.enabled &&
     overview.overflowing &&
     (overview.visible || hovered || focused || dragging);
-  const scale = overview.viewportHeight / overview.canvasHeight;
-  const scaleX = Math.min(scale, 240 / overview.canvasWidth);
+  const previewHeight = Math.min(360, overview.viewportHeight * 0.75);
+  const scale = previewHeight / overview.canvasHeight;
+  const previewWidth = Math.min(120, overview.canvasWidth * scale);
+  const scrollRange = Math.max(
+    1,
+    overview.canvasHeight - overview.viewportHeight,
+  );
+  const progress = Math.min(
+    1,
+    Math.max(0, ((overview.top / 100) * overview.canvasHeight) / scrollRange),
+  );
   const frame = {
-    left: overview.left * scaleX,
-    top: (overview.top / 100) * overview.canvasHeight * scale,
-    width: overview.viewportWidth * scaleX,
+    left: 0,
+    top: (overview.top / 100) * previewHeight,
+    width: previewWidth,
     height: overview.viewportHeight * scale,
   };
 
@@ -51,15 +60,16 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             }
           }}
           style={{
-            width: overview.canvasWidth * scaleX,
-            height: overview.viewportHeight,
+            width: previewWidth,
+            height: previewHeight,
+            top: progress * (overview.viewportHeight - previewHeight),
           }}
-          className="absolute right-4 top-0 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
+          className="absolute right-4 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
         >
           <TierBoardMiniature
             overview={overview}
             scale={scale}
-            scaleX={scaleX}
+            cropWidth={previewWidth / scale}
           />
 
           {overview.rows.map((row) => (
@@ -84,22 +94,6 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 bottom-0 backdrop-grayscale-25"
             style={{ top: frame.top + frame.height }}
-          />
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-0 backdrop-grayscale-25"
-            style={{ top: frame.top, height: frame.height, width: frame.left }}
-          />
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute right-0 backdrop-grayscale-25"
-            style={{
-              top: frame.top,
-              height: frame.height,
-              left: frame.left + frame.width,
-            }}
           />
 
           <motion.div
