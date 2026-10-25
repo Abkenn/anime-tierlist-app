@@ -3,6 +3,7 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { type ReactElement, type RefObject, useState } from 'react';
 import { renamingItemIdAtom } from '@/app/_atoms/tierlist/find.atoms';
+import { menuItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ContextMenu } from '@/app/_components/ui/context-menu';
 import { ContextMenuContent } from '@/app/_components/ui/context-menu-content';
@@ -45,12 +46,19 @@ export const TierItemMenu = ({
   onText,
 }: TierItemMenuProps) => {
   const mode = useAtomValue(imageModeAtom);
+  const setMenuItem = useSetAtom(menuItemIdAtom);
   const rename = useSetAtom(renamingItemIdAtom);
   const [renaming, setRenaming] = useState(false);
 
   return (
     <ContextMenu
       onOpenChange={(open) => {
+        setMenuItem((current) => {
+          if (open) {
+            return itemId ?? null;
+          }
+          return current === itemId ? null : current;
+        });
         if (open) {
           setRenaming(false);
           onOpen();

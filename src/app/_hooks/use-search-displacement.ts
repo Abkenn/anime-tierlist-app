@@ -45,10 +45,7 @@ export const useSearchDisplacement = (results: AnimeSearchResult[]) => {
             : closest;
         }, undefined)
       : undefined;
-  const order =
-    dragged && slots.length
-      ? slots.map((slot) => slot.id)
-      : results.map((result) => result.id);
+  const order = results.map((result) => result.id);
   const from = order.indexOf(dragged?.id ?? '');
   const to =
     target?.page === source?.page ? order.indexOf(target?.id ?? '') : -1;
@@ -59,8 +56,9 @@ export const useSearchDisplacement = (results: AnimeSearchResult[]) => {
     displaced.splice(to, 0, order[from]);
   }
 
+  const byId = new Map(results.map((result) => [result.id, result]));
   const visible = displaced.flatMap((id) => {
-    const result = results.find((entry) => entry.id === id);
+    const result = byId.get(id);
 
     return result ? [result] : [];
   });

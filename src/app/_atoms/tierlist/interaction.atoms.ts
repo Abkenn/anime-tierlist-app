@@ -25,3 +25,5 @@ export const clearEditingItemAtom = atom(null, (_get, set) => {
 });
 
 export const tierDragRegionAtom = atom<'board' | 'discard' | null>(null);
+
+export const menuItemIdAtom = atom<string | null>(null);

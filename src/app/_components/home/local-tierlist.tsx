@@ -2,6 +2,7 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
+import { useAtomValue } from 'jotai';
 import {
   type PropsWithChildren,
   type ReactNode,
@@ -9,6 +10,7 @@ import {
   useEffectEvent,
   useState,
 } from 'react';
+import { accountInitializationAtom } from '@/app/_atoms/tierlist/account.atoms';
 import { RetryCountdown } from '@/app/_components/shell/retry-countdown';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
@@ -30,7 +32,12 @@ import {
 } from '@/app/_services/tierlist.actions';
 import { UserSeed } from './user-seed';
 
-export const LocalTierlist = ({ children }: PropsWithChildren) => {
+export const LocalTierlist = ({
+  children,
+  serverInitialization = false,
+}: PropsWithChildren<{ serverInitialization?: boolean }>) => {
+  const initial = useAtomValue(accountInitializationAtom);
+  const initialReady = !serverInitialization || initial !== null;
   const storage = useLocalTierlist();
   const session = authClient.useSession();
   const [busy, setBusy] = useState(false);
@@ -38,8 +45,13 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
   const [resolvedUserId, setResolvedUserId] = useState<string | null>();
-  const sessionUserId = session.data?.user.id ?? null;
-  const identityReady = !session.isPending && resolvedUserId === sessionUserId;
+  const sessionUserId =
+    session.isPending && initial?.status === 'ready'
+      ? initial.userId
+      : (session.data?.user.id ?? null);
+  const sessionReady = !session.isPending || initial?.status === 'ready';
+  const identityReady =
+    initialReady && sessionReady && resolvedUserId === sessionUserId;
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountHandle] = useState(() => Popover.createHandle());
   const googleConnected = Boolean(
@@ -181,7 +193,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
 
   const restoreDevice = () =>
     perform(async () => {
-      if (session.data) {
+      if (sessionUserId) {
         const result = await authClient.signOut();
         if (result.error) {
           throw new Error(
@@ -237,10 +249,15 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
     }
 
     try {
-      if (session.error) {
+      const fromServer =
+        initial?.status === 'ready' && initial.userId === userId;
+      if (session.error && !fromServer) {
         throw new Error('Unable to check your account right now.');
       }
-      const account = session.data ? await readGoogleTierlist() : null;
+      let account = fromServer ? initial.account : null;
+      if (!account && userId) {
+        account = await readGoogleTierlist();
+      }
       setGoogleProfileKey(account?.profileKey ?? '');
       setGoogleName(account?.displayName ?? '');
 
@@ -272,10 +289,23 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   });
 
   useEffect(() => {
-    if (storage.seed && !session.isPending && !busy) {
+    if (
+      storage.seed &&
+      initialReady &&
+      sessionReady &&
+      !busy &&
+      resolvedUserId !== sessionUserId
+    ) {
       void completeGoogleSignIn(sessionUserId);
     }
-  }, [storage.seed, sessionUserId, session.isPending, busy]);
+  }, [
+    storage.seed,
+    sessionUserId,
+    initialReady,
+    sessionReady,
+    busy,
+    resolvedUserId,
+  ]);
 
   return (
     <>

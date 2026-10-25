@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { AnimeSearch } from '@/app/_components/anime-search/anime-search';
+import { AccountInitialization } from '@/app/_components/home/account-initialization';
 import { HomeShell } from '@/app/_components/home/home-shell';
 import { LocalTierlist } from '@/app/_components/home/local-tierlist';
 import { TierBoard } from '@/app/_components/tierlist';
@@ -16,7 +18,11 @@ const Home = () => (
     />
 
     <TierBoardProvider>
-      <LocalTierlist>
+      <LocalTierlist serverInitialization>
+        <Suspense fallback={null}>
+          <AccountInitialization />
+        </Suspense>
+
         <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-4 lg:grid-cols-[16rem_minmax(0,1fr)] lg:grid-rows-1">
           <AnimeSearch />
 

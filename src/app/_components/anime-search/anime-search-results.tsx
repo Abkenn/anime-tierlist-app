@@ -2,13 +2,20 @@
 
 import { useAtomValue } from 'jotai';
 import { motion, useReducedMotion } from 'motion/react';
-import { useActionState, useState } from 'react';
+import {
+  useActionState,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { animeSearchConfigAtom } from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
+import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
 import { classifySearchInput, imageSuitability } from '@/app/_lib/anime-search';
 import { blendAnimeSearchResults } from '@/app/_lib/anime-search-results';
 import { searchCuratedAnime } from '@/app/_lib/curated-anime-search';
@@ -44,9 +51,10 @@ export const AnimeSearchResults = () => {
     },
     { input: '', error: '' },
   );
+  const deferredQuery = useDeferredValue(query);
   const curated =
-    query.length >= 2 && !url && !urlError
-      ? searchCuratedAnime(curatedImages, query)
+    deferredQuery.length >= 2 && !url && !urlError
+      ? searchCuratedAnime(curatedImages, deferredQuery)
       : [];
   const provider = (search.data?.pages ?? []).map((page) =>
     [...page.items]
@@ -71,27 +79,55 @@ export const AnimeSearchResults = () => {
       );
 
   const reducedMotion = useReducedMotion();
-  const visibleResults = results.filter(
-    (result, index, all) =>
-      !imported.has(result.id) &&
-      all.findIndex((entry) => entry.id === result.id) === index,
-  );
-  const displacement = useSearchDisplacement(visibleResults);
-  const loadingImages = visibleResults.some(
-    (result) => !result.image && !Object.hasOwn(dimensions, result.id),
-  );
-
-  const pageFor = (id: string) => {
-    if (curated.some((item) => item.id === id)) {
-      return 'curated';
+  const seen = new Set<string>();
+  const visibleResults = results.filter((result) => {
+    if (imported.has(result.id) || seen.has(result.id)) {
+      return false;
     }
-
-    return String(
-      search.data?.pages.findIndex((page) =>
-        page.items.some((item) => item.id === id),
-      ) ?? -1,
+    seen.add(result.id);
+    return true;
+  });
+  const displacement = useSearchDisplacement(visibleResults);
+  const window = useViewportWindow(displacement.gridRef);
+  const columns = Math.max(1, window.columns);
+  const gap = window.rem * 0.125;
+  const rowHeight = window.rem * 6 + gap;
+  const rows = Math.ceil(displacement.results.length / columns);
+  const first = Math.max(0, Math.floor(window.top / rowHeight) * columns);
+  const last = Math.min(
+    displacement.results.length,
+    Math.ceil(window.bottom / rowHeight) * columns,
+  );
+  const rendered = displacement.results.flatMap((result, index) =>
+    (index >= first && index < last) || result.id === displacement.draggedId
+      ? [{ result, index }]
+      : [],
+  );
+  const loadingImages = rendered.some(
+    ({ result }) => !result.image && !Object.hasOwn(dimensions, result.id),
+  );
+  const previousQuery = useRef(query);
+  useEffect(() => {
+    if (previousQuery.current === query) {
+      return;
+    }
+    previousQuery.current = query;
+    const viewport = displacement.gridRef.current?.closest(
+      '[data-slot="scroll-area-viewport"]',
     );
-  };
+    if (viewport) {
+      viewport.scrollTop = 0;
+    }
+  }, [query, displacement.gridRef]);
+
+  const pagesById = new Map(
+    search.data?.pages.flatMap((page, index) =>
+      page.items.map((item) => [item.id, String(index)] as const),
+    ) ?? [],
+  );
+  const curatedIds = new Set(curated.map((item) => item.id));
+  const pageFor = (id: string) =>
+    curatedIds.has(id) ? 'curated' : (pagesById.get(id) ?? '-1');
 
   const loaded = (id: string, image: TierImage | null) =>
     setDimensions((current) =>
@@ -130,7 +166,7 @@ export const AnimeSearchResults = () => {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <search className="shrink-0">
         <form action={searchAction} aria-busy={submitting}>
           <label className="block text-xs text-muted-foreground">
@@ -161,19 +197,21 @@ export const AnimeSearchResults = () => {
       >
         <div
           ref={displacement.gridRef}
-          className="grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] items-center gap-0.5 lg:grid-cols-3"
+          className="relative grid shrink-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-0.5 lg:grid-cols-3"
+          style={{ height: Math.max(0, rows * rowHeight - gap) }}
         >
           {!waiting &&
             !urlError &&
-            displacement.results.map((result) => (
+            rendered.map(({ result, index }) => (
               <motion.div
                 key={result.id}
                 layout="position"
-                className={
-                  displacement.draggedId === result.id
-                    ? 'outline-1 -outline-offset-1 outline-dashed outline-divider'
-                    : undefined
-                }
+                className={`absolute flex h-24 items-center justify-center ${displacement.draggedId === result.id ? 'outline-1 -outline-offset-1 outline-dashed outline-divider' : ''}`}
+                style={{
+                  top: Math.floor(index / columns) * rowHeight,
+                  left: `calc(${index % columns} * (100% + ${gap}px) / ${columns})`,
+                  width: `calc((100% - ${(columns - 1) * gap}px) / ${columns})`,
+                }}
                 initial={false}
                 data-search-result={result.id}
                 data-search-page={pageFor(result.id)}

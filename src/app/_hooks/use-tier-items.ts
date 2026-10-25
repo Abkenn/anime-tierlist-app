@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffectEvent,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -14,6 +15,7 @@ import {
   availableRanksAtom,
   tierItemsAtom,
 } from '@/app/_atoms/tierlist/items.atoms';
+import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import {
   draggedSearchItemAtom,
   searchDragPointAtom,
@@ -87,6 +89,8 @@ export const useTierItems = ({
     ],
   ]);
   const [items, setItems] = useAtom(tierItemsAtom);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const setPosterLayout = useSetAtom(posterLayoutAtom);
   const setAvailableRanks = useSetAtom(availableRanksAtom);
   const [rows, setRows] = useState<Row[]>([]);
   const [slot, setSlot] = useState<DropSlot | null>(null);
@@ -178,6 +182,33 @@ export const useTierItems = ({
     });
   };
 
+  const previewBoxes = useMemo(() => {
+    const grouped = new Map<TierRank, Item[]>();
+    previewItems.forEach((item) => {
+      const rank = getVisibleRank(item, ranks);
+      const group = grouped.get(rank) ?? [];
+      group.push(item);
+      grouped.set(rank, group);
+    });
+    return new Map(
+      rows.map((row) => [
+        row.rank,
+        layoutTierItems({
+          items: grouped.get(row.rank) ?? [],
+          size: row.size / rem.current,
+          mode: imageMode,
+          capacity,
+          wrap: wrapItems,
+        }),
+      ]),
+    );
+  }, [previewItems, ranks, rows, imageMode, capacity, wrapItems]);
+  const previewBoxById = useMemo(
+    () =>
+      new Map([...previewBoxes.values()].flat().map((box) => [box.id, box])),
+    [previewBoxes],
+  );
+
   const positionFor = (
     item: Item,
     currentItems: Item[],
@@ -185,11 +216,12 @@ export const useTierItems = ({
   ): TierItemPosition | null => {
     const rank = visibleRank(item);
     const row = currentRows.find((value) => value.rank === rank);
-    const box = rank
-      ? boxesFor(rank, currentItems, currentRows).find(
-          (value) => value.id === item.id,
-        )
-      : undefined;
+    let box = previewBoxById.get(item.id);
+    if (currentItems !== previewItems || currentRows !== rows) {
+      box = boxesFor(rank, currentItems, currentRows).find(
+        (value) => value.id === item.id,
+      );
+    }
 
     if (!row || !box) {
       return null;
@@ -203,11 +235,39 @@ export const useTierItems = ({
     };
   };
 
+  const posterLayout = useMemo(
+    () =>
+      previewItems.flatMap((item) => {
+        const row = rows.find(
+          (row) => row.rank === getVisibleRank(item, ranks),
+        );
+        const box = previewBoxById.get(item.id);
+        return row && box
+          ? [
+              {
+                id: item.id,
+                x: row.x + (itemGapRem + box.x) * rem.current,
+                y:
+                  row.y +
+                  itemGapRem * rem.current +
+                  box.line * (row.size + itemGapRem * rem.current),
+                width: box.width * rem.current,
+                height: row.size,
+              },
+            ]
+          : [];
+      }),
+    [previewItems, rows, ranks, previewBoxById],
+  );
+  useLayoutEffect(() => {
+    setPosterLayout(posterLayout);
+  }, [posterLayout, setPosterLayout]);
+
   const getCanvasWidth = () =>
     Math.max(
       viewportWidth / rem.current,
       ...rows.map((row) => {
-        const boxes = boxesFor(row.rank, previewItems);
+        const boxes = previewBoxes.get(row.rank) ?? [];
         const right = Math.max(0, ...boxes.map((box) => box.x + box.width));
 
         return (
@@ -444,8 +504,7 @@ export const useTierItems = ({
     boardRef,
     viewportRef,
     canvasWidth: `${getCanvasWidth()}rem`,
-    lines: (rank: TierRank) =>
-      (boxesFor(rank, previewItems).at(-1)?.line ?? 0) + 1,
+    lines: (rank: TierRank) => (previewBoxes.get(rank)?.at(-1)?.line ?? 0) + 1,
     updateItem: (
       id: string,
       changes: Partial<
@@ -464,6 +523,8 @@ export const useTierItems = ({
           : [...current, item],
       ),
     items,
+    posterLayout,
+    draggingId,
     announcement,
     visibleRank,
     targetRank: activeSlot?.rank ?? null,
@@ -472,9 +533,13 @@ export const useTierItems = ({
       : null,
     position: (item: Item) =>
       positionFor(item, item.id === slot?.id ? items : previewItems, rows),
-    start: hover,
+    start: (id: string, x: number, y: number) => {
+      setDraggingId(id);
+      hover(id, x, y);
+    },
     move: hover,
     drop: (id: string, clientX: number, clientY: number) => {
+      setDraggingId(null);
       setDragRegion(null);
       if (inDiscardZone(clientX, clientY)) {
         setItems((current) => current.filter((item) => item.id !== id));
@@ -502,6 +567,7 @@ export const useTierItems = ({
       return commit(next);
     },
     cancel: () => {
+      setDraggingId(null);
       setDragRegion(null);
       setSlot(null);
     },

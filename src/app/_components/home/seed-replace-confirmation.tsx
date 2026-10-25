@@ -2,6 +2,7 @@
 
 import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { useActionState } from 'react';
+import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 
 type SeedReplaceConfirmationProps = {
   open: boolean;
@@ -52,13 +53,13 @@ export const SeedReplaceConfirmation = ({
               Cancel
             </AlertDialog.Close>
 
-            <button
-              type="submit"
+            <FormSubmitButton
+              pendingLabel="Replacing..."
               disabled={submitting}
               className="min-h-9 cursor-pointer border border-foreground px-3 hover:bg-accent disabled:opacity-50"
             >
-              {submitting ? 'Replacing...' : 'Replace tierlist'}
-            </button>
+              Replace tierlist
+            </FormSubmitButton>
           </form>
         </AlertDialog.Popup>
       </AlertDialog.Portal>

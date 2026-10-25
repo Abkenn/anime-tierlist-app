@@ -12,7 +12,11 @@ export const getGooglePrincipal = async () => {
   }
   const account = await findAuthGoogleAccount(session.user.id);
   return account
-    ? { subject: account.accountId, displayName: session.user.name }
+    ? {
+        subject: account.accountId,
+        displayName: session.user.name,
+        userId: session.user.id,
+      }
     : null;
 };
 export const getGoogleIdentity = async () => {

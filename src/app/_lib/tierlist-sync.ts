@@ -10,7 +10,8 @@ export const tierlistDocumentSchema = localTierlistSchema
   .pick({ version: true, items: true, ranks: true, imageMode: true })
   .refine(
     (document) =>
-      new TextEncoder().encode(JSON.stringify(document)).byteLength <= 700_000,
+      new TextEncoder().encode(JSON.stringify(document)).byteLength <=
+      3_000_000,
     'This tierlist is too large to sync.',
   );
 export type TierlistDocument = z.infer<typeof tierlistDocumentSchema>;

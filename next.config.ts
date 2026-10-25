@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     },
   ],
   experimental: {
+    serverActions: { bodySizeLimit: '4mb' },
     turbopackRustReactCompiler: true,
     turbopackPluginRuntimeStrategy: 'workerThreads',
   },

@@ -18,10 +18,11 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     overview.overflowing &&
     (overview.visible || hovered || focused || dragging);
   const scale = overview.viewportHeight / overview.canvasHeight;
+  const scaleX = Math.min(scale, 240 / overview.canvasWidth);
   const frame = {
-    left: overview.left * scale,
+    left: overview.left * scaleX,
     top: (overview.top / 100) * overview.canvasHeight * scale,
-    width: overview.viewportWidth * scale,
+    width: overview.viewportWidth * scaleX,
     height: overview.viewportHeight * scale,
   };
 
@@ -50,12 +51,16 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             }
           }}
           style={{
-            width: overview.canvasWidth * scale,
+            width: overview.canvasWidth * scaleX,
             height: overview.viewportHeight,
           }}
           className="absolute right-4 top-0 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
         >
-          <TierBoardMiniature overview={overview} scale={scale} />
+          <TierBoardMiniature
+            overview={overview}
+            scale={scale}
+            scaleX={scaleX}
+          />
 
           {overview.rows.map((row) => (
             <button

@@ -2,7 +2,7 @@
 
 import { useAtom, useAtomValue } from 'jotai';
 import { X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import {
   renamingItemIdAtom,
   tierFindQueryAtom,
@@ -18,13 +18,14 @@ import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 export const TierBoardFind = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useAtom(tierFindQueryAtom);
+  const deferredQuery = useDeferredValue(query);
   const items = useAtomValue(tierItemsAtom);
   const editing = useAtomValue(editingItemIdAtom);
   const renaming = useAtomValue(renamingItemIdAtom);
   const input = useRef<HTMLInputElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const count = items.filter((item) =>
-    matchesTierItemLabel(item, query),
+    matchesTierItemLabel(item, deferredQuery),
   ).length;
 
   const close = () => {

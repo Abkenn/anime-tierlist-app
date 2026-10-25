@@ -636,7 +636,10 @@ export const OriginalRatioCrop: Story = {
     await waitFor(() =>
       expect(
         Number(
-          item.querySelector('svg')?.getAttribute('viewBox')?.split(' ')[2],
+          item
+            .querySelector('svg[role="img"]')
+            ?.getAttribute('viewBox')
+            ?.split(' ')[2],
         ),
       ).toBeCloseTo(800),
     );
@@ -648,7 +651,7 @@ export const OriginalRatioCrop: Story = {
     await expect(expansion).toBeDisabled();
     await userEvent.click(page.getByRole('menuitem', { name: 'Reset trim' }));
     await waitFor(() =>
-      expect(item.querySelector('svg')).toHaveAttribute(
+      expect(item.querySelector('svg[role="img"]')).toHaveAttribute(
         'viewBox',
         '0 0 1600 900',
       ),
@@ -681,7 +684,7 @@ export const CustomRatioPosition: Story = {
       name: 'Item Position test in S+',
     });
     const originalWidth = item.getBoundingClientRect().width;
-    const image = () => item.querySelector('span > svg');
+    const image = () => item.querySelector('svg[role="img"]');
     fireEvent.contextMenu(item);
     await userEvent.click(
       await page.findByRole('menuitem', { name: 'Edit crop' }),
@@ -889,7 +892,9 @@ export const DenseLibrary: Story = {
       ).toBeCloseTo(0.85);
       expect(labels.length).toBeGreaterThan(1);
       expect(Math.max(...labels) - Math.min(...labels)).toBeLessThan(0.1);
-      expect(items.length).toBe(500);
+      expect(items.length).toBeGreaterThan(0);
+      expect(items.length).toBeLessThan(500);
+      expect(canvasElement.textContent).toContain('500 items');
       expect(Math.min(...items)).toBeGreaterThan(0);
       expect(Math.max(...items) - Math.min(...items)).toBeLessThan(0.1);
     });
@@ -940,9 +945,11 @@ export const RenameAndFind: Story = {
     ).toHaveClass('opacity-20');
     await expect(page.getByText('1 found')).toBeVisible();
     fireEvent.keyDown(find, { code: 'Escape' });
-    await expect(
-      canvas.getByRole('button', { name: 'Item Another anime in S' }),
-    ).not.toHaveClass('opacity-20');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Item Another anime in S' }),
+      ).not.toHaveClass('opacity-20'),
+    );
   },
 };
 

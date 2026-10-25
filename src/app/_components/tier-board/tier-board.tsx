@@ -83,7 +83,7 @@ export const TierBoard = ({
   return (
     <section
       aria-label="Anime tierlist"
-      className="mt-1 flex min-h-0 flex-1 flex-col"
+      className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col"
     >
       <TierBoardFind />
 

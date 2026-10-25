@@ -1,6 +1,8 @@
 'use client';
 
+import { useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
+import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
 type OverviewRow = {
@@ -32,6 +34,7 @@ type Overview = {
 };
 
 export const useTierOverview = (viewport: HTMLElement | null) => {
+  const posters = useAtomValue(posterLayoutAtom);
   const [overview, setOverview] = useState<Overview>({
     rows: [],
     posters: [],
@@ -96,18 +99,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
             .querySelector('[data-tier-rank]')
             ?.firstElementChild?.getBoundingClientRect().width ?? 96,
         left: viewport.scrollLeft,
-        posters: Array.from(
-          viewport.querySelectorAll<HTMLElement>('[data-tier-item-id]'),
-        ).map((item) => {
-          const rect = item.getBoundingClientRect();
-          return {
-            id: item.dataset.tierItemId ?? '',
-            x: rect.left - bounds.left + viewport.scrollLeft,
-            y: rect.top - bounds.top + viewport.scrollTop,
-            width: rect.width,
-            height: rect.height,
-          };
-        }),
+        posters: [],
         rows: Array.from(
           viewport.querySelectorAll<HTMLElement>('[data-tier-rank]'),
         ).map((row) => {
@@ -251,6 +243,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
 
   return {
     ...overview,
+    posters,
     enabled: previewEnabled,
     visible: previewEnabled && overview.overflowing && (scrolling || nearEdge),
     jumpToRank,

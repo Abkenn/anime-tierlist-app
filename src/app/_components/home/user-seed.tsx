@@ -3,6 +3,7 @@
 import { Popover } from '@base-ui/react/popover';
 import { ArrowRight, Check, Copy } from 'lucide-react';
 import { useActionState, useId, useState } from 'react';
+import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
@@ -43,9 +44,28 @@ export const UserSeed = ({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
-  const [shareSeed, setShareSeed] = useState('');
-  const [sharing, setSharing] = useState(false);
-  const [shareError, setShareError] = useState('');
+  const [shareVisible, setShareVisible] = useState(false);
+  const [shareState, shareAction, sharing] = useActionState(
+    async () => {
+      setShareVisible(true);
+      try {
+        const seed = await onShare();
+        setCopied(false);
+        return { seed, error: '' };
+      } catch (failure) {
+        return {
+          seed: '',
+          error: tierlistErrorMessage(
+            failure,
+            'Unable to create a share seed. Try again.',
+          ),
+        };
+      }
+    },
+    { seed: '', error: '' },
+  );
+  const shareSeed = shareVisible && !sharing ? shareState.seed : '';
+  const shareError = shareVisible && !sharing ? shareState.error : '';
   const [confirmReplace, setConfirmReplace] = useState(false);
   const importId = useId();
   const validSeed = userSeedSchema.safeParse(importSeed).success;
@@ -72,24 +92,6 @@ export const UserSeed = ({
   const displayedSeed = googleConnected ? shareSeed : seed;
   const importLabel = googleConnected ? 'Replace tierlist' : 'Import seed';
 
-  const createShare = async () => {
-    setSharing(true);
-    setShareError('');
-    try {
-      setShareSeed(await onShare());
-      setCopied(false);
-    } catch (failure) {
-      setShareError(
-        tierlistErrorMessage(
-          failure,
-          'Unable to create a share seed. Try again.',
-        ),
-      );
-    } finally {
-      setSharing(false);
-    }
-  };
-
   const submitImport = async (value = importSeed) => {
     const parsed = userSeedSchema.safeParse(value);
     if (!parsed.success) {
@@ -98,7 +100,7 @@ export const UserSeed = ({
     }
     if (await onImport(parsed.data)) {
       setImportSeed('');
-      setShareSeed('');
+      setShareVisible(false);
     }
     setConfirmReplace(false);
   };
@@ -121,8 +123,7 @@ export const UserSeed = ({
         onOpenChange(next);
         setCopied(false);
         setCopyFailed(false);
-        setShareSeed('');
-        setShareError('');
+        setShareVisible(false);
       }}
     >
       <Popover.Trigger
@@ -172,14 +173,15 @@ export const UserSeed = ({
               </p>
 
               {googleConnected && !shareSeed ? (
-                <button
-                  type="button"
-                  disabled={busy || sharing || !canSignIn}
-                  onClick={() => void createShare()}
-                  className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
-                >
-                  {sharing ? 'Creating share seed...' : 'Create share seed'}
-                </button>
+                <form action={shareAction}>
+                  <FormSubmitButton
+                    disabled={busy || !canSignIn}
+                    pendingLabel="Creating share seed..."
+                    className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
+                  >
+                    Create share seed
+                  </FormSubmitButton>
+                </form>
               ) : (
                 <div className="group relative">
                   <input
@@ -259,8 +261,7 @@ export const UserSeed = ({
                   className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
                 />
 
-                <button
-                  type="submit"
+                <FormSubmitButton
                   aria-label={busy ? 'Opening tierlist' : importLabel}
                   title={googleConnected ? 'Replace tierlist' : 'Import seed'}
                   disabled={
@@ -273,7 +274,7 @@ export const UserSeed = ({
                   className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center hover:bg-accent focus-visible:outline-2 disabled:cursor-default disabled:opacity-40"
                 >
                   <ArrowRight className="size-4" />
-                </button>
+                </FormSubmitButton>
               </div>
               <p id={`${importId}-error`} role="status" className="mt-2">
                 {validationMessage || (!validSeed ? importError : '')}

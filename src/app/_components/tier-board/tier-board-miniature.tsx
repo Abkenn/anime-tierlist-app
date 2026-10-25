@@ -12,11 +12,13 @@ import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 type TierBoardMiniatureProps = {
   overview: ReturnType<typeof useTierOverview>;
   scale: number;
+  scaleX: number;
 };
 
 export const TierBoardMiniature = ({
   overview,
   scale,
+  scaleX,
 }: TierBoardMiniatureProps) => {
   const items = useAtomValue(tierItemsAtom);
   const mode = useAtomValue(imageModeAtom);
@@ -31,7 +33,7 @@ export const TierBoardMiniature = ({
       style={{
         width: overview.canvasWidth,
         height: overview.canvasHeight,
-        transform: `scale(${scale})`,
+        transform: `scale(${scaleX}, ${scale})`,
       }}
     >
       {overview.rows.map((row) => (
@@ -52,48 +54,71 @@ export const TierBoardMiniature = ({
         </div>
       ))}
 
-      {overview.posters.map((poster) => {
-        const item = byId.get(poster.id);
-        if (!item) {
-          return null;
-        }
+      {overview.posters.length > 400 && (
+        <svg
+          aria-hidden="true"
+          width={overview.canvasWidth}
+          height={overview.canvasHeight}
+          className="absolute inset-0 fill-cloud/25"
+        >
+          <path
+            d={overview.posters
+              .map(
+                (poster) =>
+                  `M${poster.x},${poster.y}h${poster.width}v${poster.height}h${-poster.width}Z`,
+              )
+              .join('')}
+          />
+        </svg>
+      )}
 
-        return (
-          <div
-            key={poster.id}
-            data-tier-miniature-poster={poster.id}
-            className="absolute overflow-hidden text-xs text-white"
-            style={{
-              left: poster.x,
-              top: poster.y,
-              width: poster.width,
-              height: poster.height,
-            }}
-          >
-            {item.image ? (
-              <TierItemImage
-                image={item.image}
-                mode={mode}
-                crop={item.crop ?? { x: 0.5, y: 0.5 }}
-                trim={item.trim}
-              />
-            ) : (
-              <span className="flex size-full items-center justify-center bg-gray">
-                {item.label}
-              </span>
-            )}
+      {overview.posters
+        .filter(
+          (_, index) =>
+            index % Math.max(1, Math.ceil(overview.posters.length / 400)) === 0,
+        )
+        .map((poster) => {
+          const item = byId.get(poster.id);
+          if (!item) {
+            return null;
+          }
 
-            {item.title?.text && (
-              <TierItemTitle
-                title={item.title}
-                image={item.image}
-                mode={mode}
-                trim={item.trim}
-              />
-            )}
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={poster.id}
+              data-tier-miniature-poster={poster.id}
+              className="absolute overflow-hidden text-xs text-white"
+              style={{
+                left: poster.x,
+                top: poster.y,
+                width: poster.width,
+                height: poster.height,
+              }}
+            >
+              {item.image ? (
+                <TierItemImage
+                  image={item.image}
+                  mode={mode}
+                  crop={item.crop ?? { x: 0.5, y: 0.5 }}
+                  trim={item.trim}
+                />
+              ) : (
+                <span className="flex size-full items-center justify-center bg-gray">
+                  {item.label}
+                </span>
+              )}
+
+              {item.title?.text && (
+                <TierItemTitle
+                  title={item.title}
+                  image={item.image}
+                  mode={mode}
+                  trim={item.trim}
+                />
+              )}
+            </div>
+          );
+        })}
     </div>
   );
 };
