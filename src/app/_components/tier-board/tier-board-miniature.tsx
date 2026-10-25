@@ -27,7 +27,7 @@ export const TierBoardMiniature = ({
       aria-hidden="true"
       inert
       data-tier-miniature=""
-      className="pointer-events-none absolute left-0 top-0 origin-top-left overflow-hidden grayscale-35 border border-ink bg-charcoal text-cloud"
+      className="pointer-events-none absolute left-0 top-0 origin-top-left overflow-hidden grayscale-20 border border-ink bg-charcoal text-cloud"
       style={{
         width: overview.canvasWidth,
         height: overview.canvasHeight,

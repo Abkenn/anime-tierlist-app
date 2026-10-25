@@ -1,6 +1,12 @@
 'use client';
 
-import { type PropsWithChildren, type Ref, useCallback, useState } from 'react';
+import {
+  type PropsWithChildren,
+  type Ref,
+  useCallback,
+  useId,
+  useState,
+} from 'react';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useTierOverview } from '@/app/_hooks/use-tier-overview';
 import { TierScrollOverview } from './tier-scroll-overview';
@@ -15,6 +21,7 @@ export const TierViewport = ({
   ref,
   scrollable,
 }: TierViewportProps) => {
+  const viewportId = useId();
   const [viewport, setViewport] = useState<HTMLElement | null>(null);
   const overview = useTierOverview(viewport);
   const bindViewport = useCallback(
@@ -52,6 +59,7 @@ export const TierViewport = ({
           render: (
             <section
               ref={bindViewport}
+              id={viewportId}
               data-tier-viewport=""
               aria-label="Tierlist board scroll"
             />

@@ -49,6 +49,15 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
   const [scrolling, setScrolling] = useState(false);
   const [nearEdge, setNearEdge] = useState(false);
 
+  const scrollToOffset = (top: number) => {
+    if (viewport) {
+      viewport.scrollTop = Math.max(
+        0,
+        Math.min(top, viewport.scrollHeight - viewport.clientHeight),
+      );
+    }
+  };
+
   const jumpToRank = (rank: string) => {
     const row = Array.from(
       viewport?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? [],
@@ -241,5 +250,11 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     enabled: previewEnabled,
     visible: previewEnabled && overview.overflowing && (scrolling || nearEdge),
     jumpToRank,
+    scrollToOffset,
+    getScrollOffset: () => viewport?.scrollTop ?? 0,
+    scrollByOffset: (offset: number) =>
+      scrollToOffset((viewport?.scrollTop ?? 0) + offset),
+    viewportId: viewport?.id,
+    focusViewport: () => viewport?.focus({ preventScroll: true }),
   };
 };
