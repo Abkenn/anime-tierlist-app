@@ -51,6 +51,8 @@ export const getTierlistAccountStatus = ({
     offline: 'Saved on this device. Backup paused.',
     conflict: 'Choose which saved version to keep.',
     outdated: 'Saved on this device.',
+    unauthorized:
+      'Online saving requires sign-in. Your local changes are kept.',
   };
   const messages = {
     loading: 'Restoring tierlist...',

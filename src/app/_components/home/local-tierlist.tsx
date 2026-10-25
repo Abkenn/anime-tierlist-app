@@ -28,6 +28,7 @@ export const LocalTierlist = ({
     accountOpen,
     setAccountOpen,
     googleConnected,
+    accountUnavailable,
     status,
     actions,
   } = useTierlistAccount(initialAccount);
@@ -111,7 +112,7 @@ export const LocalTierlist = ({
             googleConnected={
               googleConnected || Boolean(status.restoringAccount)
             }
-            canSignIn={status.backedUp}
+            canSignIn={status.backedUp || sync.status === 'unauthorized'}
             onGoogleSignIn={actions.signIn}
             onGoogleSignOut={actions.restoreDevice}
             onShare={actions.shareSeed}
@@ -137,9 +138,12 @@ export const LocalTierlist = ({
       )}
 
       <div
-        className="flex min-h-0 flex-1 flex-col"
-        inert={storage.status === 'loading' || busy}
-        aria-busy={storage.status === 'loading' || busy}
+        className={cn(
+          'flex min-h-0 flex-1 flex-col',
+          accountUnavailable && 'invisible',
+        )}
+        inert={storage.status === 'loading' || busy || accountUnavailable}
+        aria-busy={storage.status === 'loading' || busy || accountUnavailable}
       >
         {children}
       </div>

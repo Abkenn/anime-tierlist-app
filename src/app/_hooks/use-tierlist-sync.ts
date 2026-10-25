@@ -26,6 +26,7 @@ type SyncScope = {
   failed: boolean;
   attempt: number;
   outdated: boolean;
+  unauthorized: boolean;
 };
 type SyncState = {
   status:
@@ -34,7 +35,8 @@ type SyncState = {
     | 'saving'
     | 'offline'
     | 'conflict'
-    | 'outdated';
+    | 'outdated'
+    | 'unauthorized';
   message?: string;
   conflict?: RemoteTierlist;
   retryAt?: number;
@@ -52,7 +54,7 @@ export const useTierlistSync = (
   const seed = local?.seed;
 
   const retry = () => {
-    if (scope.current?.outdated) {
+    if (scope.current?.outdated || scope.current?.unauthorized) {
       return;
     }
 
@@ -115,7 +117,14 @@ export const useTierlistSync = (
 
   useEffect(() => {
     scope.current = seed
-      ? { seed, running: false, failed: false, outdated: false, attempt: -1 }
+      ? {
+          seed,
+          running: false,
+          failed: false,
+          outdated: false,
+          unauthorized: false,
+          attempt: -1,
+        }
       : null;
     setState({ status: 'connecting' });
 
@@ -126,7 +135,11 @@ export const useTierlistSync = (
 
   useEffect(() => {
     const reconnect = () => {
-      if (scope.current?.running || scope.current?.outdated) {
+      if (
+        scope.current?.running ||
+        scope.current?.outdated ||
+        scope.current?.unauthorized
+      ) {
         return;
       }
 
@@ -223,6 +236,7 @@ export const useTierlistSync = (
           );
 
           if (!result.ok) {
+            active.unauthorized = result.code === 'unauthorized';
             throw new Error(result.message);
           }
 
@@ -253,6 +267,7 @@ export const useTierlistSync = (
           });
 
           if (!result.ok) {
+            active.unauthorized = result.code === 'unauthorized';
             throw new Error(result.message);
           }
 
@@ -279,17 +294,21 @@ export const useTierlistSync = (
       } catch (error) {
         active.failed = true;
         active.outdated ||= isOutdatedTierlistClient(error);
+        const failedStatus = active.unauthorized ? 'unauthorized' : 'offline';
 
         if (scope.current === active) {
           setState({
-            status: active.outdated ? 'outdated' : 'offline',
+            status: active.outdated ? 'outdated' : failedStatus,
             message: active.outdated
               ? tierlistUpdateMessage
               : tierlistErrorMessage(
                   error,
                   'Couldn’t reach your saved tierlist right now.',
                 ),
-            retryAt: active.outdated ? undefined : Date.now() + 30_000,
+            retryAt:
+              active.outdated || active.unauthorized
+                ? undefined
+                : Date.now() + 30_000,
           });
         }
       } finally {

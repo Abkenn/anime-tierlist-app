@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useAccountDisplayHint } from '@/app/_hooks/use-account-display-hint';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { usePromiseValue } from '@/app/_hooks/use-promise-value';
@@ -34,6 +34,8 @@ export const useTierlistAccount = (
   const [error, setError] = useState('');
   const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
+  const [accountVerified, setAccountVerified] = useState(false);
+  const rejectedProfile = useRef('');
   const accountHint = useAccountDisplayHint();
   const [resolvedUserId, setResolvedUserId] = useState<string | null>();
   const sessionUserId =
@@ -52,7 +54,10 @@ export const useTierlistAccount = (
     storage,
     busy ||
       !identityReady ||
-      Boolean(storage.snapshot?.accountOwnerId && !googleConnected),
+      (googleConnected &&
+        (!accountVerified ||
+          !sessionUserId ||
+          googleProfileKey !== storage.seed)),
     googleConnected,
   );
   const status = getTierlistAccountStatus({
@@ -202,6 +207,7 @@ export const useTierlistAccount = (
     });
 
   const completeGoogleSignIn = useEffectEvent(async (userId: string | null) => {
+    setAccountVerified(false);
     const result = new URL(window.location.href).searchParams.get('google');
 
     if (result) {
@@ -250,6 +256,8 @@ export const useTierlistAccount = (
       } else if (!account && storage.snapshot?.accountOwnerId) {
         await storage.restoreDeviceProfile();
       }
+
+      setAccountVerified(true);
     } catch (failure) {
       if (isOutdatedTierlistClient(failure)) {
         sync.requireReload();
@@ -274,7 +282,10 @@ export const useTierlistAccount = (
       initialReady &&
       sessionReady &&
       !busy &&
-      resolvedUserId !== sessionUserId
+      (resolvedUserId !== sessionUserId ||
+        (!sessionUserId &&
+          !session.error &&
+          Boolean(storage.snapshot?.accountOwnerId)))
     ) {
       void completeGoogleSignIn(sessionUserId);
     }
@@ -285,7 +296,27 @@ export const useTierlistAccount = (
     sessionReady,
     busy,
     resolvedUserId,
+    session.error,
+    storage.snapshot?.accountOwnerId,
   ]);
+
+  const restoreRejectedProfile = useEffectEvent(() => {
+    if (rejectedProfile.current !== storage.seed) {
+      rejectedProfile.current = storage.seed;
+      void perform(async () => {
+        setGoogleProfileKey('');
+        setGoogleName('');
+        accountHint.clear();
+        await storage.restoreDeviceProfile();
+      });
+    }
+  });
+
+  useEffect(() => {
+    if (sync.status === 'unauthorized' && !busy && storage.imported) {
+      restoreRejectedProfile();
+    }
+  }, [sync.status, busy, storage.imported]);
 
   return {
     storage,
@@ -295,6 +326,12 @@ export const useTierlistAccount = (
     accountOpen,
     setAccountOpen,
     googleConnected,
+    accountUnavailable: Boolean(
+      storage.snapshot?.accountOwnerId &&
+        sessionReady &&
+        !session.error &&
+        !sessionUserId,
+    ),
     status,
     actions: {
       importSeed,
