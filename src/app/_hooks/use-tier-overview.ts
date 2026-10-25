@@ -167,6 +167,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
         viewport.scrollBy({
           top: event.deltaY * unit,
           left: event.deltaX * unit,
+          behavior: 'instant',
         });
       }
     };

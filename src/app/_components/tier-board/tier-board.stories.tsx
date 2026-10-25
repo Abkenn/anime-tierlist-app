@@ -975,4 +975,27 @@ export const ScrollOverview: Story = {
       </div>
     </TierBoardProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const viewport = canvasElement.querySelector<HTMLElement>(
+      '[data-tier-viewport]',
+    );
+    if (!viewport) {
+      throw new Error('Tierlist viewport is missing.');
+    }
+
+    viewport.scrollTop = 200;
+    fireEvent.scroll(viewport);
+    const preview = await within(canvasElement).findByRole('navigation', {
+      name: 'Tierlist overview',
+    });
+
+    expect(getComputedStyle(preview).overflowY).toBe('clip');
+    fireEvent.wheel(preview, { deltaY: 100 });
+    await waitFor(() => expect(viewport.scrollTop).toBe(300));
+    fireEvent.wheel(preview, { deltaY: -60 });
+    await waitFor(() => expect(viewport.scrollTop).toBe(240));
+    expect(preview.scrollTop).toBe(0);
+    fireEvent.wheel(preview, { deltaY: 100, ctrlKey: true });
+    expect(viewport.scrollTop).toBe(240);
+  },
 };

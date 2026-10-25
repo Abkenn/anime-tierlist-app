@@ -66,7 +66,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             height: previewHeight,
             top: progress * (overview.viewportHeight - previewHeight),
           }}
-          className="absolute right-4 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
+          className="absolute right-4 z-30 overflow-clip border border-divider/60 bg-popover/90 shadow-sm"
         >
           <TierBoardMinimap
             rows={overview.rows}
