@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { useTierOverview } from '@/app/_hooks/use-tier-overview';
 import { TierBoardMiniature } from './tier-board-miniature';
 
@@ -9,8 +9,6 @@ type TierScrollOverviewProps = { overview: ReturnType<typeof useTierOverview> };
 
 export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
   const reducedMotion = useReducedMotion();
-  const [element, setElement] = useState<HTMLElement | null>(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -19,10 +17,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     overview.enabled &&
     overview.overflowing &&
     (overview.visible || hovered || focused || dragging);
-  const scale = Math.min(
-    size.width / overview.canvasWidth,
-    size.height / overview.canvasHeight,
-  );
+  const scale = overview.viewportHeight / overview.canvasHeight;
   const frame = {
     left: overview.left * scale,
     top: (overview.top / 100) * overview.canvasHeight * scale,
@@ -30,23 +25,10 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     height: overview.viewportHeight * scale,
   };
 
-  useEffect(() => {
-    if (!element) {
-      return;
-    }
-    const resize = new ResizeObserver(() =>
-      setSize({ width: element.clientWidth, height: element.clientHeight }),
-    );
-    resize.observe(element);
-
-    return () => resize.disconnect();
-  }, [element]);
-
   return (
     <AnimatePresence initial={false}>
       {visible && (
         <motion.nav
-          ref={setElement}
           aria-label="Tierlist overview"
           aria-hidden={!visible}
           inert={!visible}
@@ -68,9 +50,10 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             }
           }}
           style={{
-            aspectRatio: `${overview.canvasWidth}/${overview.canvasHeight}`,
+            width: overview.canvasWidth * scale,
+            height: overview.viewportHeight,
           }}
-          className="absolute right-4 top-3 z-30 w-28 max-h-[calc(100%-1.5rem)] overflow-hidden border border-divider/60 bg-popover/90 shadow-sm sm:w-36"
+          className="absolute right-4 top-0 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
         >
           <TierBoardMiniature overview={overview} scale={scale} />
 
@@ -82,7 +65,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
               title={`${row.rank} · ${row.count} items`}
               onClick={() => overview.jumpToRank(row.rank)}
               style={{ top: `${row.top}%`, height: `${row.height}%` }}
-              className="absolute inset-x-0 cursor-pointer hover:bg-foreground/8 focus-visible:outline-1 focus-visible:-outline-offset-1"
+              className="absolute inset-x-0 cursor-pointer focus-visible:outline-1 focus-visible:-outline-offset-1"
             />
           ))}
 
