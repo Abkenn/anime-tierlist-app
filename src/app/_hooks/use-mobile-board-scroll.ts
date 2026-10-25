@@ -2,6 +2,7 @@
 
 import { animate, useReducedMotion } from 'motion/react';
 import { type RefObject, useCallback, useEffect, useRef } from 'react';
+import { getTouchScrollState } from '@/app/_lib/touch-scroll';
 
 type MobileBoardScrollInput = {
   enabled: boolean;
@@ -26,20 +27,7 @@ export const useMobileBoardScroll = ({
       return;
     }
 
-    const revealHeight = Math.max(
-      0,
-      viewport.scrollHeight - viewport.clientHeight,
-    );
-
-    return {
-      position: viewport.scrollTop + board.scrollTop,
-      max: revealHeight + Math.max(0, board.scrollHeight - board.clientHeight),
-      moveTo: (position: number) => {
-        const next = Math.max(0, position);
-        viewport.scrollTop = Math.min(revealHeight, next);
-        board.scrollTop = Math.max(0, next - revealHeight);
-      },
-    };
+    return getTouchScrollState(board, viewport);
   }, [viewportRef, boardRef]);
 
   const revealSearch = useCallback(() => {

@@ -203,7 +203,7 @@ export const AnimeSearchResults = () => {
       <ScrollArea
         className="min-h-0 flex-1"
         viewportProps={{
-          className: 'overscroll-contain pr-3',
+          className: 'overscroll-contain pr-3 max-lg:max-h-[calc(35dvh-7rem)]',
         }}
         aria-busy={waiting || search.isFetching || loadingImages}
       >

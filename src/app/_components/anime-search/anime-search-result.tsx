@@ -60,58 +60,89 @@ export const AnimeSearchResultCard = ({
 
   return (
     <>
-      <motion.button
-        type="button"
-        disabled={!image}
-        title={`${result.title} · Drag to a rank or click to add to Watching`}
-        className="relative block w-full touch-none cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
-        drag={Boolean(image)}
-        dragSnapToOrigin
-        dragMomentum={false}
-        dragElastic={0}
-        {...drag.triggerProps}
-        animate={{ opacity: drag.dragging ? 0 : 1 }}
+      <div
+        className="relative max-w-full"
+        style={{
+          width: image ? `${(image.width / image.height) * 6}rem` : '100%',
+        }}
       >
-        {state.status === 'loading' && (
-          <motion.span
-            aria-hidden="true"
-            initial={{ opacity: 0.5 }}
-            animate={{ opacity: reducedMotion ? 0.7 : [0.5, 0.85, 0.5] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 flex min-h-16 items-center justify-center bg-muted text-[0.625rem] text-muted-foreground"
-          >
-            <TerminalText text="Loading..." />
-          </motion.span>
-        )}
+        <motion.button
+          type="button"
+          disabled={!image}
+          title={`${result.title} · Drag to a rank or click to add to Watching`}
+          className="relative block w-full touch-none cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
+          drag={Boolean(image)}
+          dragSnapToOrigin
+          dragMomentum={false}
+          dragElastic={0}
+          {...drag.triggerProps}
+          animate={{ opacity: drag.dragging ? 0 : 1 }}
+        >
+          {state.status === 'loading' && (
+            <motion.span
+              aria-hidden="true"
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: reducedMotion ? 0.7 : [0.5, 0.85, 0.5] }}
+              transition={{
+                duration: 1.4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="absolute inset-0 flex min-h-16 items-center justify-center bg-muted text-[0.625rem] text-muted-foreground"
+            >
+              <TerminalText text="Loading..." />
+            </motion.span>
+          )}
 
-        {state.status === 'error' ? (
-          <span role="status">
-            <TerminalText text="Image could not be loaded. Check the URL or try another image." />
-          </span>
-        ) : (
-          <Image
-            draggable={false}
-            unoptimized
-            src={result.imageUrl}
-            alt={result.title}
-            width={image?.width ?? 160}
-            height={image?.height ?? 240}
-            className="mx-auto block size-auto max-h-24 max-w-full"
-            onLoad={(event) => {
-              const element = event.currentTarget;
-              const loaded = {
-                src: result.imageUrl,
-                width: element.naturalWidth,
-                height: element.naturalHeight,
-                alt: result.title,
-              };
-              setState({ status: 'ready', image: loaded });
-              onLoaded(result.id, loaded);
-            }}
-            onError={() => setState({ status: 'error' })}
-          />
+          {state.status === 'error' ? (
+            <span role="status">
+              <TerminalText text="Image could not be loaded. Check the URL or try another image." />
+            </span>
+          ) : (
+            <Image
+              draggable={false}
+              unoptimized
+              src={result.imageUrl}
+              alt={result.title}
+              width={image?.width ?? 160}
+              height={image?.height ?? 240}
+              className="mx-auto block size-auto max-h-24 max-w-full"
+              onLoad={(event) => {
+                const element = event.currentTarget;
+                const loaded = {
+                  src: result.imageUrl,
+                  width: element.naturalWidth,
+                  height: element.naturalHeight,
+                  alt: result.title,
+                };
+                setState({ status: 'ready', image: loaded });
+                onLoaded(result.id, loaded);
+              }}
+              onError={() => setState({ status: 'error' })}
+            />
+          )}
+        </motion.button>
+
+        {image && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 lg:hidden"
+          >
+            {[
+              'inset-x-0 top-0 h-0.5',
+              'inset-x-0 bottom-0 h-0.5',
+              'inset-y-0 left-0 w-0.5',
+              'inset-y-0 right-0 w-0.5',
+            ].map((edge) => (
+              <span
+                key={edge}
+                data-search-scroll-edge=""
+                className={`pointer-events-auto absolute touch-pan-y ${edge}`}
+              />
+            ))}
+          </div>
         )}
-      </motion.button>
+      </div>
 
       {drag.dragging &&
         image &&

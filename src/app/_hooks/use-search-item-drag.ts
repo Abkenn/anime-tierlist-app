@@ -42,6 +42,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
   const removeItem = useSetAtom(removeTierItemAtom);
 
   const cancel = () => {
+    dragged.current = true;
     active.current = false;
     dragControls.cancel();
     setDragging(false);

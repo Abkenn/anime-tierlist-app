@@ -2,6 +2,7 @@
 
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area';
 import { cn } from 'cn';
+import { useTwoFingerScroll } from '@/app/_hooks/use-two-finger-scroll';
 
 type ScrollAreaProps = ScrollAreaPrimitive.Root.Props & {
   orientation?: ScrollAreaPrimitive.Scrollbar.Props['orientation'] | 'both';
@@ -13,13 +14,29 @@ const ScrollArea = ({
   children,
   orientation = 'vertical',
   viewportProps,
+  onTouchStartCapture,
+  onClickCapture,
   ...props
 }: ScrollAreaProps) => {
+  const touchScroll = useTwoFingerScroll();
+
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
       className={cn('relative', className)}
       {...props}
+      onTouchStartCapture={(event) => {
+        onTouchStartCapture?.(event);
+        if (!event.defaultPrevented) {
+          touchScroll.onTouchStartCapture(event);
+        }
+      }}
+      onClickCapture={(event) => {
+        touchScroll.onClickCapture(event);
+        if (!event.defaultPrevented) {
+          onClickCapture?.(event);
+        }
+      }}
     >
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
