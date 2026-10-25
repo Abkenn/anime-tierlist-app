@@ -128,12 +128,24 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       fadeTimer = setTimeout(() => setScrolling(false), 850);
     };
 
-    const onPointerMove = (event: PointerEvent) =>
+    const onPointerMove = (event: PointerEvent) => {
+      const surface = viewport.closest('[data-slot="scroll-area"]') ?? viewport;
+      const bounds = surface.getBoundingClientRect();
+      const edgeWidth = Math.min(
+        bounds.width,
+        120,
+        Math.max(48, bounds.width * 0.1),
+      );
+
       setNearEdge(
         media.matches &&
           event.pointerType === 'mouse' &&
-          event.clientX >= window.innerWidth * 0.9,
+          event.clientX >= bounds.right - edgeWidth &&
+          event.clientX <= bounds.right &&
+          event.clientY >= bounds.top &&
+          event.clientY <= bounds.bottom,
       );
+    };
 
     const leave = () => setNearEdge(false);
 
