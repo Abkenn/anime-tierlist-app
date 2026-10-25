@@ -117,8 +117,8 @@ export const AnimeSearchResults = () => {
   };
 
   return (
-    <div className="lg:flex lg:min-h-0 lg:flex-col">
-      <label className="block text-xs text-muted-foreground">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <label className="block shrink-0 text-xs text-muted-foreground">
         Find anime or paste an image URL
         <input
           type="search"
@@ -130,14 +130,14 @@ export const AnimeSearchResults = () => {
         />
       </label>
 
-      <p className="my-2 text-xs text-muted-foreground">
+      <p className="my-2 shrink-0 text-xs text-muted-foreground">
         Drag to a rank · Click to add to Watching
       </p>
 
       <ScrollArea
-        className="lg:min-h-0 lg:flex-1"
+        className="min-h-0 flex-1"
         viewportProps={{
-          className: 'max-h-64 overscroll-contain pr-3 lg:max-h-none',
+          className: 'overscroll-contain pr-3',
         }}
         aria-busy={waiting || search.isFetching || loadingImages}
       >

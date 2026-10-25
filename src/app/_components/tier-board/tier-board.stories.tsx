@@ -3,6 +3,7 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { expect, fireEvent, waitFor, within } from 'storybook/test';
 import { aspectRatioTierItems } from '@/app/_components/tier-item/tier-image.fixtures';
+import { curatedAnimeImages } from '@/app/_lib/curated-anime';
 import { tierRanks } from '@/app/_lib/tier-ranks';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import type { TierImageMode, TierRank } from '@/app/_types/tierlist.types';
@@ -943,4 +944,24 @@ export const RenameAndFind: Story = {
       canvas.getByRole('button', { name: 'Item Another anime in S' }),
     ).not.toHaveClass('opacity-20');
   },
+};
+
+export const ScrollOverview: Story = {
+  render: () => (
+    <TierBoardProvider>
+      <div className="flex h-[calc(100dvh-2rem)] min-h-0 flex-col">
+        <TierBoard
+          ranks={tierRanks}
+          initialItems={curatedAnimeImages
+            .slice(0, 18)
+            .map((poster, index) => ({
+              id: poster.id,
+              label: poster.title,
+              image: poster.image,
+              rank: tierRanks[index % tierRanks.length],
+            }))}
+        />
+      </div>
+    </TierBoardProvider>
+  ),
 };

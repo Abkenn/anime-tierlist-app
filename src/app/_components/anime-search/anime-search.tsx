@@ -29,7 +29,7 @@ export const AnimeSearch = async ({
   return (
     <aside
       aria-label="Anime search"
-      className="relative min-w-0 lg:grid lg:min-h-0 lg:w-64 lg:grid-rows-[minmax(0,1fr)] lg:self-stretch lg:contain-size"
+      className="relative flex max-h-[35dvh] min-h-0 min-w-0 flex-col lg:max-h-none lg:w-64 lg:self-stretch lg:contain-size"
     >
       <AnimeSearchProvider
         curatedImages={curatedImages}

@@ -8,7 +8,6 @@ import { Suspense, ViewTransition } from 'react';
 import { OfflineStatus } from '@/app/_components/offline/offline-status';
 import { HomeLink } from '@/app/_components/shell/home-link';
 import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
-import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { siteAccent, siteUrl } from '@/app/_lib/site-metadata';
 import { ThemeProvider } from '@/app/_providers/theme-provider';
 import { geistMono, geistSans } from '@/app/_styles/fonts';
@@ -31,37 +30,35 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex h-dvh flex-col overflow-hidden">
         <ThemeProvider>
           <OfflineSupport />
 
-          <ScrollArea className="h-dvh w-full" aria-label="Page content">
-            <div className="flex min-h-dvh flex-col bg-background text-foreground">
-              <header className="mx-auto flex w-full max-w-480 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
-                <Suspense
-                  fallback={
-                    <Link href="/" className="text-xs text-muted-foreground">
-                      tierlist / home
-                    </Link>
-                  }
-                >
-                  <HomeLink />
+          <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+            <header className="mx-auto flex w-full max-w-480 shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
+              <Suspense
+                fallback={
+                  <Link href="/" className="text-xs text-muted-foreground">
+                    tierlist / home
+                  </Link>
+                }
+              >
+                <HomeLink />
+              </Suspense>
+
+              <div className="flex items-center gap-3">
+                <Suspense fallback={null}>
+                  <OfflineStatus />
                 </Suspense>
 
-                <div className="flex items-center gap-3">
-                  <Suspense fallback={null}>
-                    <OfflineStatus />
-                  </Suspense>
+                <ThemeToggle />
+              </div>
+            </header>
 
-                  <ThemeToggle />
-                </div>
-              </header>
-
-              <ViewTransition default="page-change" update="none">
-                {children}
-              </ViewTransition>
-            </div>
-          </ScrollArea>
+            <ViewTransition default="page-change" update="none">
+              {children}
+            </ViewTransition>
+          </div>
 
           <Toaster />
         </ThemeProvider>

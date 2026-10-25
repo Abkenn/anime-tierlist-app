@@ -1,4 +1,5 @@
 import { cn } from 'cn';
+import { tierColorClasses } from '@/app/_lib/tier-colors';
 
 import type { TierColor } from '@/app/_types/tierlist.types';
 
@@ -22,6 +23,7 @@ export const TierRow = ({
   <li
     className="grid grid-cols-[var(--tier-size,5rem)_minmax(0,1fr)] border-ink not-first:border-t"
     data-tier-rank={rank}
+    data-tier-count={itemCount}
     aria-label={
       itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
     }
@@ -30,28 +32,7 @@ export const TierRow = ({
       className={cn(
         'flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-sm text-graphite',
         rank.length > 2 && 'px-1.5 text-xs',
-        {
-          'bg-orchid': color === 'orchid',
-          'bg-rose': color === 'rose',
-          'bg-salmon': color === 'salmon',
-          'bg-apricot': color === 'apricot',
-          'bg-gold': color === 'gold',
-          'bg-yellow': color === 'yellow',
-          'bg-citron': color === 'citron',
-          'bg-chartreuse': color === 'chartreuse',
-          'bg-lime': color === 'lime',
-          'bg-leaf': color === 'leaf',
-          'bg-mint': color === 'mint',
-          'bg-jade': color === 'jade',
-          'bg-seafoam': color === 'seafoam',
-          'bg-aqua': color === 'aqua',
-          'bg-sky': color === 'sky',
-          'bg-azure': color === 'azure',
-          'bg-periwinkle': color === 'periwinkle',
-          'bg-lavender': color === 'lavender',
-          'bg-wisteria': color === 'wisteria',
-          'bg-stone': color === 'stone',
-        },
+        tierColorClasses[color],
       )}
     >
       {rank}

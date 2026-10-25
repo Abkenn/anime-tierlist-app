@@ -4,7 +4,7 @@ import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area';
 import { cn } from 'cn';
 
 type ScrollAreaProps = ScrollAreaPrimitive.Root.Props & {
-  orientation?: ScrollAreaPrimitive.Scrollbar.Props['orientation'];
+  orientation?: ScrollAreaPrimitive.Scrollbar.Props['orientation'] | 'both';
   viewportProps?: ScrollAreaPrimitive.Viewport.Props;
 };
 
@@ -34,7 +34,9 @@ const ScrollArea = ({
         </ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
 
-      <ScrollBar orientation={orientation} />
+      {orientation !== 'horizontal' && <ScrollBar orientation="vertical" />}
+
+      {orientation !== 'vertical' && <ScrollBar orientation="horizontal" />}
 
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>

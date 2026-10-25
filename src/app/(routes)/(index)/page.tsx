@@ -17,10 +17,10 @@ const Home = () => (
 
     <TierBoardProvider>
       <LocalTierlist>
-        <div className="grid items-start gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-4 lg:grid-cols-[16rem_minmax(0,1fr)] lg:grid-rows-1">
           <AnimeSearch />
 
-          <div className="min-w-0">
+          <div className="flex min-h-0 min-w-0 flex-col">
             <TierBoard initialItemCount={0} />
           </div>
         </div>

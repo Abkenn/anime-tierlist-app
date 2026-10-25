@@ -362,6 +362,7 @@ export const TierItem = ({
         }
         trigger={
           <TierItemTrigger
+            data-tier-item-id={id}
             className={dimmed ? 'opacity-20' : undefined}
             ref={itemRef}
             previewAnchor={itemRef}

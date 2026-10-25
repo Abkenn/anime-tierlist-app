@@ -1,7 +1,9 @@
 'use client';
 
-import type { PropsWithChildren, Ref } from 'react';
+import { type PropsWithChildren, type Ref, useCallback, useState } from 'react';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
+import { useTierOverview } from '@/app/_hooks/use-tier-overview';
+import { TierScrollOverview } from './tier-scroll-overview';
 
 type TierViewportProps = PropsWithChildren<{
   ref?: Ref<HTMLElement>;
@@ -13,6 +15,21 @@ export const TierViewport = ({
   ref,
   scrollable,
 }: TierViewportProps) => {
+  const [viewport, setViewport] = useState<HTMLElement | null>(null);
+  const overview = useTierOverview(viewport);
+  const bindViewport = useCallback(
+    (element: HTMLElement | null) => {
+      setViewport(element);
+      if (typeof ref === 'function') {
+        return ref(element);
+      }
+      if (ref) {
+        ref.current = element;
+      }
+    },
+    [ref],
+  );
+
   if (!scrollable) {
     return (
       <section
@@ -27,22 +44,26 @@ export const TierViewport = ({
   }
 
   return (
-    <ScrollArea
-      orientation="horizontal"
-      className="min-w-0"
-      viewportProps={{
-        render: (
-          <section
-            ref={ref}
-            data-tier-viewport=""
-            aria-label="Tierlist horizontal scroll"
-          />
-        ),
-        className: 'max-h-[calc(100dvh-5rem)] overscroll-x-contain',
-        tabIndex: 0,
-      }}
-    >
-      {children}
-    </ScrollArea>
+    <div className="relative min-h-0 min-w-0 flex-1">
+      <ScrollArea
+        orientation="both"
+        className="h-full min-h-0 min-w-0"
+        viewportProps={{
+          render: (
+            <section
+              ref={bindViewport}
+              data-tier-viewport=""
+              aria-label="Tierlist board scroll"
+            />
+          ),
+          className: 'overscroll-contain',
+          tabIndex: 0,
+        }}
+      >
+        {children}
+      </ScrollArea>
+
+      <TierScrollOverview overview={overview} />
+    </div>
   );
 };

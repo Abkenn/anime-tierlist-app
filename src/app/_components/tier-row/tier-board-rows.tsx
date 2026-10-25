@@ -3,8 +3,9 @@
 import { motion } from 'motion/react';
 import { ViewTransition } from 'react';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
+import { tierColors } from '@/app/_lib/tier-colors';
 import { getTierDensity } from '@/app/_lib/tier-density';
-import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
+import type { TierRank } from '@/app/_types/tierlist.types';
 import { TierRow } from './tier-row';
 
 type TierBoardRowsProps = {
@@ -14,29 +15,6 @@ type TierBoardRowsProps = {
     ReturnType<typeof useTierItems>,
     'items' | 'targetRank' | 'visibleRank' | 'lines'
   >;
-};
-
-const tierColors: Record<TierRank, TierColor> = {
-  'S+': 'orchid',
-  S: 'rose',
-  'S−': 'salmon',
-  'A+': 'apricot',
-  A: 'gold',
-  'A−': 'yellow',
-  'B+': 'citron',
-  B: 'chartreuse',
-  'B−': 'lime',
-  'C+': 'leaf',
-  C: 'mint',
-  'C−': 'jade',
-  'D+': 'seafoam',
-  D: 'aqua',
-  'D−': 'sky',
-  'F+': 'azure',
-  F: 'periwinkle',
-  'F−': 'lavender',
-  Dropped: 'wisteria',
-  Watching: 'stone',
 };
 
 export const TierBoardRows = ({

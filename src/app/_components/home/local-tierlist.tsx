@@ -435,6 +435,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       )}
 
       <div
+        className="flex min-h-0 flex-1 flex-col"
         inert={storage.status === 'loading' || busy}
         aria-busy={storage.status === 'loading' || busy}
       >
