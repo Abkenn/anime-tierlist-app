@@ -1,26 +1,15 @@
 'use client';
 
-import { useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
-import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
-type OverviewRow = {
+export type OverviewRow = {
   rank: TierRank;
   top: number;
   height: number;
   count: number;
 };
-type PosterSnapshot = {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
 type Overview = {
-  posters: PosterSnapshot[];
   canvasWidth: number;
   canvasHeight: number;
   viewportWidth: number;
@@ -34,10 +23,8 @@ type Overview = {
 };
 
 export const useTierOverview = (viewport: HTMLElement | null) => {
-  const posters = useAtomValue(posterLayoutAtom);
   const [overview, setOverview] = useState<Overview>({
     rows: [],
-    posters: [],
     canvasWidth: 1,
     canvasHeight: 1,
     viewportWidth: 1,
@@ -101,7 +88,6 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
             .querySelector('[data-tier-rank]')
             ?.firstElementChild?.getBoundingClientRect().width ?? 96,
         left: viewport.scrollLeft,
-        posters: [],
         rows: Array.from(
           viewport.querySelectorAll<HTMLElement>('[data-tier-rank]'),
         ).map((row) => {
@@ -251,7 +237,6 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
 
   return {
     ...overview,
-    posters,
     enabled: previewEnabled,
     visible: previewEnabled && overview.overflowing && (scrolling || nearEdge),
     jumpToRank,

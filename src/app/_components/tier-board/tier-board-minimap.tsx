@@ -3,26 +3,32 @@
 import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
+import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemImage } from '@/app/_components/tier-item/tier-item-image';
 import { TierItemTitle } from '@/app/_components/tier-item/tier-item-title';
-import type { useTierOverview } from '@/app/_hooks/use-tier-overview';
+import type { OverviewRow } from '@/app/_hooks/use-tier-overview';
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 
-type TierBoardMiniatureProps = {
-  overview: ReturnType<typeof useTierOverview>;
+type TierBoardMinimapProps = {
+  rows: Pick<OverviewRow, 'rank' | 'top' | 'height'>[];
+  canvasHeight: number;
+  labelWidth: number;
   scale: number;
   cropWidth: number;
 };
 
-export const TierBoardMiniature = ({
-  overview,
+export const TierBoardMinimap = ({
+  rows,
+  canvasHeight,
+  labelWidth,
   scale,
   cropWidth,
-}: TierBoardMiniatureProps) => {
+}: TierBoardMinimapProps) => {
   const items = useAtomValue(tierItemsAtom);
   const mode = useAtomValue(imageModeAtom);
-  const posters = overview.posters.filter((poster) => poster.x < cropWidth);
+  const geometry = useAtomValue(posterLayoutAtom);
+  const posters = geometry.filter((poster) => poster.x < cropWidth);
   const byId = new Map(items.map((item) => [item.id, item]));
 
   return (
@@ -33,11 +39,11 @@ export const TierBoardMiniature = ({
       className="pointer-events-none absolute left-0 top-0 origin-top-left overflow-hidden grayscale-20 border border-ink bg-charcoal text-cloud"
       style={{
         width: cropWidth,
-        height: overview.canvasHeight,
+        height: canvasHeight,
         transform: `scale(${scale})`,
       }}
     >
-      {overview.rows.map((row) => (
+      {rows.map((row) => (
         <div
           key={row.rank}
           className="absolute inset-x-0 border-b border-ink"
@@ -48,7 +54,7 @@ export const TierBoardMiniature = ({
               'absolute left-0 top-0 flex aspect-square items-center justify-center border-r border-ink text-sm text-graphite',
               tierColorClasses[tierColors[row.rank]],
             )}
-            style={{ width: overview.labelWidth }}
+            style={{ width: labelWidth }}
           >
             {row.rank}
           </span>
@@ -58,8 +64,8 @@ export const TierBoardMiniature = ({
       {posters.length > 400 && (
         <svg
           aria-hidden="true"
-          width={overview.canvasWidth}
-          height={overview.canvasHeight}
+          width={cropWidth}
+          height={canvasHeight}
           className="absolute inset-0 fill-cloud/25"
         >
           <path

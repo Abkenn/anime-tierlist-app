@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useRef, useState } from 'react';
 import type { useTierOverview } from '@/app/_hooks/use-tier-overview';
-import { TierBoardMiniature } from './tier-board-miniature';
+import { TierBoardMinimap } from './tier-board-minimap';
 
 type TierScrollOverviewProps = { overview: ReturnType<typeof useTierOverview> };
 
@@ -68,8 +68,10 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
           }}
           className="absolute right-4 z-30 overflow-hidden border border-divider/60 bg-popover/90 shadow-sm"
         >
-          <TierBoardMiniature
-            overview={overview}
+          <TierBoardMinimap
+            rows={overview.rows}
+            canvasHeight={overview.canvasHeight}
+            labelWidth={overview.labelWidth}
             scale={scale}
             cropWidth={previewWidth / scale}
           />

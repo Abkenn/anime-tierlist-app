@@ -1,5 +1,6 @@
 export { TierBoard } from '../tier-board/tier-board';
 export { TierBoardItems } from '../tier-board/tier-board-items';
+export { TierBoardMinimap } from '../tier-board/tier-board-minimap';
 export { TierViewport } from '../tier-board/tier-viewport';
 export { TierCropControls } from '../tier-item/tier-crop-controls';
 export { TierCropPreview } from '../tier-item/tier-crop-preview';
