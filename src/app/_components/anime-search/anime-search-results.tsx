@@ -25,6 +25,8 @@ import type { TierImage } from '@/app/_types/tierlist.types';
 import { AnimeSearchResultCard } from './anime-search-result';
 import { AnimeSearchSkeleton } from './anime-search-skeleton';
 
+type ImageDimensions = Record<string, TierImage | null>;
+
 export const AnimeSearchResults = () => {
   const {
     curatedImages,
@@ -34,9 +36,7 @@ export const AnimeSearchResults = () => {
   } = useAtomValue(animeSearchConfigAtom);
   const imported = useAtomValue(importedItemIdsAtom);
   const [input, setInput] = useState(initialQuery);
-  const [dimensions, setDimensions] = useState<
-    Record<string, TierImage | null>
-  >({});
+  const [dimensions, setDimensions] = useState<ImageDimensions>({});
   const { search, sentinel, query, url, urlError, waiting, submitQuery } =
     useAnimeSearch(input, { initialQuery, initialPage });
   const [submission, searchAction, submitting] = useActionState(
