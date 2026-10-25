@@ -70,3 +70,5 @@ export type TierItemData = {
   rowHeightExpansion?: number;
   title?: TierItemTitle;
 };
+
+export type PosterSize = 'dynamic' | 'small' | 'medium' | 'large';

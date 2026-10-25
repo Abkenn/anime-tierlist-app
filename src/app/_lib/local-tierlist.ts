@@ -48,6 +48,7 @@ export const localTierlistSchema = z.object({
   accountOwnerId: z.string().uuid().optional(),
   items: z.array(item),
   ranks: z.array(rank),
+  posterSize: z.enum(['dynamic', 'small', 'medium', 'large']).optional(),
   imageMode: z.enum(['natural', 'cover', 'contain']),
   sync: z
     .object({

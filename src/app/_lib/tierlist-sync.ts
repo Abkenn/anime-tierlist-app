@@ -12,6 +12,7 @@ export const tierlistDocumentSchema = localTierlistSchema
     items: true,
     ranks: true,
     imageMode: true,
+    posterSize: true,
     updatedAt: true,
   })
   .refine(
@@ -43,6 +44,7 @@ export const getTierlistDocument = (
   items: snapshot.items,
   ranks: snapshot.ranks,
   imageMode: snapshot.imageMode,
+  posterSize: snapshot.posterSize,
   updatedAt: snapshot.updatedAt,
 });
 
