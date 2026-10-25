@@ -127,7 +127,7 @@ export const LocalTierlist = ({
         />
       </TerminalSequence>
 
-      {sync.conflict && (
+      {sync.status === 'conflict' && (
         <TierlistConflict
           onlineItemCount={sync.conflict.document.items.length}
           localItemCount={storage.snapshot?.items.length ?? 0}

@@ -21,7 +21,9 @@ import {
   activateImportedTierlist,
   getDeviceTierlist,
   loadLocalTierlist,
+  saveLocalSyncMetadata,
   saveLocalTierlist,
+  saveLocalTierlistEdit,
 } from './local-tierlist';
 
 const database = createDatabaseStore('anime-tierlist', 'drafts');
@@ -39,6 +41,89 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('rebases simultaneous tab edits without dropping another tab’s fields or new posters', async () => {
+    const base: LocalTierlist = {
+      ...initial,
+      items: [{ id: 'one', label: 'Original', rank: 'S+' }],
+    };
+    await loadLocalTierlist(base);
+    await Promise.all([
+      saveLocalTierlistEdit(base.seed, base, {
+        ...base,
+        items: [
+          { ...base.items[0], label: 'Renamed' },
+          { id: 'two', label: 'Added', rank: 'Watching' },
+        ],
+      }),
+      saveLocalTierlistEdit(base.seed, base, {
+        ...base,
+        items: [{ ...base.items[0], crop: { x: 0.3, y: 0.7 } }],
+        imageMode: 'cover',
+      }),
+    ]);
+    const saved = await getDeviceTierlist();
+    expect(saved.revision).toBe(2);
+    expect(saved.items).toEqual([
+      { id: 'one', label: 'Renamed', rank: 'S+', crop: { x: 0.3, y: 0.7 } },
+      { id: 'two', label: 'Added', rank: 'Watching' },
+    ]);
+    expect(saved.imageMode).toBe('cover');
+  });
+
+  it('updates three open stores through notifications without echo writes, including sync metadata', async () => {
+    await loadLocalTierlist(initial);
+    const tabs = Array.from({ length: 3 }, () => {
+      const store = createStore();
+      const hook = renderHook(useLocalTierlist, {
+        wrapper: ({ children }: PropsWithChildren) => (
+          <Provider store={store}>{children}</Provider>
+        ),
+      });
+
+      return { store, hook };
+    });
+
+    try {
+      await waitFor(() =>
+        tabs.forEach(({ hook }) => {
+          expect(hook.result.current.status).toBe('saved');
+        }),
+      );
+      act(() =>
+        tabs[0].store.set(tierItemsAtom, [
+          { id: 'shared', label: 'Shared', rank: 'S+' },
+        ]),
+      );
+      await waitFor(() =>
+        tabs.forEach(({ store }) => {
+          expect(store.get(tierItemsAtom)[0]?.label).toBe('Shared');
+        }),
+      );
+      act(() => tabs[1].store.set(imageModeAtom, 'cover'));
+      await waitFor(() =>
+        tabs.forEach(({ store }) => {
+          expect(store.get(imageModeAtom)).toBe('cover');
+        }),
+      );
+      const saved = await getDeviceTierlist();
+      await saveLocalSyncMetadata(
+        initial.seed,
+        { ownerId: 'owner', revision: 4, document: saved },
+        saved.revision,
+      );
+      await waitFor(() =>
+        tabs.forEach(({ hook }) => {
+          expect(hook.result.current.snapshot?.sync?.serverRevision).toBe(4);
+        }),
+      );
+      expect((await getDeviceTierlist()).revision).toBe(2);
+    } finally {
+      tabs.forEach(({ hook }) => {
+        hook.unmount();
+      });
+    }
+  });
+
   it('migrates an account draft to a non-credential profile key without losing unsynced edits or the device list', async () => {
     await loadLocalTierlist(initial);
     const accountSeed = createUserSeed();
@@ -198,7 +283,7 @@ describe('local tierlist durability', () => {
     });
     await waitFor(() => expect(hook.result.current.status).toBe('saved'));
     const save = vi
-      .spyOn(tierlistPersistence, 'saveLocalTierlist')
+      .spyOn(tierlistPersistence, 'saveLocalTierlistEdit')
       .mockRejectedValueOnce(new Error('Storage is full.'));
 
     try {

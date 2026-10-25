@@ -84,7 +84,8 @@ export const getTierlistAccountStatus = ({
   const identitySeparator = backedUp || restoringAccount ? '' : ' · ';
   const statusText =
     message + (showIdentity ? identitySeparator + identityLabel : '');
-  const backupMessage = sync.message ?? 'Couldn’t reach your saved tierlist.';
+  const backupMessage =
+    'message' in sync ? sync.message : 'Couldn’t reach your saved tierlist.';
   const needsReconnect =
     sync.status === 'offline' || sync.status === 'outdated';
   const reconnectLabel =

@@ -7,16 +7,17 @@ import {
   tierlistUpdateMessage,
 } from '@/app/_lib/tierlist-error';
 import {
-  getSyncDecision,
   getTierlistDocument,
   type RemoteTierlist,
   sameTierlistDocument,
 } from '@/app/_lib/tierlist-sync';
+import { withTierlistSyncLock } from '@/app/_lib/tierlist-tabs';
 import { backupRemoteTierlist } from '@/app/_services/local-tierlist';
 import {
-  connectTierlist,
-  syncTierlist,
-} from '@/app/_services/tierlist.actions';
+  synchronizeTierlist,
+  TierlistSyncError,
+} from '@/app/_services/synchronize-tierlist';
+import { connectTierlist } from '@/app/_services/tierlist.actions';
 import type { useLocalTierlist } from './use-local-tierlist';
 
 type SyncScope = {
@@ -28,18 +29,28 @@ type SyncScope = {
   outdated: boolean;
   unauthorized: boolean;
 };
-type SyncState = {
-  status:
-    | 'connecting'
-    | 'saved'
-    | 'saving'
-    | 'offline'
-    | 'conflict'
-    | 'outdated'
-    | 'unauthorized';
-  message?: string;
-  conflict?: RemoteTierlist;
-  retryAt?: number;
+type SyncState =
+  | { status: 'connecting' | 'saved' | 'saving' }
+  | { status: 'offline'; message: string; retryAt: number }
+  | { status: 'conflict'; conflict: RemoteTierlist }
+  | { status: 'outdated' | 'unauthorized'; message: string };
+
+const getSyncFailureState = (
+  error: unknown,
+  { outdated, unauthorized }: Pick<SyncScope, 'outdated' | 'unauthorized'>,
+): SyncState => {
+  if (outdated) {
+    return { status: 'outdated', message: tierlistUpdateMessage };
+  }
+
+  const message = tierlistErrorMessage(
+    error,
+    'Couldn’t reach your saved tierlist right now.',
+  );
+
+  return unauthorized
+    ? { status: 'unauthorized', message }
+    : { status: 'offline', message, retryAt: Date.now() + 30_000 };
 };
 
 export const useTierlistSync = (
@@ -52,6 +63,8 @@ export const useTierlistSync = (
   const [state, setState] = useState<SyncState>({ status: 'connecting' });
   const local = storage.snapshot;
   const seed = local?.seed;
+  const retryAt = state.status === 'offline' ? state.retryAt : undefined;
+  const conflict = state.status === 'conflict' ? state.conflict : undefined;
 
   const retry = () => {
     if (scope.current?.outdated || scope.current?.unauthorized) {
@@ -77,7 +90,7 @@ export const useTierlistSync = (
   };
 
   const keepDeviceChanges = async () => {
-    if (!local || !state.conflict) {
+    if (!local || state.status !== 'conflict') {
       return;
     }
 
@@ -161,7 +174,7 @@ export const useTierlistSync = (
   }, []);
 
   useEffect(() => {
-    if (paused || state.status !== 'offline' || !state.retryAt) {
+    if (paused || retryAt === undefined) {
       return;
     }
 
@@ -175,11 +188,25 @@ export const useTierlistSync = (
         setState({ status: 'connecting' });
         setAttempt((value) => value + 1);
       },
-      Math.max(0, state.retryAt - Date.now()),
+      Math.max(0, retryAt - Date.now()),
     );
 
     return () => clearTimeout(timer);
-  }, [paused, state.status, state.retryAt]);
+  }, [paused, retryAt]);
+
+  useEffect(() => {
+    if (
+      conflict &&
+      local?.sync &&
+      local.sync.ownerId === conflict.ownerId &&
+      local.sync.serverRevision >= conflict.revision
+    ) {
+      if (scope.current) {
+        scope.current.remote = undefined;
+      }
+      setState({ status: 'connecting' });
+    }
+  }, [local, conflict]);
 
   useEffect(() => {
     const active = scope.current;
@@ -211,105 +238,71 @@ export const useTierlistSync = (
       active.attempt = attempt;
 
       try {
-        if (!navigator.onLine) {
-          throw new Error(
-            'Saved on this device. Online saving will resume when connected.',
-          );
-        }
-
-        const checkingSavedChanges =
-          state.status === 'saved' &&
-          local.sync?.syncedLocalRevision === local.revision;
-
-        if (!checkingSavedChanges) {
-          setState({ status: active.remote ? 'saving' : 'connecting' });
-        }
-
-        if (!active.remote) {
-          const result = await connectTierlist(
-            account
-              ? { account: true }
-              : {
-                  seed: local.seed,
-                  document: getTierlistDocument(local),
-                },
-          );
-
-          if (!result.ok) {
-            active.unauthorized = result.code === 'unauthorized';
-            throw new Error(result.message);
+        await withTierlistSyncLock(async () => {
+          const latest = await storage.refresh();
+          if (
+            !latest ||
+            scope.current !== active ||
+            latest.seed !== active.seed
+          ) {
+            return;
           }
 
-          active.remote = result.value;
-        }
+          const local = latest;
+          if (
+            active.remote &&
+            local.sync &&
+            local.sync.serverRevision > active.remote.revision
+          ) {
+            active.remote = undefined;
+          }
 
-        if (scope.current !== active || active.attempt !== attempt) {
-          return;
-        }
+          if (!navigator.onLine) {
+            throw new Error(
+              'Saved on this device. Online saving will resume when connected.',
+            );
+          }
 
-        const decision = getSyncDecision(local, active.remote);
+          const checkingSavedChanges =
+            state.status === 'saved' &&
+            local.sync?.syncedLocalRevision === local.revision;
 
-        if (decision === 'conflict') {
-          setState({ status: 'conflict', conflict: active.remote });
+          if (!checkingSavedChanges) {
+            setState({ status: active.remote ? 'saving' : 'connecting' });
+          }
 
-          return;
-        }
-
-        if (decision === 'download') {
-          await storage.replaceRemote(active.remote, local.revision);
-        } else if (decision === 'equal') {
-          await storage.updateSync(active.remote, local.revision);
-        } else {
-          const result = await syncTierlist({
-            ownerId: active.remote.ownerId,
-            revision: active.remote.revision,
-            document: getTierlistDocument(local),
+          const result = await synchronizeTierlist({
+            local,
+            remote: active.remote,
+            account,
+            storage: {
+              replaceRemote: storage.replaceRemote,
+              updateSync: storage.updateSync,
+            },
+            isCurrent: () =>
+              scope.current === active && active.attempt === attempt,
           });
-
-          if (!result.ok) {
-            active.unauthorized = result.code === 'unauthorized';
-            throw new Error(result.message);
-          }
-
-          active.remote = result.value.tierlist;
-
-          if (scope.current !== active) {
+          if (!result || scope.current !== active) {
             return;
           }
 
-          if (result.value.status === 'conflict') {
-            setState({ status: 'conflict', conflict: active.remote });
-
-            return;
-          }
-
-          await storage.updateSync(active.remote, local.revision);
-        }
-
-        if (scope.current === active) {
+          active.remote = result.remote;
           if (!active.outdated) {
-            setState({ status: 'saved' });
+            setState(
+              result.status === 'conflict'
+                ? { status: 'conflict', conflict: result.remote }
+                : { status: 'saved' },
+            );
           }
-        }
+        });
       } catch (error) {
         active.failed = true;
+        active.unauthorized ||=
+          error instanceof TierlistSyncError && error.code === 'unauthorized';
         active.outdated ||= isOutdatedTierlistClient(error);
-        const failedStatus = active.unauthorized ? 'unauthorized' : 'offline';
 
         if (scope.current === active) {
-          setState({
-            status: active.outdated ? 'outdated' : failedStatus,
-            message: active.outdated
-              ? tierlistUpdateMessage
-              : tierlistErrorMessage(
-                  error,
-                  'Couldn’t reach your saved tierlist right now.',
-                ),
-            retryAt:
-              active.outdated || active.unauthorized
-                ? undefined
-                : Date.now() + 30_000,
-          });
+          setState(getSyncFailureState(error, active));
         }
       } finally {
         active.running = false;
@@ -333,6 +326,7 @@ export const useTierlistSync = (
     storage.status,
     storage.updateSync,
     storage.replaceRemote,
+    storage.refresh,
     account,
   ]);
 

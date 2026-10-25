@@ -158,7 +158,7 @@ it('does not retry rejected authorization on a timer, focus, reconnect or manual
   const { result } = renderHook(() => useTierlistAccount(), { wrapper });
 
   await waitFor(() => expect(result.current.sync.status).toBe('unauthorized'));
-  expect(result.current.sync.retryAt).toBeUndefined();
+  expect(result.current.sync).not.toHaveProperty('retryAt');
   vi.useFakeTimers();
 
   try {

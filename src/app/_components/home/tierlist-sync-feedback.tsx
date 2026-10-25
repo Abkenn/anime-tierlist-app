@@ -19,14 +19,11 @@ export const TierlistSyncFeedback = ({
     {sync.status === 'offline' && (
       <div className="mb-3 space-y-1 text-xs text-muted-foreground">
         <p role="status">
-          <TerminalText
-            text={sync.message ?? 'Couldn’t reach your saved tierlist.'}
-            line={2}
-          />
+          <TerminalText text={sync.message} line={2} />
         </p>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {sync.retryAt && <RetryCountdown retryAt={sync.retryAt} line={3} />}
+          <RetryCountdown retryAt={sync.retryAt} line={3} />
 
           <button
             type="button"

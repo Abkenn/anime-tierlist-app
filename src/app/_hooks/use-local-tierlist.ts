@@ -9,15 +9,22 @@ import {
   imageModeAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import { createSaveQueue } from '@/app/_lib/save-queue';
 import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
+import { sameTierlistDocument } from '@/app/_lib/tierlist-sync';
+import { subscribeTierlistTabs } from '@/app/_lib/tierlist-tabs';
 import {
   activateAccountTierlist,
   activateDeviceTierlist,
   activateImportedTierlist,
   backupLocalTierlist,
   getDeviceTierlist,
+  LocalTierlistChangedError,
   loadLocalTierlist,
+  readLocalTierlist,
+  saveLocalSyncMetadata,
   saveLocalTierlist,
+  saveLocalTierlistEdit,
 } from '@/app/_services/local-tierlist';
 
 type StorageState = {
@@ -26,6 +33,7 @@ type StorageState = {
   error?: string;
 };
 type LocalController = {
+  refresh: () => Promise<LocalTierlist>;
   flush: () => Promise<void>;
   metadata: (remote: RemoteTierlist, localRevision: number) => Promise<void>;
   replace: (remote: RemoteTierlist, expectedRevision?: number) => Promise<void>;
@@ -77,6 +85,7 @@ export const useLocalTierlist = () => {
     let disposed = false;
 
     let unsubscribe = () => {};
+    let stopTabs = () => {};
 
     const initialize = async () => {
       try {
@@ -107,18 +116,19 @@ export const useLocalTierlist = () => {
         }
 
         setDeviceSeed(device.seed);
-        let queue = Promise.resolve();
-        let failed = false;
-        let pending = 0;
+        let observed = current;
 
-        const hydrate = () => {
-          store.set(clearEditingItemAtom);
+        const hydrate = (clearEditing = true) => {
+          if (clearEditing) {
+            store.set(clearEditingItemAtom);
+          }
           store.set(tierItemsAtom, current.items);
           store.set(enabledTierRanksAtom, current.ranks);
           store.set(imageModeAtom, current.imageMode);
+          observed = current;
         };
 
-        const publish = () => {
+        const publish = (pending = 0) => {
           if (!disposed) {
             setSnapshot(current);
             setState({
@@ -128,65 +138,40 @@ export const useLocalTierlist = () => {
           }
         };
 
-        const enqueue = (operation: () => Promise<void>) => {
-          if (failed) {
-            return Promise.reject(
-              new Error(
-                'Local saving is paused. Reload before editing further.',
-              ),
-            );
-          }
-
-          pending += 1;
-          setState({ status: 'saving', seed: current.seed });
-          const previous = queue;
-
-          const run = async () => {
-            await previous;
-
-            if (failed) {
-              throw new Error(
-                'Local saving is paused. Reload before editing further.',
-              );
+        const queue = createSaveQueue({
+          onSaving: () => {
+            if (!disposed) {
+              setState({ status: 'saving', seed: current.seed });
             }
-
-            await operation();
-          };
-
-          const task = run();
-
-          const settle = async () => {
-            try {
-              await task;
-              pending -= 1;
-              publish();
-            } catch (error) {
-              if (failed) {
-                return;
-              }
-
-              failed = true;
-
-              if (!disposed) {
-                setState({
-                  status: 'error',
-                  seed: current.seed,
-                  error:
-                    error instanceof Error
-                      ? error.message
-                      : 'Unable to save this tierlist on this device.',
-                });
-              }
+          },
+          onSettled: (pending) => {
+            if (
+              !pending &&
+              !disposed &&
+              !sameTierlistDocument(observed, current)
+            ) {
+              unsubscribe();
+              hydrate(false);
+              unsubscribe = subscribe();
             }
-          };
-
-          queue = settle();
-
-          return task;
-        };
+            publish(pending);
+          },
+          onError: (error) => {
+            if (!disposed) {
+              setState({
+                status: 'error',
+                seed: current.seed,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : 'Unable to save this tierlist on this device.',
+              });
+            }
+          },
+        });
 
         const persist = async () => {
-          if (failed) {
+          if (queue.failed) {
             return;
           }
 
@@ -196,15 +181,15 @@ export const useLocalTierlist = () => {
             ranks: store.get(enabledTierRanksAtom),
             imageMode: store.get(imageModeAtom),
           };
+          const before = observed;
+          observed = { ...observed, ...document };
           try {
-            await enqueue(async () => {
-              const next = {
-                ...current,
-                ...document,
-                revision: current.revision + 1,
-              };
-              await saveLocalTierlist(next, current.revision);
-              current = next;
+            await queue.enqueue(async () => {
+              current = await saveLocalTierlistEdit(
+                current.seed,
+                before,
+                document,
+              );
             });
           } catch {
             // The queue reports failures; atom subscriptions have no promise consumer.
@@ -228,47 +213,54 @@ export const useLocalTierlist = () => {
         };
 
         unsubscribe = subscribe();
-        controller.current = {
-          flush: async () => {
-            await queue;
+        const refresh = async () => {
+          await queue.enqueue(async () => {
+            current = await readLocalTierlist(current.seed);
+          }, false);
 
-            if (failed) {
-              throw new Error(
-                'Local saving is paused. Reload before switching tierlists.',
-              );
-            }
-          },
+          return current;
+        };
+        const receive = async () => {
+          if (disposed || queue.failed) {
+            return;
+          }
+
+          try {
+            await refresh();
+          } catch {
+            // The save queue owns storage failure feedback.
+          }
+        };
+        stopTabs = subscribeTierlistTabs(() => void receive());
+        void receive();
+        controller.current = {
+          refresh,
+          flush: queue.flush,
           metadata: (remote, localRevision) => {
             if (
               current.sync?.ownerId === remote.ownerId &&
               current.sync.serverRevision === remote.revision &&
               current.sync.syncedLocalRevision === localRevision
             ) {
-              return queue;
+              return queue.flush();
             }
 
-            return enqueue(async () => {
-              const next = {
-                ...current,
-                sync: {
-                  ownerId: remote.ownerId,
-                  serverRevision: remote.revision,
-                  syncedLocalRevision: localRevision,
-                },
-              };
-              await saveLocalTierlist(next, current.revision);
-              current = next;
+            return queue.enqueue(async () => {
+              current = await saveLocalSyncMetadata(
+                current.seed,
+                remote,
+                localRevision,
+              );
             });
           },
           replace: (remote, expectedRevision) =>
-            enqueue(async () => {
+            queue.enqueue(async () => {
+              current = await readLocalTierlist(current.seed);
               if (
                 expectedRevision !== undefined &&
                 current.revision !== expectedRevision
               ) {
-                throw new Error(
-                  'Local edits changed while syncing. Reload to compare both versions.',
-                );
+                return;
               }
 
               await backupLocalTierlist(current);
@@ -282,7 +274,17 @@ export const useLocalTierlist = () => {
                   syncedLocalRevision: current.revision + 1,
                 },
               };
-              await saveLocalTierlist(next, current.revision);
+              try {
+                await saveLocalTierlist(next, current.revision);
+              } catch (error) {
+                if (!(error instanceof LocalTierlistChangedError)) {
+                  throw error;
+                }
+
+                current = await readLocalTierlist(current.seed);
+
+                return;
+              }
               current = next;
               unsubscribe();
               hydrate();
@@ -307,6 +309,7 @@ export const useLocalTierlist = () => {
       disposed = true;
       controller.current = null;
       unsubscribe();
+      stopTabs();
     };
   }, [store, profileSeed]);
 
@@ -319,6 +322,7 @@ export const useLocalTierlist = () => {
     restoreDeviceProfile,
     updateSync,
     replaceRemote,
+    refresh: async () => controller.current?.refresh(),
     flush: async () => {
       await controller.current?.flush();
     },
