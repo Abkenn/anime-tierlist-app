@@ -2,7 +2,7 @@ import type { LocalTierlist } from './local-tierlist';
 
 export type LocalTierlistContent = Pick<
   LocalTierlist,
-  'items' | 'ranks' | 'imageMode' | 'posterSize' | 'updatedAt'
+  'items' | 'ranks' | 'rankDetails' | 'imageMode' | 'posterSize' | 'updatedAt'
 >;
 
 const same = (first: unknown, second: unknown) =>
@@ -61,6 +61,9 @@ export const applyLocalTierlistEdit = (
     updatedAt: after.updatedAt,
     revision: current.revision + 1,
     items: [...ordered, ...items.values()],
+    rankDetails: same(before.rankDetails, after.rankDetails)
+      ? current.rankDetails
+      : after.rankDetails,
     ranks: same(before.ranks, after.ranks) ? current.ranks : after.ranks,
     posterSize:
       before.posterSize === after.posterSize

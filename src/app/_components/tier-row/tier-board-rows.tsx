@@ -66,7 +66,7 @@ export const TierBoardRows = ({
           <TierRow
             key={rank}
             rank={rank}
-            color={tierColors[rank]}
+            color={tierColors[rank] ?? 'stone'}
             active={interaction.targetRank === rank}
             fixedItemSize={layout === 'two-line'}
             lines={interaction.lines(rank)}

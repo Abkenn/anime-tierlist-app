@@ -1,10 +1,11 @@
 'use client';
 
 import { cn } from 'cn';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { motion } from 'motion/react';
 import { startTransition, useId, useState } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import { removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemLabelEditor } from '@/app/_components/tier-item/tier-item-label-editor';
 import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
@@ -43,6 +44,7 @@ export const TierBoard = ({
 }: TierBoardProps = {}) => {
   const optionsId = useId();
   const [localRanks, setLocalRanks] = useAtom(enabledTierRanksAtom);
+  const removeRank = useSetAtom(removeRankAtom);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const keyboardMode = useAtomValue(keyboardModeAtom);
   const { imageMode, changeImageMode } = useTierImageMode({
@@ -51,7 +53,7 @@ export const TierBoard = ({
   });
 
   const enabledRanks = controlledRanks ?? localRanks;
-  const ranks = tierRanks.filter((rank) => enabledRanks.includes(rank));
+  const ranks = enabledRanks;
 
   const interaction = useTierItems({
     ranks,
@@ -73,7 +75,16 @@ export const TierBoard = ({
 
     startTransition(() => {
       if (controlledRanks === undefined) {
-        setLocalRanks(nextRanks);
+        if (enabledRanks.includes(rank)) {
+          removeRank(rank);
+        } else {
+          const before = enabledRanks.findIndex(
+            (existing) => tierRanks.indexOf(existing) > tierRanks.indexOf(rank),
+          );
+          const ordered = [...enabledRanks];
+          ordered.splice(before < 0 ? ordered.length : before, 0, rank);
+          setLocalRanks(ordered);
+        }
       }
 
       onRanksChange?.(nextRanks);

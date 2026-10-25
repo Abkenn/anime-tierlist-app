@@ -1,10 +1,9 @@
 import { cn } from 'cn';
-import { tierColorClasses } from '@/app/_lib/tier-colors';
-
-import type { TierColor } from '@/app/_types/tierlist.types';
+import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
+import { TierRankLabel } from './tier-rank-label';
 
 type TierRowProps = {
-  rank: string;
+  rank: TierRank;
   color: TierColor;
   active?: boolean;
   itemCount?: number;
@@ -28,15 +27,7 @@ export const TierRow = ({
       itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
     }
   >
-    <div
-      className={cn(
-        'flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-sm text-graphite',
-        rank.length > 2 && 'px-1.5 text-xs',
-        tierColorClasses[color],
-      )}
-    >
-      {rank}
-    </div>
+    <TierRankLabel rank={rank} color={color} />
 
     <div
       className={cn(

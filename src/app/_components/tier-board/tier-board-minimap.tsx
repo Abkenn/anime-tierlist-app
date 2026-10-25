@@ -4,7 +4,10 @@ import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
-import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
+import {
+  imageModeAtom,
+  rankDetailsAtom,
+} from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemImage } from '@/app/_components/tier-item/tier-item-image';
 import { TierItemTitle } from '@/app/_components/tier-item/tier-item-title';
 import type { OverviewRow } from '@/app/_hooks/use-tier-overview';
@@ -27,6 +30,7 @@ export const TierBoardMinimap = ({
 }: TierBoardMinimapProps) => {
   const items = useAtomValue(tierItemsAtom);
   const mode = useAtomValue(imageModeAtom);
+  const details = useAtomValue(rankDetailsAtom);
   const geometry = useAtomValue(posterLayoutAtom);
   const posters = geometry.filter((poster) => poster.x < cropWidth);
   const byId = new Map(items.map((item) => [item.id, item]));
@@ -45,18 +49,21 @@ export const TierBoardMinimap = ({
     >
       {rows.map((row) => (
         <div
-          key={row.rank}
+          key={details[row.rank]?.label ?? row.rank}
           className="absolute inset-x-0 border-b border-ink"
           style={{ top: `${row.top}%`, height: `${row.height}%` }}
         >
           <span
             className={cn(
               'absolute left-0 top-0 flex aspect-square items-center justify-center border-r border-ink text-sm text-graphite',
-              tierColorClasses[tierColors[row.rank]],
+              tierColorClasses[tierColors[row.rank] ?? 'stone'],
             )}
-            style={{ width: labelWidth }}
+            style={{
+              width: labelWidth,
+              backgroundColor: details[row.rank]?.color,
+            }}
           >
-            {row.rank}
+            {details[row.rank]?.label ?? row.rank}
           </span>
         </div>
       ))}

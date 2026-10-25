@@ -8,6 +8,7 @@ import {
   enabledTierRanksAtom,
   imageModeAtom,
   posterSizeAtom,
+  rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import { createSaveQueue } from '@/app/_lib/save-queue';
@@ -99,6 +100,7 @@ export const useLocalTierlist = () => {
           ranks: store.get(enabledTierRanksAtom),
           imageMode: store.get(imageModeAtom),
           posterSize: store.get(posterSizeAtom),
+          rankDetails: store.get(rankDetailsAtom),
         });
 
         if (disposed) {
@@ -128,6 +130,7 @@ export const useLocalTierlist = () => {
           store.set(enabledTierRanksAtom, current.ranks);
           store.set(imageModeAtom, current.imageMode);
           store.set(posterSizeAtom, current.posterSize ?? 'dynamic');
+          store.set(rankDetailsAtom, current.rankDetails ?? {});
           observed = current;
         };
 
@@ -184,6 +187,7 @@ export const useLocalTierlist = () => {
             ranks: store.get(enabledTierRanksAtom),
             imageMode: store.get(imageModeAtom),
             posterSize: store.get(posterSizeAtom),
+            rankDetails: store.get(rankDetailsAtom),
           };
           const before = observed;
           observed = { ...observed, ...document };
@@ -209,6 +213,7 @@ export const useLocalTierlist = () => {
             store.sub(enabledTierRanksAtom, persist),
             store.sub(imageModeAtom, persist),
             store.sub(posterSizeAtom, persist),
+            store.sub(rankDetailsAtom, persist),
           ];
 
           return () =>

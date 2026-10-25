@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { tierRanks } from './tier-ranks';
 
-const rank = z.enum(tierRanks);
+const rank = z.union([
+  z.enum(tierRanks),
+  z.templateLiteral(['custom-', z.string().min(1).max(93)]),
+]);
 const fraction = z.number().min(0).max(1);
 const item = z.object({
   id: z.string().min(1),
@@ -47,7 +50,19 @@ export const localTierlistSchema = z.object({
     .optional(),
   accountOwnerId: z.string().uuid().optional(),
   items: z.array(item),
-  ranks: z.array(rank),
+  ranks: z.array(rank).min(1).max(200),
+  rankDetails: z
+    .record(
+      z.string(),
+      z.object({
+        label: z.string().min(1).max(100),
+        color: z
+          .templateLiteral(['#', z.string()])
+          .refine((value) => /^#[0-9a-f]{6}$/iu.test(value))
+          .optional(),
+      }),
+    )
+    .optional(),
   posterSize: z.enum(['dynamic', 'small', 'medium', 'large']).optional(),
   imageMode: z.enum(['natural', 'cover', 'contain']),
   sync: z

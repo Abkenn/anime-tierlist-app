@@ -1,6 +1,8 @@
 'use client';
 
-import { tierLetters } from '@/app/_lib/tier-ranks';
+import { useSetAtom } from 'jotai';
+import { addRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
+import { tierRanks } from '@/app/_lib/tier-ranks';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
 type TierRankOptionsProps = {
@@ -15,35 +17,45 @@ export const TierRankOptions = ({
   open,
   enabledRanks,
   onToggle,
-}: TierRankOptionsProps) => (
-  <div id={id} hidden={!open} className="mb-5 border-y border-divider py-4">
-    <p className="mb-3 text-xs text-muted-foreground">
-      Add or remove letter variants
-    </p>
+}: TierRankOptionsProps) => {
+  const add = useSetAtom(addRankAtom);
 
-    <div className="flex flex-wrap gap-x-6 gap-y-4">
-      {tierLetters.map((letter) => (
-        <fieldset key={letter} className="flex gap-3">
-          <legend className="mb-2 text-xs">{letter}</legend>
+  return (
+    <div
+      id={id}
+      hidden={!open}
+      className="mb-4 border-y border-divider py-3 text-xs"
+    >
+      <p className="mb-3 text-muted-foreground">
+        Click a tier name to rename it. Clear its name to delete.
+      </p>
 
-          {(['+', '−'] as const).map((modifier) => (
-            <label
-              key={modifier}
-              className="flex min-h-8 cursor-pointer items-center gap-2 text-xs"
-            >
-              <input
-                type="checkbox"
-                checked={enabledRanks.includes(`${letter}${modifier}`)}
-                onChange={() => onToggle(`${letter}${modifier}`)}
-              />
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        {tierRanks.map((rank) => (
+          <label
+            key={rank}
+            className="flex min-h-9 cursor-pointer items-center gap-2"
+          >
+            <input
+              type="checkbox"
+              checked={enabledRanks.includes(rank)}
+              disabled={
+                enabledRanks.length === 1 && enabledRanks.includes(rank)
+              }
+              onChange={() => onToggle(rank)}
+            />
+            {rank}
+          </label>
+        ))}
+      </div>
 
-              {letter}
-
-              {modifier}
-            </label>
-          ))}
-        </fieldset>
-      ))}
+      <button
+        type="button"
+        onClick={() => add()}
+        className="mt-2 min-h-9 cursor-pointer underline underline-offset-4"
+      >
+        Add tier
+      </button>
     </div>
-  </div>
-);
+  );
+};

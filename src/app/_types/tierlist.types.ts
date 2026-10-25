@@ -1,10 +1,10 @@
 type TierLetter = 'S' | 'A' | 'B' | 'C' | 'D' | 'F';
-
 export type TierRank =
   | TierLetter
   | `${TierLetter}${'+' | '−'}`
   | 'Dropped'
-  | 'Watching';
+  | 'Watching'
+  | `custom-${string}`;
 
 export type TierColor =
   | 'orchid'
@@ -72,3 +72,5 @@ export type TierItemData = {
 };
 
 export type PosterSize = 'dynamic' | 'small' | 'medium' | 'large';
+
+export type RankDetails = Record<string, { label: string; color?: HexColor }>;
