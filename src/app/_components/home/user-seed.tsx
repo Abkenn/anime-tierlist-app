@@ -2,8 +2,9 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { ArrowRight, Check, Copy } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useActionState, useId, useState } from 'react';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
 type UserSeedProps = {
@@ -47,6 +48,27 @@ export const UserSeed = ({
   const [shareError, setShareError] = useState('');
   const [confirmReplace, setConfirmReplace] = useState(false);
   const importId = useId();
+  const validSeed = userSeedSchema.safeParse(importSeed).success;
+  const validationMessage =
+    importSeed && !validSeed ? 'Enter a valid 64-character seed.' : '';
+  const [importError, importAction, importPending] = useActionState(
+    async (_previous: string, data: FormData) => {
+      const parsed = userSeedSchema.safeParse(data.get('seed'));
+      if (!parsed.success) {
+        return 'Enter a valid 64-character seed.';
+      }
+      if (busy || sharing || (googleConnected && !canSignIn)) {
+        return '';
+      }
+      if (googleConnected) {
+        setConfirmReplace(true);
+      } else {
+        await submitImport(parsed.data);
+      }
+      return '';
+    },
+    '',
+  );
   const displayedSeed = googleConnected ? shareSeed : seed;
   const importLabel = googleConnected ? 'Replace tierlist' : 'Import seed';
 
@@ -68,8 +90,13 @@ export const UserSeed = ({
     }
   };
 
-  const submitImport = async () => {
-    if (await onImport(importSeed)) {
+  const submitImport = async (value = importSeed) => {
+    const parsed = userSeedSchema.safeParse(value);
+    if (!parsed.success) {
+      setConfirmReplace(false);
+      return;
+    }
+    if (await onImport(parsed.data)) {
       setImportSeed('');
       setShareSeed('');
     }
@@ -205,17 +232,7 @@ export const UserSeed = ({
               )}
             </section>
 
-            <form
-              className="mt-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (googleConnected) {
-                  setConfirmReplace(true);
-                } else {
-                  void submitImport();
-                }
-              }}
-            >
+            <form className="mt-4" action={importAction}>
               <label htmlFor={importId} className="mb-2 block">
                 {googleConnected
                   ? 'Replace tierlist from a seed'
@@ -225,6 +242,9 @@ export const UserSeed = ({
               <div className="relative">
                 <input
                   id={importId}
+                  name="seed"
+                  aria-invalid={Boolean(validationMessage)}
+                  aria-describedby={`${importId}-error`}
                   aria-label="Seed to import"
                   placeholder="Paste your seed"
                   type="text"
@@ -232,7 +252,9 @@ export const UserSeed = ({
                   spellCheck={false}
                   value={importSeed}
                   maxLength={64}
-                  disabled={busy || (googleConnected && !canSignIn)}
+                  disabled={
+                    busy || importPending || (googleConnected && !canSignIn)
+                  }
                   onChange={(event) => setImportSeed(event.currentTarget.value)}
                   className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
                 />
@@ -244,7 +266,8 @@ export const UserSeed = ({
                   disabled={
                     busy ||
                     sharing ||
-                    !importSeed.trim() ||
+                    importPending ||
+                    !validSeed ||
                     (googleConnected && !canSignIn)
                   }
                   className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center hover:bg-accent focus-visible:outline-2 disabled:cursor-default disabled:opacity-40"
@@ -252,13 +275,16 @@ export const UserSeed = ({
                   <ArrowRight className="size-4" />
                 </button>
               </div>
+              <p id={`${importId}-error`} role="status" className="mt-2">
+                {validationMessage || (!validSeed ? importError : '')}
+              </p>
             </form>
 
             <SeedReplaceConfirmation
               open={confirmReplace}
               busy={busy}
               onOpenChange={setConfirmReplace}
-              onConfirm={submitImport}
+              onConfirm={() => submitImport()}
             />
 
             {imported && !googleConnected && (

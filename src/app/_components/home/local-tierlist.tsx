@@ -108,6 +108,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
         return false;
       }
 
+      setAccountOpen(true);
       setError(
         tierlistErrorMessage(
           failure,
@@ -227,6 +228,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
     }
 
     if (result === 'failed') {
+      setAccountOpen(true);
       setError(
         'Google sign-in was cancelled or could not be completed. Please try again.',
       );
@@ -259,6 +261,7 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
       }
 
       if (result === 'connected') {
+        setAccountOpen(true);
         setError(
           'Unable to open your Google tierlist. Your device’s list is unchanged. Try signing in again.',
         );
@@ -277,10 +280,10 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
   return (
     <>
       <TerminalSequence
-        identity={`${statusText}:${visibleError}:${sync.status === 'offline' ? backupMessage : ''}`}
+        identity={`${statusText}:${sync.status === 'offline' ? backupMessage : ''}`}
         lines={[
           statusText,
-          visibleError && !sync.conflict && !accountOpen ? visibleError : '',
+          '',
           needsReconnect ? backupMessage : '',
           sync.status === 'offline' ? 'Retrying in 30 seconds...' : '',
           needsReconnect ? reconnectLabel : '',
@@ -344,12 +347,6 @@ export const LocalTierlist = ({ children }: PropsWithChildren) => {
             onShare={shareSeed}
           />
         </div>
-
-        {visibleError && !sync.conflict && !accountOpen && (
-          <p role="status" className="mb-3 text-xs text-muted-foreground">
-            <TerminalText text={visibleError} line={1} />
-          </p>
-        )}
 
         {sync.status === 'offline' && (
           <div className="mb-3 space-y-1 text-xs text-muted-foreground">

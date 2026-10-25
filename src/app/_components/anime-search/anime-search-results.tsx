@@ -2,14 +2,14 @@
 
 import { useAtomValue } from 'jotai';
 import { motion, useReducedMotion } from 'motion/react';
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { animeSearchConfigAtom } from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
-import { imageSuitability } from '@/app/_lib/anime-search';
+import { classifySearchInput, imageSuitability } from '@/app/_lib/anime-search';
 import { blendAnimeSearchResults } from '@/app/_lib/anime-search-results';
 import { searchCuratedAnime } from '@/app/_lib/curated-anime-search';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
@@ -30,9 +30,19 @@ export const AnimeSearchResults = () => {
   const [dimensions, setDimensions] = useState<
     Record<string, TierImage | null>
   >({});
-  const { search, sentinel, query, url, urlError, waiting } = useAnimeSearch(
-    input,
-    { initialQuery, initialPage },
+  const { search, sentinel, query, url, urlError, waiting, submitQuery } =
+    useAnimeSearch(input, { initialQuery, initialPage });
+  const [submission, searchAction, submitting] = useActionState(
+    async (_previous: { input: string; error: string }, data: FormData) => {
+      const value = String(data.get('query') ?? '');
+      const classified = classifySearchInput(value);
+      submitQuery(value);
+      if (classified.kind === 'invalid') {
+        return { input: value, error: classified.message };
+      }
+      return { input: value, error: '' };
+    },
+    { input: '', error: '' },
   );
   const curated =
     query.length >= 2 && !url && !urlError
@@ -94,6 +104,9 @@ export const AnimeSearchResults = () => {
     if (waiting) {
       return 'Waiting...';
     }
+    if (submission.input === input && submission.error) {
+      return submission.error;
+    }
     if (urlError) {
       return urlError;
     }
@@ -118,17 +131,22 @@ export const AnimeSearchResults = () => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <label className="block shrink-0 text-xs text-muted-foreground">
-        Find anime or paste an image URL
-        <input
-          type="search"
-          value={input}
-          maxLength={2048}
-          placeholder="Search anime…"
-          className="mt-2 min-h-11 w-full border border-divider bg-background px-3 text-sm text-foreground outline-none focus-visible:border-foreground"
-          onChange={(event) => setInput(event.currentTarget.value)}
-        />
-      </label>
+      <search className="shrink-0">
+        <form action={searchAction} aria-busy={submitting}>
+          <label className="block text-xs text-muted-foreground">
+            Find anime or paste an image URL
+            <input
+              type="search"
+              name="query"
+              value={input}
+              maxLength={2048}
+              placeholder="Search anime…"
+              className="mt-2 min-h-11 w-full border border-divider bg-background px-3 text-sm text-foreground outline-none focus-visible:border-foreground"
+              onChange={(event) => setInput(event.currentTarget.value)}
+            />
+          </label>
+        </form>
+      </search>
 
       <p className="my-2 shrink-0 text-xs text-muted-foreground">
         Drag to a rank · Click to add to Watching

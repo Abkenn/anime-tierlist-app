@@ -93,6 +93,7 @@ export const useAnimeSearch = (
     url,
     urlError,
     debounced,
+    submitQuery: (value: string) => setDebounced(value.trim()),
     waiting: input.trim() !== debounced,
   };
 };

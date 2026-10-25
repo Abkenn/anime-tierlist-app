@@ -47,11 +47,25 @@ it('offers a separate share seed and requires confirmation before replacing an a
       'b'.repeat(64),
     ),
   );
+  const seedInput = screen.getByRole('textbox', { name: 'Seed to import' });
+  fireEvent.change(seedInput, { target: { value: 'invalid-seed' } });
+  expect(
+    screen.getByRole('button', { name: 'Replace tierlist' }),
+  ).toBeDisabled();
+  expect(screen.getByText('Enter a valid 64-character seed.')).toBeVisible();
+  const form = seedInput.closest('form');
+  if (!form) {
+    throw new Error('Seed input must belong to its submission form.');
+  }
+  fireEvent.submit(form);
+  await waitFor(() => expect(seedInput).not.toBeDisabled());
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  expect(onImport).not.toHaveBeenCalled();
   fireEvent.change(screen.getByRole('textbox', { name: 'Seed to import' }), {
     target: { value: 'c'.repeat(64) },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
-  expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  await screen.findByRole('alertdialog');
   expect(onImport).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(onImport).not.toHaveBeenCalled();
@@ -59,6 +73,7 @@ it('offers a separate share seed and requires confirmation before replacing an a
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
   );
   fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
+  await screen.findByRole('alertdialog');
   const buttons = screen.getAllByRole('button', { name: 'Replace tierlist' });
   fireEvent.click(buttons[buttons.length - 1]);
   await waitFor(() =>
