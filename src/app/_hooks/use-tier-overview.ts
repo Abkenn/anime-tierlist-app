@@ -66,6 +66,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
 
     let fadeTimer: ReturnType<typeof setTimeout>;
     let frame = 0;
+    let scrollFrame = 0;
     const media = window.matchMedia(
       '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
     );
@@ -116,13 +117,19 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
         return;
       }
 
-      setOverview((current) => ({
-        ...current,
-        top: (viewport.scrollTop / Math.max(1, viewport.scrollHeight)) * 100,
-        left: viewport.scrollLeft,
-        viewportWidth: viewport.clientWidth,
-        viewportHeight: viewport.clientHeight,
-      }));
+      if (!scrollFrame) {
+        scrollFrame = requestAnimationFrame(() => {
+          scrollFrame = 0;
+          setOverview((current) => ({
+            ...current,
+            top:
+              (viewport.scrollTop / Math.max(1, viewport.scrollHeight)) * 100,
+            left: viewport.scrollLeft,
+            viewportWidth: viewport.clientWidth,
+            viewportHeight: viewport.clientHeight,
+          }));
+        });
+      }
       setScrolling(true);
       clearTimeout(fadeTimer);
       fadeTimer = setTimeout(() => setScrolling(false), 850);
@@ -207,17 +214,27 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       resize.observe(viewport.firstElementChild);
     }
 
-    const mutations = new MutationObserver(scheduleMeasure);
+    const mutations = new MutationObserver((records) => {
+      if (
+        records.some(
+          (record) =>
+            record.type === 'attributes' ||
+            [...record.addedNodes, ...record.removedNodes].some(
+              (node) =>
+                node instanceof Element &&
+                (node.matches('[data-tier-rank]') ||
+                  node.querySelector('[data-tier-rank]')),
+            ),
+        )
+      ) {
+        scheduleMeasure();
+      }
+    });
     mutations.observe(viewport, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: [
-        'data-tier-rank',
-        'data-tier-count',
-        'data-tier-item-id',
-        'style',
-      ],
+      attributeFilter: ['data-tier-rank', 'data-tier-count'],
     });
     viewport.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -230,6 +247,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     return () => {
       clearTimeout(fadeTimer);
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(scrollFrame);
       resize.disconnect();
       media.removeEventListener('change', onMediaChange);
       mutations.disconnect();

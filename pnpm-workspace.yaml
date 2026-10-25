@@ -1,5 +1,16 @@
+engineStrict: true
+saveExact: true
+pmOnFail: download
+minimumReleaseAge: 1440
+blockExoticSubdeps: true
+strictDepBuilds: true
 allowBuilds:
   esbuild@0.28.2: true
   sharp: false
   unrs-resolver: false
   workerd: false
+overrides:
+  "@hono/node-server@<1.19.15": 1.19.15
+  hono@<4.13.11: 4.13.11
+  lodash@<=4.17.23: 4.18.1
+  valibot@<=1.4.1: 1.4.2

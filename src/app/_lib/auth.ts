@@ -30,6 +30,24 @@ if (process.env.NODE_ENV !== 'production') {
 
 export const auth = betterAuth({
   appName: 'Anime Tierlist',
+  logger: {
+    log: (level, message, ...args: unknown[]) => {
+      const details = [message, ...args].map(String).join(' ');
+      if (
+        /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|connection timeout/iu.test(
+          details,
+        )
+      ) {
+        console.warn(
+          'Account database is temporarily unreachable. Local editing remains available.',
+        );
+      } else if (level === 'error') {
+        console.error(message, ...args);
+      } else if (level === 'warn') {
+        console.warn(message, ...args);
+      }
+    },
+  },
   baseURL,
   secret: process.env.AUTH_SECRET,
   database: pool,

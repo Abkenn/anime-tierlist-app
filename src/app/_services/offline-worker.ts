@@ -82,7 +82,16 @@ const cacheOfflineHomepage = async () => {
 
 // Waiting for old tabs to close prevents mixing chunks from different builds.
 self.addEventListener('install', (event) => {
-  event.waitUntil(cacheOfflineHomepage());
+  event.waitUntil(
+    (async () => {
+      try {
+        await cacheOfflineHomepage();
+      } catch (error) {
+        await caches.delete(CACHE_NAME);
+        throw error;
+      }
+    })(),
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -95,6 +104,7 @@ self.addEventListener('activate', (event) => {
           .filter(
             (name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME,
           )
+          .slice(0, -1)
           .map((name) => caches.delete(name)),
       );
       await self.clients.claim();
@@ -188,9 +198,25 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cache = await caches.open(CACHE_NAME);
 
-        return (
-          (await cache.match(request, { ignoreSearch: true })) ?? fetch(request)
+        const cached = await cache.match(request);
+        if (cached) {
+          return cached;
+        }
+        const previous = (await caches.keys()).filter(
+          (name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME,
         );
+        for (const name of previous) {
+          const saved = await (await caches.open(name)).match(request);
+          if (saved) {
+            return saved;
+          }
+        }
+        const response = await fetch(request);
+        if (response.ok) {
+          event.waitUntil(cache.put(request, response.clone()));
+        }
+
+        return response;
       })(),
     );
   }
