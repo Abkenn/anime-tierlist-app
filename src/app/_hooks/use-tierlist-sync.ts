@@ -14,6 +14,10 @@ import {
 import { withTierlistSyncLock } from '@/app/_lib/tierlist-tabs';
 import { backupRemoteTierlist } from '@/app/_services/local-tierlist';
 import {
+  markOffline,
+  OFFLINE_RECOVERED_EVENT,
+} from '@/app/_services/offline-mode';
+import {
   synchronizeTierlist,
   TierlistSyncError,
 } from '@/app/_services/synchronize-tierlist';
@@ -165,10 +169,12 @@ export const useTierlistSync = (
     };
 
     window.addEventListener('online', reconnect);
+    window.addEventListener(OFFLINE_RECOVERED_EVENT, reconnect);
     window.addEventListener('focus', reconnect);
 
     return () => {
       window.removeEventListener('online', reconnect);
+      window.removeEventListener(OFFLINE_RECOVERED_EVENT, reconnect);
       window.removeEventListener('focus', reconnect);
     };
   }, []);
@@ -230,6 +236,10 @@ export const useTierlistSync = (
       local.sync.serverRevision === active.remote.revision &&
       sameTierlistDocument(getTierlistDocument(local), active.remote.document)
     ) {
+      if (state.status === 'connecting' || state.status === 'saving') {
+        setState({ status: 'saved' });
+      }
+
       return;
     }
 
@@ -300,6 +310,9 @@ export const useTierlistSync = (
         active.unauthorized ||=
           error instanceof TierlistSyncError && error.code === 'unauthorized';
         active.outdated ||= isOutdatedTierlistClient(error);
+        if (!active.outdated && !active.unauthorized) {
+          markOffline();
+        }
 
         if (scope.current === active) {
           setState(getSyncFailureState(error, active));

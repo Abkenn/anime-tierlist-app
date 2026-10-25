@@ -6,6 +6,7 @@ import { useOfflineMode } from '@/app/_hooks/use-offline-mode';
 import {
   OFFLINE_POLL_INTERVAL_MS,
   OFFLINE_RECONNECT_EVENT,
+  OFFLINE_RECOVERED_EVENT,
   withOfflineMode,
 } from '@/app/_services/offline-mode';
 
@@ -77,6 +78,7 @@ export const useOfflineReconnect = () => {
     if (mode === null && refreshAfterNavigation.current) {
       refreshAfterNavigation.current = false;
       startTransition(() => router.refresh());
+      window.dispatchEvent(new Event(OFFLINE_RECOVERED_EVENT));
     }
   }, [mode, router]);
 

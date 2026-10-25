@@ -13,6 +13,7 @@ import {
 } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { readGoogleTierlist } from '@/app/_services/google-auth.actions';
+import { OFFLINE_RECOVERED_EVENT } from '@/app/_services/offline-mode';
 import {
   connectTierlist,
   createShareSeed,
@@ -35,6 +36,8 @@ export const useTierlistAccount = (
   const [googleProfileKey, setGoogleProfileKey] = useState('');
   const [googleName, setGoogleName] = useState('');
   const [accountVerified, setAccountVerified] = useState(false);
+  const [accountAttempt, setAccountAttempt] = useState(0);
+  const revalidating = useRef(false);
   const rejectedProfile = useRef('');
   const accountHint = useAccountDisplayHint();
   const [resolvedUserId, setResolvedUserId] = useState<string | null>();
@@ -276,6 +279,34 @@ export const useTierlistAccount = (
     }
   });
 
+  const revalidateAccount = useEffectEvent(async () => {
+    if (revalidating.current) {
+      return;
+    }
+    revalidating.current = true;
+    try {
+      await session.refetch();
+      setAccountAttempt((value) => value + 1);
+    } catch {
+      // The next connection recovery retries verification while the local draft stays available.
+    } finally {
+      revalidating.current = false;
+    }
+  });
+
+  useEffect(() => {
+    const retry = () => {
+      void revalidateAccount();
+    };
+    window.addEventListener('online', retry);
+    window.addEventListener(OFFLINE_RECOVERED_EVENT, retry);
+
+    return () => {
+      window.removeEventListener('online', retry);
+      window.removeEventListener(OFFLINE_RECOVERED_EVENT, retry);
+    };
+  }, []);
+
   useEffect(() => {
     if (
       storage.seed &&
@@ -283,6 +314,7 @@ export const useTierlistAccount = (
       sessionReady &&
       !busy &&
       (resolvedUserId !== sessionUserId ||
+        (accountAttempt > 0 && !accountVerified) ||
         (!sessionUserId &&
           !session.error &&
           Boolean(storage.snapshot?.accountOwnerId)))
@@ -291,6 +323,8 @@ export const useTierlistAccount = (
     }
   }, [
     storage.seed,
+    accountAttempt,
+    accountVerified,
     sessionUserId,
     initialReady,
     sessionReady,

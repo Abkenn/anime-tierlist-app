@@ -5,6 +5,7 @@ import { Provider } from 'jotai';
 import type { PropsWithChildren } from 'react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import type { LocalTierlist } from '@/app/_lib/local-tierlist';
+import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import {
   activateAccountTierlist,
   activateImportedTierlist,
@@ -18,13 +19,14 @@ const mocks = vi.hoisted(() => ({
     isPending: false,
     error: null as Error | null,
   },
+  refetch: vi.fn(),
   connect: vi.fn(),
   readAccount: vi.fn(),
 }));
 
 vi.mock('@/app/_lib/auth-client', () => ({
   authClient: {
-    useSession: () => mocks.session,
+    useSession: () => ({ ...mocks.session, refetch: mocks.refetch }),
     signOut: vi.fn(),
   },
 }));
@@ -173,4 +175,39 @@ it('does not retry rejected authorization on a timer, focus, reconnect or manual
   } finally {
     vi.useRealTimers();
   }
+});
+
+it('re-verifies the same signed-in user after a failed account read when connectivity returns', async () => {
+  await activateAccountTierlist(accountKey, remote);
+  mocks.session.data = { user: { id: 'google-user' } };
+  mocks.connect.mockResolvedValue({
+    ok: true,
+    value: {
+      ...remote,
+      document: tierlistDocumentSchema.parse(remote.document),
+    },
+  });
+  mocks.readAccount.mockRejectedValueOnce(new TypeError('Network unavailable'));
+  const { result } = renderHook(() => useTierlistAccount(), { wrapper });
+  await waitFor(() => expect(mocks.readAccount).toHaveBeenCalledTimes(1));
+  mocks.readAccount.mockResolvedValue({
+    profileKey: accountKey,
+    displayName: 'Recovered',
+    remote,
+  });
+  act(() => {
+    window.dispatchEvent(new Event('online'));
+  });
+  await waitFor(() => expect(mocks.readAccount).toHaveBeenCalledTimes(2));
+  await waitFor(
+    () =>
+      expect({
+        sync: result.current.sync.status,
+        label: result.current.status.identityLabel,
+        storage: result.current.storage.status,
+      }).toMatchObject({ sync: 'saved' }),
+    { timeout: 2000 },
+  );
+  expect(result.current.status.identityLabel).toBe('Recovered (Google)');
+  expect(result.current.storage.seed).toBe(accountKey);
 });

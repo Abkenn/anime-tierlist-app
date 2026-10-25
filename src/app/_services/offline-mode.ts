@@ -1,5 +1,6 @@
 import type { OfflineMode } from '@/app/_types/offline.types';
 
+export const OFFLINE_RECOVERED_EVENT = 'tierlist:connection-restored';
 export const OFFLINE_RECONNECT_EVENT = 'tierlist:reconnect';
 export const OFFLINE_POLL_INTERVAL_MS = 30_000;
 
