@@ -162,7 +162,11 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       );
 
     const onWheel = (event: WheelEvent) => {
-      if (!event.ctrlKey && outsideBoard(event.target)) {
+      if (
+        !event.ctrlKey &&
+        event.target instanceof Element &&
+        event.target.closest('[data-tier-overview]')
+      ) {
         event.preventDefault();
         const unit = [1, 16, viewport.clientHeight][event.deltaMode] ?? 1;
         viewport.scrollBy({
