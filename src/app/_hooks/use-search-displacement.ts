@@ -66,8 +66,10 @@ export const useSearchDisplacement = (results: AnimeSearchResult[]) => {
   useLayoutEffect(() => {
     if (!dragged?.id) {
       setSlots([]);
+
       return;
     }
+
     const nodes = gridRef.current?.querySelectorAll<HTMLElement>(
       '[data-search-result]',
     );

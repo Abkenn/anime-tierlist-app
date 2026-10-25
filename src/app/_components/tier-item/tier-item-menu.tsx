@@ -57,6 +57,7 @@ export const TierItemMenu = ({
           if (open) {
             return itemId ?? null;
           }
+
           return current === itemId ? null : current;
         });
         if (open) {

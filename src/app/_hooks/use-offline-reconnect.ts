@@ -83,6 +83,7 @@ export const useOfflineReconnect = () => {
   useEffect(() => {
     if (mode === null) {
       setRetryAt(undefined);
+
       return;
     }
 

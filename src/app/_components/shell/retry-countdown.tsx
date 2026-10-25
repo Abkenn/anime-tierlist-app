@@ -14,6 +14,7 @@ export const RetryCountdown = ({ retryAt, line }: RetryCountdownProps) => {
   useEffect(() => {
     const update = () =>
       setSeconds(Math.max(0, Math.ceil((retryAt - Date.now()) / 1000)));
+
     update();
     const timer = setInterval(update, 250);
 

@@ -2,19 +2,19 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
-import { useAtomValue } from 'jotai';
 import {
   type PropsWithChildren,
   type ReactNode,
   useEffect,
   useEffectEvent,
+  useRef,
   useState,
 } from 'react';
-import { accountInitializationAtom } from '@/app/_atoms/tierlist/account.atoms';
 import { RetryCountdown } from '@/app/_components/shell/retry-countdown';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
+import { usePromiseValue } from '@/app/_hooks/use-promise-value';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
 import { authClient } from '@/app/_lib/auth-client';
 import {
@@ -30,14 +30,17 @@ import {
   disconnectTierlist,
   replaceAccountFromSeed,
 } from '@/app/_services/tierlist.actions';
+import type { AccountSnapshot } from '@/app/_types/account-snapshot';
 import { UserSeed } from './user-seed';
+
+const unavailableAccount: AccountSnapshot = { status: 'unavailable' };
 
 export const LocalTierlist = ({
   children,
-  serverInitialization = false,
-}: PropsWithChildren<{ serverInitialization?: boolean }>) => {
-  const initial = useAtomValue(accountInitializationAtom);
-  const initialReady = !serverInitialization || initial !== null;
+  initialAccount,
+}: PropsWithChildren<{ initialAccount?: Promise<AccountSnapshot> }>) => {
+  const initial = usePromiseValue(initialAccount, unavailableAccount);
+  const initialReady = !initialAccount || initial !== null;
   const storage = useLocalTierlist();
   const session = authClient.useSession();
   const [busy, setBusy] = useState(false);
@@ -53,6 +56,7 @@ export const LocalTierlist = ({
   const identityReady =
     initialReady && sessionReady && resolvedUserId === sessionUserId;
   const [accountOpen, setAccountOpen] = useState(false);
+  const statusAnchor = useRef<HTMLButtonElement>(null);
   const [accountHandle] = useState(() => Popover.createHandle());
   const googleConnected = Boolean(
     storage.snapshot?.accountOwnerId ||
@@ -112,11 +116,13 @@ export const LocalTierlist = ({
 
     try {
       await operation();
+
       return true;
     } catch (failure) {
       if (isOutdatedTierlistClient(failure)) {
         sync.requireReload();
         setError('');
+
         return false;
       }
 
@@ -127,6 +133,7 @@ export const LocalTierlist = ({
           'Couldn’t connect. Your current tierlist is unchanged.',
         ),
       );
+
       return false;
     } finally {
       setBusy(false);
@@ -165,6 +172,7 @@ export const LocalTierlist = ({
 
         await storage.replaceRemote(result.value, snapshot.revision);
         sync.retry();
+
         return;
       }
 
@@ -201,10 +209,16 @@ export const LocalTierlist = ({
           );
         }
       }
+
       setGoogleProfileKey('');
       setGoogleName('');
       setAccountOpen(false);
-      await disconnectTierlist().catch(() => null);
+      try {
+        await disconnectTierlist();
+      } catch {
+        // Restoring the device profile must also work without the server.
+      }
+
       await storage.restoreDeviceProfile();
     });
 
@@ -245,6 +259,7 @@ export const LocalTierlist = ({
         'Google sign-in was cancelled or could not be completed. Please try again.',
       );
       setResolvedUserId(userId);
+
       return;
     }
 
@@ -254,10 +269,12 @@ export const LocalTierlist = ({
       if (session.error && !fromServer) {
         throw new Error('Unable to check your account right now.');
       }
+
       let account = fromServer ? initial.account : null;
       if (!account && userId) {
         account = await readGoogleTierlist();
       }
+
       setGoogleProfileKey(account?.profileKey ?? '');
       setGoogleName(account?.displayName ?? '');
 
@@ -274,6 +291,7 @@ export const LocalTierlist = ({
     } catch (failure) {
       if (isOutdatedTierlistClient(failure)) {
         sync.requireReload();
+
         return;
       }
 
@@ -340,6 +358,7 @@ export const LocalTierlist = ({
                         text: identityLabel,
                         render: (content: ReactNode) => (
                           <Popover.Trigger
+                            ref={statusAnchor}
                             handle={accountHandle}
                             className={cn(
                               'max-w-full cursor-pointer wrap-break-word text-left align-baseline underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4',
@@ -364,6 +383,7 @@ export const LocalTierlist = ({
             }
             open={accountOpen}
             handle={accountHandle}
+            statusAnchor={statusAnchor}
             onOpenChange={setAccountOpen}
             imported={storage.imported}
             busy={controlsBusy}

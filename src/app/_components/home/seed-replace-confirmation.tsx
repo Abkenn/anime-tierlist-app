@@ -19,6 +19,7 @@ export const SeedReplaceConfirmation = ({
 }: SeedReplaceConfirmationProps) => {
   const [, confirmAction, pending] = useActionState(async () => {
     await onConfirm();
+
     return null;
   }, null);
   const submitting = busy || pending;

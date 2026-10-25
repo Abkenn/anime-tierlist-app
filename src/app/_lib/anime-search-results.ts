@@ -13,6 +13,7 @@ export const blendAnimeSearchResults = (
   const extras = curated.filter((item) => !fetchedIds.has(item.id));
   const blended = first.flatMap((item, index) => {
     const extra = extras[Math.floor(index / 4)];
+
     return (index + 1) % 4 === 0 && extra ? [item, extra] : [item];
   });
 

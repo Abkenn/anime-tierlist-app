@@ -48,6 +48,7 @@ export const DirectImageImport: Story = {
     if (!card) {
       throw new Error('Missing image card');
     }
+
     await userEvent.click(card);
     await canvas.findByRole('button', {
       name: 'Item Unknown in Watching',

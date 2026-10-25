@@ -109,6 +109,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
       if (!active.current) {
         return;
       }
+
       x.set(info.point.x - grab.current.x);
       y.set(info.point.y - grab.current.y);
       preview.set({ x: x.get(), y: y.get() });
@@ -118,6 +119,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
       if (active.current) {
         commitDrop();
       }
+
       cancel();
     },
     onPointerCancel: cancel,
@@ -127,10 +129,12 @@ export const useSearchItemDrag = (item: TierItemData) => {
       }
     },
   };
+
   useEffect(() => {
     if (!dragging) {
       return;
     }
+
     const tick = ({ delta }: { delta: number }) => {
       const board = document.querySelector<HTMLElement>(
         '[aria-label="Anime tierlist"]',
@@ -162,6 +166,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
     if (!dragging) {
       return;
     }
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.code === 'Escape') {
         active.current = false;
@@ -172,6 +177,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
         setSlot(null);
       }
     };
+
     window.addEventListener('keydown', handleEscape);
 
     return () => window.removeEventListener('keydown', handleEscape);

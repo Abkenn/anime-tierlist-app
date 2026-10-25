@@ -684,7 +684,9 @@ export const CustomRatioPosition: Story = {
       name: 'Item Position test in S+',
     });
     const originalWidth = item.getBoundingClientRect().width;
+
     const image = () => item.querySelector('svg[role="img"]');
+
     fireEvent.contextMenu(item);
     await userEvent.click(
       await page.findByRole('menuitem', { name: 'Edit crop' }),
@@ -819,7 +821,9 @@ export const ItemText: Story = {
         'Heavenly Delusion',
       ),
     );
+
     const title = () => item.querySelector('[data-tier-title] > span > span');
+
     await expect(title()).toHaveClass('top-1');
     await expect(getComputedStyle(title() as Element).color).toBe(
       'rgb(255, 255, 0)',

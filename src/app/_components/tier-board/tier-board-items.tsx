@@ -98,7 +98,9 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
             ) {
               return true;
             }
+
             const rect = geometry.get(item.id);
+
             return (
               rect &&
               rect.x + rect.width >= window.left &&

@@ -47,6 +47,7 @@ export const AnimeSearchResults = () => {
       if (classified.kind === 'invalid') {
         return { input: value, error: classified.message };
       }
+
       return { input: value, error: '' };
     },
     { input: '', error: '' },
@@ -84,7 +85,9 @@ export const AnimeSearchResults = () => {
     if (imported.has(result.id) || seen.has(result.id)) {
       return false;
     }
+
     seen.add(result.id);
+
     return true;
   });
   const displacement = useSearchDisplacement(visibleResults);
@@ -107,10 +110,12 @@ export const AnimeSearchResults = () => {
     ({ result }) => !result.image && !Object.hasOwn(dimensions, result.id),
   );
   const previousQuery = useRef(query);
+
   useEffect(() => {
     if (previousQuery.current === query) {
       return;
     }
+
     previousQuery.current = query;
     const viewport = displacement.gridRef.current?.closest(
       '[data-slot="scroll-area-viewport"]',
@@ -126,6 +131,7 @@ export const AnimeSearchResults = () => {
     ) ?? [],
   );
   const curatedIds = new Set(curated.map((item) => item.id));
+
   const pageFor = (id: string) =>
     curatedIds.has(id) ? 'curated' : (pagesById.get(id) ?? '-1');
 
@@ -140,24 +146,30 @@ export const AnimeSearchResults = () => {
     if (waiting) {
       return 'Waiting...';
     }
+
     if (submission.input === input && submission.error) {
       return submission.error;
     }
+
     if (urlError) {
       return urlError;
     }
+
     if (!url && search.isError) {
       return tierlistErrorMessage(
         search.error,
         'Search is unavailable right now. Try again shortly.',
       );
     }
+
     if (!url && search.isFetching) {
       return 'Searching...';
     }
+
     if (loadingImages) {
       return 'Loading images...';
     }
+
     if (query.length >= 2 && !url && results.length === 0) {
       return 'No images found.';
     }
@@ -198,7 +210,10 @@ export const AnimeSearchResults = () => {
         <div
           ref={displacement.gridRef}
           className="relative grid shrink-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-0.5 lg:grid-cols-3"
-          style={{ height: Math.max(0, rows * rowHeight - gap) }}
+          style={{
+            height:
+              waiting || urlError ? 0 : Math.max(0, rows * rowHeight - gap),
+          }}
         >
           {!waiting &&
             !urlError &&

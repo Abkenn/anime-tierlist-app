@@ -25,6 +25,7 @@ export const createGoogleAccount = async ({
         document,
         revision: 0,
       });
+
       return tx.orm.public.TierlistGoogleAccount.create({
         subject,
         ownerId,
@@ -36,6 +37,7 @@ export const createGoogleAccount = async ({
     if (existing) {
       return existing;
     }
+
     throw error;
   }
 };

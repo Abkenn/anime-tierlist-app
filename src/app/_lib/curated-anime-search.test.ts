@@ -19,6 +19,7 @@ describe('curated anime matching', () => {
     if (!oshi) {
       throw new Error('Missing curated fixture');
     }
+
     expect(
       searchCuratedAnime(
         [{ ...oshi, title: 'Oshi no Ko Season 4' }],

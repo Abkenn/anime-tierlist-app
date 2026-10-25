@@ -47,6 +47,7 @@ export const AnimeSearchResultCard = ({
     if (state.status !== 'loading') {
       return;
     }
+
     const timer = setTimeout(
       () =>
         setState((current) =>

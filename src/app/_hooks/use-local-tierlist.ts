@@ -75,6 +75,7 @@ export const useLocalTierlist = () => {
 
   useEffect(() => {
     let disposed = false;
+
     let unsubscribe = () => {};
 
     const initialize = async () => {
@@ -137,13 +138,32 @@ export const useLocalTierlist = () => {
 
           pending += 1;
           setState({ status: 'saving', seed: current.seed });
-          const task = queue.then(operation);
-          queue = task
-            .then(() => {
+          const previous = queue;
+
+          const run = async () => {
+            await previous;
+
+            if (failed) {
+              throw new Error(
+                'Local saving is paused. Reload before editing further.',
+              );
+            }
+
+            await operation();
+          };
+
+          const task = run();
+
+          const settle = async () => {
+            try {
+              await task;
               pending -= 1;
               publish();
-            })
-            .catch((error: unknown) => {
+            } catch (error) {
+              if (failed) {
+                return;
+              }
+
               failed = true;
 
               if (!disposed) {
@@ -156,12 +176,15 @@ export const useLocalTierlist = () => {
                       : 'Unable to save this tierlist on this device.',
                 });
               }
-            });
+            }
+          };
+
+          queue = settle();
 
           return task;
         };
 
-        const persist = () => {
+        const persist = async () => {
           if (failed) {
             return;
           }
@@ -171,15 +194,19 @@ export const useLocalTierlist = () => {
             ranks: store.get(enabledTierRanksAtom),
             imageMode: store.get(imageModeAtom),
           };
-          void enqueue(async () => {
-            const next = {
-              ...current,
-              ...document,
-              revision: current.revision + 1,
-            };
-            await saveLocalTierlist(next, current.revision);
-            current = next;
-          }).catch(() => {});
+          try {
+            await enqueue(async () => {
+              const next = {
+                ...current,
+                ...document,
+                revision: current.revision + 1,
+              };
+              await saveLocalTierlist(next, current.revision);
+              current = next;
+            });
+          } catch {
+            // The queue reports failures; atom subscriptions have no promise consumer.
+          }
         };
 
         hydrate();

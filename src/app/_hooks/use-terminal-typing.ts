@@ -24,23 +24,36 @@ export const useTerminalTyping = ({
   const progress = useMotionValue(0);
   const typed = useMotionValue('');
   const previousText = useRef<string | undefined>(undefined);
+  const history = useRef(new Map<string, number>());
 
   useLayoutEffect(() => {
     const characters = Array.from(text);
     const old = Array.from(typed.get());
-    const unchanged = previousText.current === text;
+    if (!replaceTail && previousText.current) {
+      const previous = Array.from(previousText.current);
+      let length = 0;
+      while (length < old.length && old[length] === previous[length]) {
+        length += 1;
+      }
+
+      history.current.set(previousText.current, length);
+    }
+
+    previousText.current = text;
     let shared = 0;
     let typing: AnimationPlaybackControls | undefined;
     let delay = 0;
     let scale = 1;
-    previousText.current = text;
 
     if (typed.get() === text) {
+      history.current.set(text, characters.length);
+
       return;
     }
 
     if (reducedMotion) {
       typed.set(text);
+
       return;
     }
 
@@ -64,8 +77,12 @@ export const useTerminalTyping = ({
       );
     }
 
-    if (unchanged && !replaceTail) {
-      shared = old.length;
+    if (!replaceTail) {
+      while (shared < old.length && old[shared] === characters[shared]) {
+        shared += 1;
+      }
+
+      shared = Math.max(shared, history.current.get(text) ?? 0);
 
       if (shared > 0) {
         delay = 0;
@@ -85,16 +102,34 @@ export const useTerminalTyping = ({
         ),
         delay,
         ease: 'linear',
-        onUpdate: (value) =>
-          typed.set(characters.slice(0, Math.floor(value)).join('')),
-        onComplete: () => typed.set(text),
+        onUpdate: (value) => {
+          typed.set(characters.slice(0, Math.floor(value)).join(''));
+          if (!replaceTail) {
+            history.current.set(text, Math.floor(value));
+          }
+        },
+        onComplete: () => {
+          typed.set(text);
+          if (!replaceTail) {
+            history.current.set(text, characters.length);
+          }
+        },
       });
     };
 
     if (!replaceTail || old.length === 0) {
-      if (!unchanged) {
-        typed.set('');
+      typed.set(characters.slice(0, shared).join(''));
+      if (shared === characters.length) {
+        return;
       }
+
+      if (history.current.size > 32) {
+        const oldest = history.current.keys().next().value;
+        if (oldest !== undefined) {
+          history.current.delete(oldest);
+        }
+      }
+
       type();
 
       return () => typing?.stop();

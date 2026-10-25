@@ -16,6 +16,7 @@ export const readGoogleTierlist = async () => {
   if (!principal) {
     return null;
   }
+
   let identity = await findGoogleAccount(principal.subject);
   if (!identity) {
     const source = await readAnonymousTierlistOwner();
@@ -34,7 +35,9 @@ export const readGoogleTierlist = async () => {
       ),
     });
   }
+
   const remote = await connectAccountTierlist();
+
   return {
     profileKey: hashTierlistSecret(`google-profile:${identity.ownerId}`),
     displayName: principal.displayName,

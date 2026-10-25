@@ -28,6 +28,7 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
       if (!viewport.contains(board)) {
         return;
       }
+
       const bounds = viewport.getBoundingClientRect();
       const previousX = viewport.scrollLeft;
       const previousY = viewport.scrollTop;
@@ -39,6 +40,7 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
       ) {
         viewport.scrollTop += speed(y, bounds.top, bounds.bottom);
       }
+
       if (
         y >= bounds.top &&
         y <= bounds.bottom &&
@@ -46,6 +48,7 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
       ) {
         viewport.scrollLeft += speed(x, bounds.left, bounds.right);
       }
+
       changed ||=
         previousX !== viewport.scrollLeft || previousY !== viewport.scrollTop;
     });

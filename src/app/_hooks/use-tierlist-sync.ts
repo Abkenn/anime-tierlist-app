@@ -87,6 +87,7 @@ export const useTierlistSync = (
     if (scope.current) {
       scope.current.remote = state.conflict;
     }
+
     setState({ status: 'saving' });
     setAttempt((value) => value + 1);
   };
@@ -108,6 +109,7 @@ export const useTierlistSync = (
     if (scope.current) {
       scope.current.remote = result.value;
     }
+
     setState({ status: 'saved' });
   };
 
@@ -135,8 +137,10 @@ export const useTierlistSync = (
 
       setAttempt((value) => value + 1);
     };
+
     window.addEventListener('online', reconnect);
     window.addEventListener('focus', reconnect);
+
     return () => {
       window.removeEventListener('online', reconnect);
       window.removeEventListener('focus', reconnect);
@@ -233,6 +237,7 @@ export const useTierlistSync = (
 
         if (decision === 'conflict') {
           setState({ status: 'conflict', conflict: active.remote });
+
           return;
         }
 
@@ -259,6 +264,7 @@ export const useTierlistSync = (
 
           if (result.value.status === 'conflict') {
             setState({ status: 'conflict', conflict: active.remote });
+
             return;
           }
 

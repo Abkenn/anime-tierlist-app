@@ -15,13 +15,13 @@ vi.mock('./tierlist-identity', () => ({
   hashTierlistSecret: (value: string) => `hashed:${value}`,
 }));
 
-import { readAccountInitialization } from './account-initialization';
+import { readAccountSnapshot } from './account-snapshot';
 
 beforeEach(() => vi.resetAllMocks());
 
 it('does not look up private tierlist data without a verified account', async () => {
   mocks.principal.mockResolvedValue(null);
-  expect(await readAccountInitialization()).toEqual({
+  expect(await readAccountSnapshot()).toEqual({
     status: 'ready',
     userId: null,
     account: null,
@@ -49,7 +49,7 @@ it('returns only the verified owner snapshot and defers new-account provisioning
     document,
     seedHash: 'private',
   });
-  expect(await readAccountInitialization()).toEqual({
+  expect(await readAccountSnapshot()).toEqual({
     status: 'ready',
     userId: 'user',
     account: {
@@ -62,7 +62,7 @@ it('returns only the verified owner snapshot and defers new-account provisioning
   expect(mocks.owner).toHaveBeenCalledWith('owner');
   mocks.identity.mockResolvedValue(null);
   mocks.owner.mockClear();
-  expect(await readAccountInitialization()).toEqual({
+  expect(await readAccountSnapshot()).toEqual({
     status: 'ready',
     userId: 'user',
     account: null,

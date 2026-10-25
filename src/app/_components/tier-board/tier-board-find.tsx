@@ -48,11 +48,13 @@ export const TierBoardFind = () => {
               ? document.activeElement
               : null;
         }
+
         setOpen(true);
         input.current?.focus();
         input.current?.select();
       }
     };
+
     window.addEventListener('keydown', handleFind);
 
     return () => window.removeEventListener('keydown', handleFind);

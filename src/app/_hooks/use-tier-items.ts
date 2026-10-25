@@ -74,6 +74,7 @@ export const useTierItems = ({
   );
   const [viewportWidth, setViewportWidth] = useState(344);
   const boardRef = useRef<HTMLDivElement>(null);
+
   useHydrateAtoms([
     [
       tierItemsAtom,
@@ -88,6 +89,7 @@ export const useTierItems = ({
         ),
     ],
   ]);
+
   const [items, setItems] = useAtom(tierItemsAtom);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const setPosterLayout = useSetAtom(posterLayoutAtom);
@@ -190,6 +192,7 @@ export const useTierItems = ({
       group.push(item);
       grouped.set(rank, group);
     });
+
     return new Map(
       rows.map((row) => [
         row.rank,
@@ -242,6 +245,7 @@ export const useTierItems = ({
           (row) => row.rank === getVisibleRank(item, ranks),
         );
         const box = previewBoxById.get(item.id);
+
         return row && box
           ? [
               {
@@ -259,6 +263,7 @@ export const useTierItems = ({
       }),
     [previewItems, rows, ranks, previewBoxById],
   );
+
   useLayoutEffect(() => {
     setPosterLayout(posterLayout);
   }, [posterLayout, setPosterLayout]);
@@ -469,6 +474,7 @@ export const useTierItems = ({
     }
 
     const update = () => setViewportWidth(viewport.clientWidth);
+
     const observer = new ResizeObserver(update);
 
     update();
@@ -553,6 +559,7 @@ export const useTierItems = ({
 
       if (outsideBoard(clientX, clientY)) {
         setSlot(null);
+
         return null;
       }
 

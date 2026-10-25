@@ -2,7 +2,7 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { ArrowRight, Check, Copy } from 'lucide-react';
-import { useActionState, useId, useState } from 'react';
+import { type RefObject, useActionState, useId, useRef, useState } from 'react';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
@@ -10,6 +10,7 @@ import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
 type UserSeedProps = {
   seed: string;
+  statusAnchor?: RefObject<HTMLElement | null>;
   imported: boolean;
   busy: boolean;
   error?: string;
@@ -27,6 +28,7 @@ type UserSeedProps = {
 
 export const UserSeed = ({
   seed,
+  statusAnchor,
   imported,
   busy,
   error,
@@ -41,6 +43,7 @@ export const UserSeed = ({
   onGoogleSignOut,
   onShare,
 }: UserSeedProps) => {
+  const desktopAnchor = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
@@ -51,6 +54,7 @@ export const UserSeed = ({
       try {
         const seed = await onShare();
         setCopied(false);
+
         return { seed, error: '' };
       } catch (failure) {
         return {
@@ -77,14 +81,17 @@ export const UserSeed = ({
       if (!parsed.success) {
         return 'Enter a valid 64-character seed.';
       }
+
       if (busy || sharing || (googleConnected && !canSignIn)) {
         return '';
       }
+
       if (googleConnected) {
         setConfirmReplace(true);
       } else {
         await submitImport(parsed.data);
       }
+
       return '';
     },
     '',
@@ -96,12 +103,15 @@ export const UserSeed = ({
     const parsed = userSeedSchema.safeParse(value);
     if (!parsed.success) {
       setConfirmReplace(false);
+
       return;
     }
+
     if (await onImport(parsed.data)) {
       setImportSeed('');
       setShareVisible(false);
     }
+
     setConfirmReplace(false);
   };
 
@@ -127,6 +137,7 @@ export const UserSeed = ({
       }}
     >
       <Popover.Trigger
+        ref={desktopAnchor}
         disabled={busy}
         className="hidden min-h-9 cursor-pointer text-xs underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50 sm:inline-flex sm:items-center"
       >
@@ -135,6 +146,11 @@ export const UserSeed = ({
 
       <Popover.Portal>
         <Popover.Positioner
+          anchor={() =>
+            desktopAnchor.current?.getClientRects().length
+              ? desktopAnchor.current
+              : (statusAnchor?.current ?? null)
+          }
           side="bottom"
           align="end"
           positionMethod="fixed"

@@ -76,6 +76,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     if (!viewport) {
       return;
     }
+
     let fadeTimer: ReturnType<typeof setTimeout>;
     let frame = 0;
     const media = window.matchMedia(
@@ -87,6 +88,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       if (!media.matches) {
         return;
       }
+
       const bounds = viewport.getBoundingClientRect();
       const total = Math.max(1, viewport.scrollHeight);
       setOverview({
@@ -104,6 +106,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
           viewport.querySelectorAll<HTMLElement>('[data-tier-rank]'),
         ).map((row) => {
           const rect = row.getBoundingClientRect();
+
           return {
             rank: row.dataset.tierRank as TierRank,
             top: ((rect.top - bounds.top + viewport.scrollTop) / total) * 100,
@@ -126,6 +129,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       if (!media.matches) {
         return;
       }
+
       setOverview((current) => ({
         ...current,
         top: (viewport.scrollTop / Math.max(1, viewport.scrollHeight)) * 100,
@@ -144,6 +148,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
           event.pointerType === 'mouse' &&
           event.clientX >= window.innerWidth * 0.9,
       );
+
     const leave = () => setNearEdge(false);
 
     const outsideBoard = (target: EventTarget | null) =>
@@ -177,6 +182,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       ) {
         return;
       }
+
       const moves: Record<string, number> = {
         PageDown: viewport.clientHeight * 0.85,
         PageUp: -viewport.clientHeight * 0.85,
@@ -199,6 +205,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
         clearTimeout(fadeTimer);
       }
     };
+
     media.addEventListener('change', onMediaChange);
     onMediaChange();
     const resize = new ResizeObserver(scheduleMeasure);
@@ -206,6 +213,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     if (viewport.firstElementChild) {
       resize.observe(viewport.firstElementChild);
     }
+
     const mutations = new MutationObserver(scheduleMeasure);
     mutations.observe(viewport, {
       childList: true,

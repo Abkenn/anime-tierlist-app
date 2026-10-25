@@ -30,6 +30,7 @@ export const TierViewport = ({
       if (typeof ref === 'function') {
         return ref(element);
       }
+
       if (ref) {
         ref.current = element;
       }

@@ -57,6 +57,7 @@ it('offers a separate share seed and requires confirmation before replacing an a
   if (!form) {
     throw new Error('Seed input must belong to its submission form.');
   }
+
   fireEvent.submit(form);
   await waitFor(() => expect(seedInput).not.toBeDisabled());
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();

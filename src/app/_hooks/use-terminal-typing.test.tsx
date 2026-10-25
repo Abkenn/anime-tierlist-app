@@ -46,3 +46,23 @@ describe('unchanged terminal messages', () => {
     expect(result.current.typed.get()).toBe('Changes saved');
   });
 });
+
+it('resumes a repeated message and preserves the prefix when account text is appended', () => {
+  const { result, rerender } = renderHook(
+    ({ text }) => useTerminalTyping({ text, replaceTail: false, line: 0 }),
+    { initialProps: { text: 'Saved on this device · Connecting...' } },
+  );
+  act(() => result.current.typed.set('Saved on this device · Connect'));
+  rerender({ text: 'Restoring tierlist...' });
+  rerender({ text: 'Saved on this device · Connecting...' });
+  expect(result.current.typed.get()).toBe('Saved on this device · Connect');
+  act(() => result.current.typed.set('Saved on this device · Connecting...'));
+  rerender({ text: 'Saved on this device · Connecting... · Google account' });
+  expect(result.current.typed.get()).toBe(
+    'Saved on this device · Connecting...',
+  );
+  rerender({ text: 'Saved on this device · Connecting...' });
+  expect(result.current.typed.get()).toBe(
+    'Saved on this device · Connecting...',
+  );
+});

@@ -9,11 +9,12 @@ import {
 import { Provider } from 'jotai';
 import { createStore } from 'jotai/vanilla';
 import { type PropsWithChildren, StrictMode } from 'react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import * as tierlistPersistence from './local-tierlist';
 import {
   activateAccountTierlist,
   activateDeviceTierlist,
@@ -167,11 +168,13 @@ describe('local tierlist durability', () => {
   it('restores before subscribing and persists atom edits under Strict Mode', async () => {
     await loadLocalTierlist({ ...initial, imageMode: 'cover' });
     const store = createStore();
+
     const wrapper = ({ children }: PropsWithChildren) => (
       <StrictMode>
         <Provider store={store}>{children}</Provider>
       </StrictMode>
     );
+
     const hook = renderHook(useLocalTierlist, { wrapper });
     await waitFor(() => expect(hook.result.current.status).toBe('saved'));
     expect(store.get(imageModeAtom)).toBe('cover');
@@ -183,5 +186,37 @@ describe('local tierlist durability', () => {
     );
     hook.unmount();
     expect((await loadLocalTierlist(initial)).seed).toBe(initial.seed);
+  });
+
+  it('pauses queued writes after a storage failure without clearing the current edits', async () => {
+    await loadLocalTierlist(initial);
+    const store = createStore();
+    const hook = renderHook(useLocalTierlist, {
+      wrapper: ({ children }: PropsWithChildren) => (
+        <Provider store={store}>{children}</Provider>
+      ),
+    });
+    await waitFor(() => expect(hook.result.current.status).toBe('saved'));
+    const save = vi
+      .spyOn(tierlistPersistence, 'saveLocalTierlist')
+      .mockRejectedValueOnce(new Error('Storage is full.'));
+
+    try {
+      act(() => {
+        store.set(imageModeAtom, 'cover');
+        store.set(imageModeAtom, 'contain');
+      });
+      await waitFor(() => expect(hook.result.current.status).toBe('error'));
+      await expect(hook.result.current.flush()).rejects.toThrow('paused');
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(hook.result.current.error).toBe('Storage is full.');
+      expect(store.get(imageModeAtom)).toBe('contain');
+      expect((await loadLocalTierlist(initial)).imageMode).toBe(
+        initial.imageMode,
+      );
+    } finally {
+      save.mockRestore();
+      hook.unmount();
+    }
   });
 });

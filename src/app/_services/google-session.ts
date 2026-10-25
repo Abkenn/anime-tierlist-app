@@ -10,7 +10,9 @@ export const getGooglePrincipal = async () => {
   if (!session) {
     return null;
   }
+
   const account = await findAuthGoogleAccount(session.user.id);
+
   return account
     ? {
         subject: account.accountId,
@@ -22,5 +24,6 @@ export const getGooglePrincipal = async () => {
 export const getGoogleIdentity = async () => {
   const principal = await getGooglePrincipal();
   const identity = principal && (await findGoogleAccount(principal.subject));
+
   return identity ? { ...identity, displayName: principal.displayName } : null;
 };

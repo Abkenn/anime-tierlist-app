@@ -5,6 +5,7 @@ export const imageUrlInput = (input: string) => {
   if (!/^(?:https?:|www\.)/i.test(input)) {
     return null;
   }
+
   const url = new URL(input.startsWith('www.') ? `https://${input}` : input);
 
   if (
@@ -25,12 +26,15 @@ export const imageSuitability = (width: number, height: number) => {
   if (ratio >= 0.55 && ratio <= 0.85) {
     return 0;
   }
+
   if (ratio >= 0.4 && ratio <= 1) {
     return 1;
   }
+
   if (ratio > 1 && ratio <= 2) {
     return 2;
   }
+
   if (ratio < 0.4) {
     return 3;
   }

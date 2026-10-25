@@ -1,5 +1,4 @@
 import { Toaster } from '@/app/_components/ui/toast';
-import { OfflineSupport } from '@/app/_providers/offline-support';
 import '../_styles/globals.css';
 
 import type { Metadata, Viewport } from 'next';
@@ -32,8 +31,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     >
       <body className="flex h-dvh flex-col overflow-hidden">
         <ThemeProvider>
-          <OfflineSupport />
-
           <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
             <header className="mx-auto flex w-full max-w-480 shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-12">
               <Suspense

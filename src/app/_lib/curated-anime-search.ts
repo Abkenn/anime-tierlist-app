@@ -8,6 +8,7 @@ const normalizeAlias = (value: string) =>
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
+
 const seasonPattern =
   /\b(?:season\s*(\d+)|(\d+)(?:st|nd|rd|th)\s+season|s(\d+))\b/u;
 
@@ -36,6 +37,7 @@ export const searchCuratedAnime = (
   const candidates = images
     .filter((image) => {
       const season = seasonNumber(normalizeAlias(image.title));
+
       return !requestedSeason || !season || requestedSeason === season;
     })
     .map((image) => ({
@@ -72,10 +74,12 @@ export const searchCuratedAnime = (
     .filter(({ aliases }) =>
       aliases.some((alias) => {
         let position = -1;
+
         return matches.every((matchingWords) => {
           position = alias.findIndex(
             (word, index) => index > position && matchingWords.has(word),
           );
+
           return position !== -1;
         });
       }),

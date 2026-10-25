@@ -20,6 +20,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     columns: 3,
     rem: 16,
   });
+
   useEffect(() => {
     const element = content.current;
     const viewport = element?.closest<HTMLElement>(
@@ -34,9 +35,12 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         columns: 3,
         rem: 16,
       });
+
       return;
     }
+
     let frame = 0;
+
     const measure = () => {
       const view = viewport.getBoundingClientRect();
       const bounds = element.getBoundingClientRect();
@@ -63,20 +67,24 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
           : next,
       );
     };
+
     const schedule = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(measure);
     };
+
     const resize = new ResizeObserver(schedule);
     resize.observe(viewport);
     resize.observe(element);
     viewport.addEventListener('scroll', schedule, { passive: true });
     measure();
+
     return () => {
       cancelAnimationFrame(frame);
       resize.disconnect();
       viewport.removeEventListener('scroll', schedule);
     };
   }, [content]);
+
   return window;
 };

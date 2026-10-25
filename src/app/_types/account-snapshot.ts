@@ -5,7 +5,7 @@ export type GoogleTierlistSnapshot = {
   displayName: string;
   remote: RemoteTierlist;
 };
-export type AccountInitialization =
+export type AccountSnapshot =
   | {
       status: 'ready';
       userId: string | null;

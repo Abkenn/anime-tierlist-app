@@ -14,6 +14,7 @@ export const FormSubmitButton = ({
   ...props
 }: FormSubmitButtonProps) => {
   const { pending } = useFormStatus();
+
   return (
     <button
       {...props}

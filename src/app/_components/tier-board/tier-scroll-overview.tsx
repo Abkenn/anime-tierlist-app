@@ -28,6 +28,8 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     1,
     Math.max(0, ((overview.top / 100) * overview.canvasHeight) / scrollRange),
   );
+  const dragScale =
+    scale + (overview.viewportHeight - previewHeight) / scrollRange;
   const frame = {
     left: 0,
     top: (overview.top / 100) * previewHeight,
@@ -117,9 +119,9 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
               setDragging(true);
             }}
             onPan={(_, info) => {
-              if (scale > 0) {
+              if (dragScale > 0) {
                 overview.scrollToOffset(
-                  dragTop.current + info.offset.y / scale,
+                  dragTop.current + info.offset.y / dragScale,
                 );
               }
             }}

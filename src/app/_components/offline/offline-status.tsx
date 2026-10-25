@@ -5,12 +5,14 @@ import { RetryCountdown } from '@/app/_components/shell/retry-countdown';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useOfflineReconnect } from '@/app/_hooks/use-offline-reconnect';
+import { useOfflineSupport } from '@/app/_hooks/use-offline-support';
 
 type OfflineNoticeProps = ReturnType<typeof useOfflineReconnect> & {
   mode: 'offline' | 'dev' | 'dev-temporary';
 };
 
 export const OfflineStatus = () => {
+  useOfflineSupport();
   const connection = useOfflineReconnect();
 
   if (connection.mode === null) {

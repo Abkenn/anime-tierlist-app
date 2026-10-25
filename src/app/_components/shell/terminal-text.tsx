@@ -31,7 +31,6 @@ export const TerminalText = ({
 
   return (
     <TypedTerminalText
-      key={replaceTail ? 'editable' : text}
       text={text}
       parts={parts}
       pending={pending}

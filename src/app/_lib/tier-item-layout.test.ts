@@ -20,6 +20,7 @@ const makeItem = (
   rowHeightExpansion,
   image: { src: '/fixture.svg', alt: id, width, height },
 });
+
 const portrait = makeItem('portrait', 9, 16);
 const landscape = makeItem('landscape', 16, 9);
 const panorama = makeItem('panorama', 3, 1, 1);
