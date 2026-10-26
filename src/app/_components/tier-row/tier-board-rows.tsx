@@ -49,7 +49,7 @@ export const TierBoardRows = ({
     <ViewTransition default="none" enter="preview-change" exit="preview-change">
       <ol
         style={{ '--tier-base-size': size } as React.CSSProperties}
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-max-size:11rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-max-size:10rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank) => (

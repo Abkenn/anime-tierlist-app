@@ -25,5 +25,5 @@ export const getPosterSize = ({ mode, imageMode, items }: PosterSizeInput) => {
     );
   });
   const longest = Math.max(1, ...rowWidths.values());
-  return `clamp(6rem, calc(42cqw / ${longest}), var(--tier-max-size, 11rem))`;
+  return `clamp(6rem, min(calc(42cqw / ${longest}), calc(8.5rem + 1.5cqw)), var(--tier-max-size, 10rem))`;
 };
