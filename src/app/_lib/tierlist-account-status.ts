@@ -89,7 +89,7 @@ export const getTierlistAccountStatus = ({
   const needsReconnect =
     sync.status === 'offline' || sync.status === 'outdated';
   const reconnectLabel =
-    sync.status === 'outdated' ? 'Reload app' : 'Try saving again';
+    sync.status === 'outdated' ? 'Try again' : 'Try saving again';
 
   return {
     visibleError,

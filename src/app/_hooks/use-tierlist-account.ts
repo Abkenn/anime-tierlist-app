@@ -3,7 +3,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useAccountDisplayHint } from '@/app/_hooks/use-account-display-hint';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
-import { useOfflineUpdate } from '@/app/_hooks/use-offline-update';
 import { usePromiseValue } from '@/app/_hooks/use-promise-value';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
 import { authClient } from '@/app/_lib/auth-client';
@@ -31,7 +30,6 @@ export const useTierlistAccount = (
   const initial = usePromiseValue(initialAccount, unavailableAccount);
   const initialReady = !initialAccount || initial !== null;
   const storage = useLocalTierlist();
-  const update = useOfflineUpdate();
   const session = authClient.useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -75,13 +73,6 @@ export const useTierlistAccount = (
     hintName: accountHint.name,
     identityReady,
   });
-  const promptUpdate = useEffectEvent(() => sync.requireReload());
-
-  useEffect(() => {
-    if (update.available && storage.seed && identityReady) {
-      promptUpdate();
-    }
-  }, [update.available, storage.seed, identityReady]);
 
   const perform = async (operation: () => Promise<void>) => {
     setBusy(true);
@@ -227,7 +218,6 @@ export const useTierlistAccount = (
   const reloadApp = () =>
     perform(async () => {
       await storage.flush();
-      await update.activate();
       window.location.reload();
     });
 

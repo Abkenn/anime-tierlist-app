@@ -1,5 +1,4 @@
-export const tierlistUpdateMessage =
-  'This page needs an update. Reload to reconnect.';
+export const tierlistUpdateMessage = 'Online saving needs to reconnect.';
 
 export const isOutdatedTierlistClient = (error: unknown) =>
   error instanceof Error &&

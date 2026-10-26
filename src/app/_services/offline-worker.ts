@@ -120,12 +120,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-self.addEventListener('message', (event) => {
-  if (event.data === 'ACTIVATE_UPDATE') {
-    event.waitUntil(self.skipWaiting());
-  }
-});
-
 const offlineNavigation = async (request: Request) => {
   const url = new URL(request.url);
 

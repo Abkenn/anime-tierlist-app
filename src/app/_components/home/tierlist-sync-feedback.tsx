@@ -48,7 +48,7 @@ export const TierlistSyncFeedback = ({
           onClick={() => void onReload()}
           className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-foreground disabled:opacity-50"
         >
-          <TerminalText text="Reload app" line={4} />
+          <TerminalText text="Try again" line={4} />
         </button>
       </div>
     )}
