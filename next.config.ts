@@ -13,7 +13,9 @@ const nextConfig: NextConfig = {
         { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
         {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self'",
+          // The worker fetches external posters, including user-supplied URLs.
+          value:
+            "default-src 'self'; script-src 'self'; connect-src 'self' https: http:",
         },
       ],
     },
