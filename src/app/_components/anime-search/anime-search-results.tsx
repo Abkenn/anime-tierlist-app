@@ -15,6 +15,7 @@ import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
+import { useSearchImageRecovery } from '@/app/_hooks/use-search-image-recovery';
 import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
 import { classifySearchInput, imageSuitability } from '@/app/_lib/anime-search';
 import { blendAnimeSearchResults } from '@/app/_lib/anime-search-results';
@@ -109,6 +110,27 @@ export const AnimeSearchResults = () => {
   const loadingImages = rendered.some(
     ({ result }) => !result.image && !Object.hasOwn(dimensions, result.id),
   );
+  const failedImages = rendered.filter(
+    ({ result }) => dimensions[result.id] === null,
+  );
+  const recoveryScope = url ?? query;
+  const imageAttempts = useSearchImageRecovery({
+    scope: recoveryScope,
+    failedIds:
+      !waiting && !loadingImages && failedImages.length > rendered.length * 0.75
+        ? failedImages.map(({ result }) => result.id)
+        : [],
+    onRetry: (ids) =>
+      setDimensions((current) => {
+        const next = { ...current };
+        for (const id of ids) {
+          delete next[id];
+        }
+
+        return next;
+      }),
+  });
+  const hasResults = !waiting && !urlError && visibleResults.length > 0;
   const previousQuery = useRef(query);
 
   useEffect(() => {
@@ -162,11 +184,11 @@ export const AnimeSearchResults = () => {
       );
     }
 
-    if (!url && search.isFetching) {
+    if (!hasResults && !url && search.isFetching) {
       return 'Searching...';
     }
 
-    if (loadingImages) {
+    if (!hasResults && loadingImages) {
       return 'Loading images...';
     }
 
@@ -241,7 +263,11 @@ export const AnimeSearchResults = () => {
                       }
                 }
               >
-                <AnimeSearchResultCard result={result} onLoaded={loaded} />
+                <AnimeSearchResultCard
+                  key={`${recoveryScope}:${result.id}:${result.imageUrl}:${imageAttempts[`${recoveryScope}:${result.id}`] ?? 0}`}
+                  result={result}
+                  onLoaded={loaded}
+                />
               </motion.div>
             ))}
         </div>
@@ -250,9 +276,9 @@ export const AnimeSearchResults = () => {
           <TerminalText text={statusMessage()} />
         </p>
 
-        {(waiting || search.isFetching || loadingImages) && !urlError && (
-          <AnimeSearchSkeleton />
-        )}
+        {!hasResults &&
+          (waiting || search.isFetching || loadingImages) &&
+          !urlError && <AnimeSearchSkeleton />}
 
         {!waiting && !url && search.isError && (
           <button

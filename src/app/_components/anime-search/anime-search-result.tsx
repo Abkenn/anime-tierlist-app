@@ -1,5 +1,6 @@
 'use client';
 
+import { ImageOff } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
@@ -95,8 +96,13 @@ export const AnimeSearchResultCard = ({
           )}
 
           {state.status === 'error' ? (
-            <span role="status">
-              <TerminalText text="Image could not be loaded. Check the URL or try another image." />
+            <span
+              role="img"
+              aria-label={`${result.title}: image unavailable`}
+              className="mx-auto flex h-24 w-16 flex-col items-center justify-center gap-2 border border-divider bg-muted text-muted-foreground"
+            >
+              <ImageOff aria-hidden="true" className="size-5" />
+              <span className="text-[0.625rem]">Unavailable</span>
             </span>
           ) : (
             <Image
