@@ -1,8 +1,8 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { ViewTransition } from 'react';
-import { rankDropTargetAtom } from '@/app/_atoms/tierlist/ranks.atoms';
+import { useLayoutEffect, ViewTransition } from 'react';
+import { rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import {
   imageModeAtom,
   posterSizeAtom,
@@ -29,12 +29,21 @@ export const TierBoardRows = ({
 }: TierBoardRowsProps) => {
   const mode = useAtomValue(posterSizeAtom);
   const imageMode = useAtomValue(imageModeAtom);
-  const rankDropTarget = useAtomValue(rankDropTargetAtom);
+  const offsets = useAtomValue(rankOffsetsAtom);
+  const rankKey = ranks.join();
   const size = getPosterSize({
     mode,
     imageMode,
     items: interaction.items,
   });
+
+  useLayoutEffect(() => {
+    if (rankKey) {
+      offsets.forEach((offset) => {
+        offset.jump(0);
+      });
+    }
+  }, [rankKey, offsets]);
 
   return (
     <ViewTransition default="none" enter="preview-change" exit="preview-change">
@@ -48,7 +57,7 @@ export const TierBoardRows = ({
             key={rank}
             rank={rank}
             color={tierColors[rank] ?? 'stone'}
-            active={interaction.targetRank === rank || rankDropTarget === rank}
+            active={interaction.targetRank === rank}
             fixedItemSize={layout === 'two-line'}
             lines={interaction.lines(rank)}
             searchPosition={interaction.searchPosition(rank)}

@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from 'cn';
 import { useAtom } from 'jotai';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { posterSizeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { SegmentedControl } from '@/app/_components/ui/segmented-control';
 import type { PosterSize, TierImageMode } from '@/app/_types/tierlist.types';
@@ -22,6 +22,7 @@ export const TierBoardToolbar = ({
   onImageModeChange,
 }: TierBoardToolbarProps) => {
   const [posterSize, setPosterSize] = useAtom(posterSizeAtom);
+  const reducedMotion = useReducedMotion();
 
   return (
     <>
@@ -74,29 +75,32 @@ export const TierBoardToolbar = ({
           ]}
         />
 
-        {imageMode !== 'natural' && (
-          <fieldset
-            aria-label="Square image fit"
-            className="flex border border-divider"
-          >
-            {(['cover', 'contain'] as const).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                aria-pressed={imageMode === mode}
-                className={cn(
-                  'min-h-9 min-w-11 cursor-pointer px-2 underline-offset-4 transition-colors hover:text-foreground active:opacity-60',
-                  imageMode === mode
-                    ? 'bg-muted text-foreground underline'
-                    : 'text-muted-foreground',
-                )}
-                onClick={() => onImageModeChange(mode)}
-              >
-                {mode === 'cover' ? 'Fill' : 'Fit'}
-              </button>
-            ))}
-          </fieldset>
-        )}
+        <AnimatePresence initial={false}>
+          {imageMode !== 'natural' && (
+            <motion.div
+              key="square-fit"
+              className="flex"
+              initial={reducedMotion ? false : { opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reducedMotion ? 0 : -4 }}
+              transition={{
+                duration: reducedMotion ? 0 : 0.18,
+                ease: 'easeOut',
+              }}
+            >
+              <SegmentedControl
+                name="squareFit"
+                label="Square image fit"
+                value={imageMode}
+                onChange={onImageModeChange}
+                options={[
+                  { value: 'cover', label: 'Fill' },
+                  { value: 'contain', label: 'Fit' },
+                ]}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

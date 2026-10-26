@@ -6,7 +6,7 @@ import { cn } from 'cn';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Plus, SwatchBook, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import {
   enabledTierRanksAtom,
@@ -35,9 +35,26 @@ export const TierRankLabel = ({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [presetColor, setPresetColor] = useState<HexColor>('#aaaaaa');
+  const labelRef = useRef<HTMLDivElement>(null);
   const label = details[rank]?.label ?? rank;
   const addRankButtonClass =
-    'absolute left-0 z-20 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
+    'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
+
+  useLayoutEffect(() => {
+    if (!labelRef.current || !color) {
+      return;
+    }
+
+    const channels = getComputedStyle(labelRef.current)
+      .backgroundColor.match(/[\d.]+/g)
+      ?.slice(0, 3);
+    if (channels?.length === 3) {
+      setPresetColor(
+        `#${channels.map((channel) => Math.round(Number(channel)).toString(16).padStart(2, '0')).join('')}`,
+      );
+    }
+  }, [color]);
   const commit = () => {
     setEditing(false);
     if (!draft.trim()) {
@@ -52,6 +69,7 @@ export const TierRankLabel = ({
 
   return (
     <motion.div
+      ref={labelRef}
       animate={
         details[rank]?.color
           ? {
@@ -137,7 +155,7 @@ export const TierRankLabel = ({
           type="color"
           name="tierColor"
           aria-label={`Color for ${label}`}
-          value={details[rank]?.color ?? '#e68e8e'}
+          value={details[rank]?.color ?? presetColor}
           onChange={(event) =>
             setDetails({
               ...details,

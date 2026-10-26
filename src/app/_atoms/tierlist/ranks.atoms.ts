@@ -3,8 +3,6 @@ import type { TierRank } from '@/app/_types/tierlist.types';
 import { tierItemsAtom } from './items.atoms';
 import { enabledTierRanksAtom, rankDetailsAtom } from './settings.atoms';
 
-export const rankDropTargetAtom = atom<TierRank | null>(null);
-
 export const moveRankAtom = atom(
   null,
   (get, set, { rank, target }: { rank: TierRank; target: TierRank }) => {

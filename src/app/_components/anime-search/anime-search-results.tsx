@@ -218,7 +218,9 @@ export const AnimeSearchResults = ({
   const message = statusMessage();
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <div
+      className={`flex min-h-0 min-w-0 flex-1 flex-col${inline && hasResults ? ' gap-1.5' : ''}`}
+    >
       <search className="shrink-0">
         <form action={searchAction} aria-busy={submitting}>
           <label className="block text-xs text-muted-foreground">

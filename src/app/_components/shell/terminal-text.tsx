@@ -66,7 +66,7 @@ const TypedTerminalText = ({
   let offset = 0;
 
   return (
-    <span className="max-w-full whitespace-pre-wrap align-baseline font-mono">
+    <span className="max-w-full whitespace-pre-wrap align-baseline font-mono [text-decoration:inherit]">
       {parts.map((part) => {
         const start = offset;
         offset += Array.from(part.text).length;
@@ -109,12 +109,15 @@ const TypedSegment = ({ part, start, typed }: TypedSegmentProps) => {
       .join(''),
   );
   const content = (
-    <span className="inline-grid max-w-full align-baseline">
+    <span className="inline-grid max-w-full align-baseline [text-decoration:inherit]">
       <span className="col-start-1 row-start-1 whitespace-pre-wrap opacity-0">
         {part.text}
       </span>
 
-      <motion.span aria-hidden="true" className="col-start-1 row-start-1">
+      <motion.span
+        aria-hidden="true"
+        className="col-start-1 row-start-1 [text-decoration:inherit]"
+      >
         {visible}
       </motion.span>
     </span>

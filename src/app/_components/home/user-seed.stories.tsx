@@ -1,6 +1,8 @@
 import { Popover } from '@base-ui/react/popover';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useRef, useState } from 'react';
+import { expect, waitFor, within } from 'storybook/test';
+import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { UserSeed } from './user-seed';
 
 const AccountControls = () => {
@@ -15,9 +17,9 @@ const AccountControls = () => {
         <Popover.Trigger
           handle={handle}
           ref={statusAnchor}
-          className="cursor-pointer underline"
+          className="cursor-pointer font-medium text-foreground underline decoration-current/70 underline-offset-4 transition-[color,text-decoration-color,opacity] hover:decoration-current active:opacity-60"
         >
-          Example (Google)
+          <TerminalText text="Example (Google)" />
         </Popover.Trigger>
       </p>
       <UserSeed
@@ -46,4 +48,20 @@ const meta = {
   render: () => <AccountControls />,
 } satisfies Meta<typeof AccountControls>;
 export default meta;
-export const DesktopAndMobile: StoryObj<typeof meta> = {};
+export const DesktopAndMobile: StoryObj<typeof meta> = {
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const account = canvas.getByRole('button', { name: 'Example (Google)' });
+    const visible = account.querySelector('span[aria-hidden="true"]');
+    expect(visible).not.toBeNull();
+    expect(getComputedStyle(visible as Element).textDecorationLine).toBe(
+      'underline',
+    );
+
+    await userEvent.click(account);
+    const popup = await within(
+      canvasElement.ownerDocument.body,
+    ).findByLabelText('Sign in and user seed');
+    await waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
+    await userEvent.keyboard('{Escape}');
+  },
+};

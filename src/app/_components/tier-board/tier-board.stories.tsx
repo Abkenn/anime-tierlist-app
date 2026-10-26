@@ -89,7 +89,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByLabelText('Color for S+')).toHaveValue('#e68ee6');
+    await expect(canvas.getByLabelText('Color for S')).toHaveValue('#e68e95');
+  },
+};
 export const Light: Story = { globals: { theme: 'light' } };
 export const Narrow: Story = {
   decorators: [
@@ -520,6 +525,14 @@ export const IndependentBoards: Story = {
     await expect(
       secondBoard.getByRole('button', { name: 'Item 1 in S+' }),
     ).toHaveAttribute('data-image-mode', 'natural');
+    await waitFor(() => {
+      const fit = firstBoard.getByRole('radiogroup', {
+        name: 'Square image fit',
+      });
+      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe(
+        '1',
+      );
+    });
   },
 };
 
@@ -536,10 +549,16 @@ export const ControlledImageMode: Story = {
       expect(item).toHaveAttribute('data-image-mode', 'natural'),
     );
     await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
+    await userEvent.click(canvas.getByRole('radio', { name: 'Fit' }));
     await waitFor(() =>
       expect(item).toHaveAttribute('data-image-mode', 'contain'),
     );
+    await waitFor(() => {
+      const fit = canvas.getByRole('radiogroup', { name: 'Square image fit' });
+      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe(
+        '1',
+      );
+    });
   },
 };
 
@@ -554,9 +573,9 @@ export const FixedImageMode: Story = {
 
     await userEvent.click(mode);
     await expect(mode).toHaveAttribute('aria-checked', 'true');
-    await userEvent.click(canvas.getByRole('button', { name: 'Fill' }));
-    await expect(canvas.getByRole('button', { name: 'Fit' })).toHaveAttribute(
-      'aria-pressed',
+    await userEvent.click(canvas.getByRole('radio', { name: 'Fill' }));
+    await expect(canvas.getByRole('radio', { name: 'Fit' })).toHaveAttribute(
+      'aria-checked',
       'true',
     );
     await expect(
@@ -807,7 +826,7 @@ export const ItemText: Story = {
       'Heavenly Delusion',
     );
     await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
+    await userEvent.click(canvas.getByRole('radio', { name: 'Fit' }));
     fireEvent.contextMenu(item);
     await userEvent.click(
       await page.findByRole('menuitem', { name: 'Edit text' }),
@@ -825,6 +844,14 @@ export const ItemText: Story = {
     );
     await userEvent.click(page.getByRole('button', { name: 'Remove text' }));
     await expect(item.querySelector('[data-tier-title]')).toBeNull();
+    await waitFor(() => {
+      expect(page.queryByLabelText('Item text')).not.toBeInTheDocument();
+      expect(
+        canvasElement.ownerDocument.querySelector(
+          '[data-slot="context-menu-content"]',
+        ),
+      ).toBeNull();
+    });
   },
 };
 

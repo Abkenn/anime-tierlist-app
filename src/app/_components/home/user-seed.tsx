@@ -2,6 +2,7 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { ArrowRight, Check, Copy } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { type RefObject, useActionState, useId, useRef, useState } from 'react';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
@@ -46,6 +47,7 @@ export const UserSeed = ({
   onShare,
 }: UserSeedProps) => {
   const desktopAnchor = useRef<HTMLButtonElement>(null);
+  const reducedMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
@@ -141,7 +143,7 @@ export const UserSeed = ({
       <Popover.Trigger
         ref={desktopAnchor}
         disabled={busy}
-        className="hidden min-h-9 cursor-pointer text-xs underline decoration-current/50 underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50 sm:inline-flex sm:items-center"
+        className="hidden min-h-9 cursor-pointer text-xs font-medium text-foreground underline decoration-current/70 underline-offset-4 transition-[color,text-decoration-color,opacity] hover:decoration-current active:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50 sm:inline-flex sm:items-center"
       >
         {googleConnected || resolvingIdentity
           ? 'Account & seed'
@@ -163,8 +165,20 @@ export const UserSeed = ({
           className="z-50"
         >
           <Popover.Popup
+            render={
+              <motion.div
+                initial={
+                  reducedMotion ? false : { opacity: 0, y: -4, scale: 0.98 }
+                }
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  duration: reducedMotion ? 0 : 0.16,
+                  ease: 'easeOut',
+                }}
+              />
+            }
             aria-label="Sign in and user seed"
-            className="w-84 max-h-(--available-height) max-w-[calc(100vw-2rem)] overflow-y-auto border border-divider bg-popover p-4 text-xs leading-relaxed text-popover-foreground shadow-md"
+            className="w-84 max-h-(--available-height) max-w-[calc(100vw-2rem)] origin-(--transform-origin) overflow-y-auto border border-divider bg-popover p-4 text-xs leading-relaxed text-popover-foreground shadow-md"
           >
             <button
               type="button"

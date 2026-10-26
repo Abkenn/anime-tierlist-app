@@ -57,7 +57,7 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
           <Popover.Popup
             aria-label={`Add anime to ${label}`}
             initialFocus={input}
-            className="flex min-h-0 w-80 max-w-[calc(100vw-1.5rem)] flex-col bg-popover text-popover-foreground shadow-md has-data-search-result:h-[min(24rem,var(--available-height))] has-data-search-result:border has-data-search-result:border-divider has-data-search-result:p-2"
+            className="flex min-h-0 w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-xs bg-popover text-popover-foreground shadow-lg has-data-search-result:h-[min(24rem,var(--available-height))] has-data-search-result:border has-data-search-result:border-divider has-data-search-result:p-2.5"
           >
             <div className="sr-only">
               <Popover.Title>Add to {label}</Popover.Title>
