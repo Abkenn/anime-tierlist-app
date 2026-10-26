@@ -35,8 +35,11 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             <header className="flex w-full shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-6">
               <Suspense
                 fallback={
-                  <Link href="/" className="text-xs text-muted-foreground">
-                    tierlist / home
+                  <Link
+                    href="/"
+                    className="text-xl tracking-tight text-foreground"
+                  >
+                    Anime Tierlist
                   </Link>
                 }
               >

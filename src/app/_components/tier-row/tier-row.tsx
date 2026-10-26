@@ -1,6 +1,8 @@
 import { cn } from 'cn';
+import type { CSSProperties } from 'react';
 import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRankLabel } from './tier-rank-label';
+import { TierRowSearch } from './tier-row-search';
 
 type TierRowProps = {
   rank: TierRank;
@@ -9,6 +11,7 @@ type TierRowProps = {
   itemCount?: number;
   fixedItemSize?: boolean;
   lines?: number;
+  searchPosition?: Pick<CSSProperties, 'left' | 'top'>;
 };
 
 export const TierRow = ({
@@ -18,9 +21,10 @@ export const TierRow = ({
   itemCount = 0,
   fixedItemSize = false,
   lines = 1,
+  searchPosition,
 }: TierRowProps) => (
   <li
-    className="grid grid-cols-[var(--tier-size,5rem)_minmax(0,1fr)] border-ink not-first:border-t"
+    className="group/row grid grid-cols-[var(--tier-size,5rem)_minmax(0,1fr)] border-ink not-first:border-t"
     data-tier-rank={rank}
     data-tier-count={itemCount}
     aria-label={
@@ -30,8 +34,9 @@ export const TierRow = ({
     <TierRankLabel rank={rank} color={color} />
 
     <div
+      tabIndex={-1}
       className={cn(
-        'min-w-0 transition-colors duration-150 motion-reduce:transition-none',
+        'relative min-w-0 transition-colors duration-150 motion-reduce:transition-none',
         active && 'bg-white/10 ring-1 ring-inset ring-white/40',
         fixedItemSize && 'grid gap-0.5 p-0.5',
         fixedItemSize &&
@@ -44,6 +49,8 @@ export const TierRow = ({
         Array.from({ length: lines }, (_, index) => `slot-${index}`).map(
           (slot) => <span key={slot} aria-hidden="true" />,
         )}
+
+      <TierRowSearch rank={rank} position={searchPosition} />
     </div>
   </li>
 );

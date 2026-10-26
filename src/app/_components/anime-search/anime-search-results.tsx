@@ -3,6 +3,7 @@
 import { useAtomValue } from 'jotai';
 import { motion, useReducedMotion } from 'motion/react';
 import {
+  type Ref,
   useActionState,
   useDeferredValue,
   useEffect,
@@ -10,7 +11,10 @@ import {
   useState,
 } from 'react';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
-import { animeSearchConfigAtom } from '@/app/_atoms/tierlist/search.atoms';
+import {
+  animeSearchConfigAtom,
+  searchDestinationAtom,
+} from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
@@ -28,7 +32,15 @@ import { AnimeSearchSkeleton } from './anime-search-skeleton';
 
 type ImageDimensions = Record<string, TierImage | null>;
 
-export const AnimeSearchResults = () => {
+type AnimeSearchResultsProps = {
+  inline?: boolean;
+  inputRef?: Ref<HTMLInputElement>;
+};
+
+export const AnimeSearchResults = ({
+  inline = false,
+  inputRef,
+}: AnimeSearchResultsProps = {}) => {
   const {
     curatedImages,
     initialQuery = '',
@@ -36,6 +48,7 @@ export const AnimeSearchResults = () => {
     catalogSearchEnabled = true,
   } = useAtomValue(animeSearchConfigAtom);
   const imported = useAtomValue(importedItemIdsAtom);
+  const destination = useAtomValue(searchDestinationAtom);
   const [input, setInput] = useState(initialQuery);
   const [dimensions, setDimensions] = useState<ImageDimensions>({});
   const { search, sentinel, query, url, urlError, waiting, submitQuery } =
@@ -55,7 +68,7 @@ export const AnimeSearchResults = () => {
   );
   const deferredQuery = useDeferredValue(query);
   const curated =
-    deferredQuery.length >= 2 && !url && !urlError
+    query.length >= 2 && deferredQuery.length >= 2 && !url && !urlError
       ? searchCuratedAnime(curatedImages, deferredQuery)
       : [];
   const provider = (search.data?.pages ?? []).map((page) =>
@@ -165,6 +178,10 @@ export const AnimeSearchResults = () => {
     );
 
   const statusMessage = () => {
+    if (input.trim().length < 2) {
+      return '';
+    }
+
     if (waiting) {
       return 'Waiting...';
     }
@@ -198,34 +215,44 @@ export const AnimeSearchResults = () => {
 
     return '';
   };
+  const message = statusMessage();
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <search className="shrink-0">
         <form action={searchAction} aria-busy={submitting}>
           <label className="block text-xs text-muted-foreground">
-            Find anime or paste an image URL
+            <span className={inline ? 'sr-only' : undefined}>
+              Find anime or paste an image URL
+            </span>
             <input
+              ref={inputRef}
               type="search"
               name="query"
               value={input}
               maxLength={2048}
               placeholder="Search anime…"
-              className="mt-2 min-h-11 w-full border border-divider bg-background px-3 text-sm text-foreground outline-none focus-visible:border-foreground"
+              className={`${inline ? '' : 'mt-2 '}min-h-11 w-full border border-divider bg-background px-3 text-sm text-foreground outline-none focus-visible:border-foreground`}
               onChange={(event) => setInput(event.currentTarget.value)}
             />
           </label>
         </form>
       </search>
 
-      <p className="my-2 shrink-0 text-xs text-muted-foreground">
-        Drag to a rank · Click to add to Watching
+      <p
+        className={
+          inline ? 'sr-only' : 'my-2 shrink-0 text-xs text-muted-foreground'
+        }
+      >
+        Drag to a rank · Click to add to {destination.label}
       </p>
 
       <ScrollArea
         className="min-h-0 flex-1"
         viewportProps={{
-          className: 'overscroll-contain pr-3 max-lg:max-h-[calc(35dvh-7rem)]',
+          className: inline
+            ? 'overscroll-contain pr-3'
+            : 'overscroll-contain pr-3 max-lg:max-h-[calc(35dvh-7rem)]',
         }}
         aria-busy={waiting || search.isFetching || loadingImages}
       >
@@ -272,11 +299,17 @@ export const AnimeSearchResults = () => {
             ))}
         </div>
 
-        <p role="status" className="min-h-8 py-2 text-xs text-muted-foreground">
-          <TerminalText text={statusMessage()} />
+        <p
+          role="status"
+          className={
+            message ? 'min-h-8 py-2 text-xs text-muted-foreground' : 'sr-only'
+          }
+        >
+          <TerminalText text={message} />
         </p>
 
-        {!hasResults &&
+        {!inline &&
+          !hasResults &&
           (waiting || search.isFetching || loadingImages) &&
           !urlError && <AnimeSearchSkeleton />}
 

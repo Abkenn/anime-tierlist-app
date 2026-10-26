@@ -260,6 +260,7 @@ export const useTierItems = ({
           row.x / rem.current +
           Math.max(right, wrapItems ? capacity : 0) +
           itemGapRem * 2 +
+          2.25 +
           1 / rem.current
         );
       }),
@@ -444,6 +445,17 @@ export const useTierItems = ({
       ),
     items,
     posterLayout,
+    searchPosition: (rank: TierRank) => {
+      const row = rows.find((row) => row.rank === rank);
+      const last = previewBoxes.get(rank)?.at(-1);
+
+      return {
+        left: `${itemGapRem + (last ? last.x + last.width : 0) + 0.25}rem`,
+        top: row
+          ? `${itemGapRem + (last?.line ?? 0) * (row.size / rem.current + itemGapRem) + row.size / rem.current / 2}rem`
+          : '50%',
+      };
+    },
     draggingId,
     announcement,
     visibleRank,

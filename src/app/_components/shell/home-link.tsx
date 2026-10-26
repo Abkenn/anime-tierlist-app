@@ -10,7 +10,7 @@ export const HomeLink = () => {
   return (
     <Link
       href="/"
-      className="text-xs tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+      className="text-xl tracking-tight text-foreground transition-opacity hover:opacity-75"
       onClick={(event) => {
         if (
           !mode ||
@@ -31,7 +31,7 @@ export const HomeLink = () => {
         window.history.replaceState(null, '', withOfflineMode(url, mode));
       }}
     >
-      tierlist / home
+      Anime Tierlist
     </Link>
   );
 };

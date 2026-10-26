@@ -35,6 +35,80 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
+
+export const InlineRankImport: Story = {
+  args: {
+    initialQuery: 'test',
+    catalogSearchEnabled: false,
+    curatedImages: testTierItems.flatMap((item) =>
+      item.image
+        ? [
+            {
+              id: item.id,
+              title: item.label,
+              imageUrl: item.image.src,
+              image: item.image,
+              keywords: ['test'],
+            },
+          ]
+        : [],
+    ),
+  },
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const row = canvas.getByRole('listitem', { name: 'A tier, empty' });
+    await userEvent.hover(row);
+    within(row).getByRole('button', { name: 'Rename A' }).focus();
+    await userEvent.click(
+      within(row).getByRole('button', { name: 'Add anime to A' }),
+    );
+    const page = within(canvasElement.ownerDocument.body);
+    const popup = await page.findByRole('dialog', {
+      name: 'Add to A',
+    });
+    const search = within(popup);
+    const image = await search.findByRole('img', { name: 'Square TEST' });
+    const card = image.closest('button');
+    if (!card) {
+      throw new Error('Missing inline result');
+    }
+
+    await userEvent.click(card);
+    await canvas.findByRole('button', {
+      name: 'Item Square TEST in A',
+    });
+    await userEvent.keyboard('{Escape}');
+    const portrait = await canvas.findByRole('img', { name: 'Portrait TEST' });
+    const portraitCard = portrait.closest('button');
+    if (!portraitCard) {
+      throw new Error('Missing sidebar result');
+    }
+
+    await userEvent.click(portraitCard);
+    await canvas.findByRole('button', {
+      name: 'Item Portrait TEST in Watching',
+    });
+  },
+};
+export const ClearSearchImmediately: Story = {
+  args: InlineRankImport.args,
+  play: async ({ canvas, canvasElement }) => {
+    await canvas.findByRole('img', { name: 'Square TEST' });
+    const input = canvas.getByRole('searchbox');
+
+    for (const value of ['t', 'test', '']) {
+      fireEvent.change(input, { target: { value } });
+
+      if (value.length < 2) {
+        expect(canvas.queryByText('Waiting...')).not.toBeInTheDocument();
+        expect(
+          canvasElement.querySelector('[data-slot="skeleton"]'),
+        ).toBeNull();
+        expect(canvasElement.querySelector('[data-search-result]')).toBeNull();
+      }
+    }
+  },
+};
+
 export const DirectImageImport: Story = {
   play: async ({ canvas, canvasElement, userEvent }) => {
     const input = canvas.getByRole('searchbox');

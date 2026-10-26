@@ -14,39 +14,27 @@ type StoryArgs = NonNullable<ComponentProps<typeof TierBoard>> &
 
 const RankSandbox = ({
   ranks = [],
-  onRanksChange,
   imageMode,
   onImageModeChange,
   ...props
 }: NonNullable<ComponentProps<typeof TierBoard>>) => {
-  const [currentRanks, setCurrentRanks] = useState(ranks);
   const [currentImageMode, setCurrentImageMode] = useState<TierImageMode>(
     imageMode ?? 'natural',
   );
-
-  const rankKey = ranks.join(',');
-
-  useEffect(() => {
-    setCurrentRanks(rankKey ? (rankKey.split(',') as TierRank[]) : []);
-  }, [rankKey]);
 
   useEffect(() => {
     setCurrentImageMode(imageMode ?? 'natural');
   }, [imageMode]);
 
   return (
-    <TierBoardProvider>
+    <TierBoardProvider key={ranks.join(',')}>
       <TierBoard
         {...props}
-        ranks={currentRanks}
+        ranks={ranks}
         imageMode={currentImageMode}
         onImageModeChange={(mode) => {
           setCurrentImageMode(mode);
           onImageModeChange?.(mode);
-        }}
-        onRanksChange={(nextRanks) => {
-          setCurrentRanks(nextRanks);
-          onRanksChange?.(nextRanks);
         }}
       />
     </TierBoardProvider>
@@ -93,13 +81,6 @@ const meta = {
         onImageModeChange={(mode) => updateArgs({ imageMode: mode })}
         layout={args.layout}
         ranks={tierRanks.filter((rank) => args[rank] !== false)}
-        onRanksChange={(ranks) => {
-          updateArgs(
-            Object.fromEntries(
-              tierRanks.map((rank) => [rank, ranks.includes(rank)]),
-            ),
-          );
-        }}
       />
     );
   },
@@ -109,21 +90,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-export const ConfigureVariants: Story = {
-  args: { 'S−': false },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'tier options' }));
-    await userEvent.click(canvas.getByRole('checkbox', { name: 'S−' }));
-    await expect(
-      canvas.findByRole('listitem', { name: 'S− tier, empty' }),
-    ).resolves.toBeVisible();
-    await userEvent.click(canvas.getByRole('checkbox', { name: 'S+' }));
-    await expect(
-      canvas.queryByRole('listitem', { name: 'S+ tier, empty' }),
-    ).not.toBeInTheDocument();
-  },
-};
-
 export const Light: Story = { globals: { theme: 'light' } };
 export const Narrow: Story = {
   decorators: [
@@ -185,7 +151,9 @@ export const KeyboardOrdering: Story = {
     await expect(first).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(first).not.toHaveFocus();
-    await expect(canvas.getByText(/Tab to select/)).toBeVisible();
+    await expect(
+      canvas.getByText('Drag to arrange · Right-click to edit'),
+    ).toBeVisible();
     await expect(second).toBeVisible();
   },
 };
@@ -545,9 +513,8 @@ export const IndependentBoards: Story = {
     await expect(
       secondBoard.queryByText(/^Keyboard mode/),
     ).not.toBeInTheDocument();
-    await userEvent.selectOptions(
-      firstBoard.getByRole('combobox', { name: 'Image sizing' }),
-      'cover',
+    await userEvent.click(
+      firstBoard.getByRole('radio', { name: 'Square cells' }),
     );
     await expect(item).toHaveAttribute('data-image-mode', 'cover');
     await expect(
@@ -568,10 +535,7 @@ export const ControlledImageMode: Story = {
     await waitFor(() =>
       expect(item).toHaveAttribute('data-image-mode', 'natural'),
     );
-    await userEvent.selectOptions(
-      canvas.getByRole('combobox', { name: 'Image sizing' }),
-      'cover',
-    );
+    await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
     await waitFor(() =>
       expect(item).toHaveAttribute('data-image-mode', 'contain'),
@@ -586,10 +550,10 @@ export const FixedImageMode: Story = {
     </TierBoardProvider>
   ),
   play: async ({ canvas, userEvent }) => {
-    const mode = canvas.getByRole('combobox', { name: 'Image sizing' });
+    const mode = canvas.getByRole('radio', { name: 'Square cells' });
 
-    await userEvent.selectOptions(mode, 'cover');
-    await expect(mode).toHaveValue('cover');
+    await userEvent.click(mode);
+    await expect(mode).toHaveAttribute('aria-checked', 'true');
     await userEvent.click(canvas.getByRole('button', { name: 'Fill' }));
     await expect(canvas.getByRole('button', { name: 'Fit' })).toHaveAttribute(
       'aria-pressed',
@@ -828,10 +792,7 @@ export const ItemText: Story = {
     await expect(getComputedStyle(title() as Element).color).toBe(
       'rgb(255, 255, 0)',
     );
-    await userEvent.selectOptions(
-      canvas.getByRole('combobox', { name: 'Image sizing' }),
-      'cover',
-    );
+    await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     fireEvent.contextMenu(item);
     await userEvent.click(
       await page.findByRole('menuitem', { name: 'Edit text' }),
@@ -845,10 +806,7 @@ export const ItemText: Story = {
     await expect(item.querySelector('[data-tier-title]')).toHaveTextContent(
       'Heavenly Delusion',
     );
-    await userEvent.selectOptions(
-      canvas.getByRole('combobox', { name: 'Image sizing' }),
-      'cover',
-    );
+    await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     await userEvent.click(canvas.getByRole('button', { name: 'Fit' }));
     fireEvent.contextMenu(item);
     await userEvent.click(
@@ -881,7 +839,6 @@ export const DenseLibrary: Story = {
   },
   play: async ({ canvasElement }) => {
     await waitFor(() => {
-      const list = canvasElement.querySelector('ol');
       const labels = [
         ...canvasElement.querySelectorAll('[data-tier-rank] > div:first-child'),
       ].map((label) => label.getBoundingClientRect().width);
@@ -889,11 +846,6 @@ export const DenseLibrary: Story = {
         (item) => item.getBoundingClientRect().height,
       );
 
-      expect(
-        Number(
-          list && getComputedStyle(list).getPropertyValue('--tier-density'),
-        ),
-      ).toBeCloseTo(0.85);
       expect(labels.length).toBeGreaterThan(1);
       expect(Math.max(...labels) - Math.min(...labels)).toBeLessThan(0.1);
       expect(items.length).toBeGreaterThan(0);

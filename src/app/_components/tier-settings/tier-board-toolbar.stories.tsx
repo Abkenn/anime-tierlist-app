@@ -10,27 +10,17 @@ const meta = {
     rankCount: 11,
     itemCount: 24,
     keyboardMode: false,
-    settingsOpen: false,
-    optionsId: 'toolbar-rank-options',
     imageMode: 'contain',
-    onToggleOptions: fn(),
     onImageModeChange: fn(),
   },
   render: (args) => {
     const [, updateArgs] = useArgs();
 
     return (
-      <>
-        <TierBoardToolbar
-          {...args}
-          onToggleOptions={() =>
-            updateArgs({ settingsOpen: !args.settingsOpen })
-          }
-          onImageModeChange={(imageMode) => updateArgs({ imageMode })}
-        />
-
-        <div id={args.optionsId} hidden />
-      </>
+      <TierBoardToolbar
+        {...args}
+        onImageModeChange={(imageMode) => updateArgs({ imageMode })}
+      />
     );
   },
 } satisfies Meta<typeof TierBoardToolbar>;

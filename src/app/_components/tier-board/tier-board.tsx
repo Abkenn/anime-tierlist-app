@@ -1,19 +1,16 @@
 'use client';
 
 import { cn } from 'cn';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
 import { motion } from 'motion/react';
-import { startTransition, useId, useState } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
-import { removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemLabelEditor } from '@/app/_components/tier-item/tier-item-label-editor';
 import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
 import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-toolbar';
-import { TierRankOptions } from '@/app/_components/tier-settings/tier-rank-options';
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
-import { tierRanks } from '@/app/_lib/tier-ranks';
 import type {
   TierImageMode,
   TierItemData,
@@ -30,30 +27,26 @@ type TierBoardProps = {
   imageMode?: TierImageMode;
   onImageModeChange?: (mode: TierImageMode) => void;
   layout?: 'single-line' | 'two-line';
-  onRanksChange?: (ranks: TierRank[]) => void;
 };
 
 export const TierBoard = ({
-  ranks: controlledRanks,
-  onRanksChange,
+  ranks: initialRanks,
   initialItemCount = 2,
   layout = 'single-line',
   initialItems,
   imageMode: controlledImageMode,
   onImageModeChange,
 }: TierBoardProps = {}) => {
-  const optionsId = useId();
-  const [localRanks, setLocalRanks] = useAtom(enabledTierRanksAtom);
-  const removeRank = useSetAtom(removeRankAtom);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  useHydrateAtoms(
+    new Map(initialRanks ? [[enabledTierRanksAtom, initialRanks]] : []),
+  );
+
+  const ranks = useAtomValue(enabledTierRanksAtom);
   const keyboardMode = useAtomValue(keyboardModeAtom);
   const { imageMode, changeImageMode } = useTierImageMode({
     value: controlledImageMode,
     onChange: onImageModeChange,
   });
-
-  const enabledRanks = controlledRanks ?? localRanks;
-  const ranks = enabledRanks;
 
   const interaction = useTierItems({
     ranks,
@@ -68,33 +61,10 @@ export const TierBoard = ({
     initialItemCount === 0 ||
     initialItems !== undefined;
 
-  const toggleVariant = (rank: TierRank) => {
-    const nextRanks = enabledRanks.includes(rank)
-      ? enabledRanks.filter((value) => value !== rank)
-      : [...enabledRanks, rank];
-
-    startTransition(() => {
-      if (controlledRanks === undefined) {
-        if (enabledRanks.includes(rank)) {
-          removeRank(rank);
-        } else {
-          const before = enabledRanks.findIndex(
-            (existing) => tierRanks.indexOf(existing) > tierRanks.indexOf(rank),
-          );
-          const ordered = [...enabledRanks];
-          ordered.splice(before < 0 ? ordered.length : before, 0, rank);
-          setLocalRanks(ordered);
-        }
-      }
-
-      onRanksChange?.(nextRanks);
-    });
-  };
-
   return (
     <section
       aria-label="Anime tierlist"
-      className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col"
+      className="flex min-h-0 min-w-0 flex-1 flex-col"
     >
       <TierBoardFind />
 
@@ -104,18 +74,8 @@ export const TierBoard = ({
         rankCount={ranks.length}
         itemCount={interaction.items.length}
         keyboardMode={keyboardMode}
-        settingsOpen={settingsOpen}
-        optionsId={optionsId}
         imageMode={imageMode}
-        onToggleOptions={() => setSettingsOpen((open) => !open)}
         onImageModeChange={changeImageMode}
-      />
-
-      <TierRankOptions
-        id={optionsId}
-        open={settingsOpen}
-        enabledRanks={enabledRanks}
-        onToggle={toggleVariant}
       />
 
       <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>

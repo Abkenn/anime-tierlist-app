@@ -12,12 +12,14 @@ import {
   enabledTierRanksAtom,
   rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
+import { rankTextColor } from '@/app/_lib/rank-text-color';
 import { tierColorClasses } from '@/app/_lib/tier-colors';
 import type {
   HexColor,
   TierColor,
   TierRank,
 } from '@/app/_types/tierlist.types';
+import { TierRankMove } from './tier-rank-move';
 
 export const TierRankLabel = ({
   rank,
@@ -35,7 +37,7 @@ export const TierRankLabel = ({
   const [confirming, setConfirming] = useState(false);
   const label = details[rank]?.label ?? rank;
   const addRankButtonClass =
-    'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40';
+    'absolute left-0 z-20 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
   const commit = () => {
     setEditing(false);
     if (!draft.trim()) {
@@ -52,7 +54,10 @@ export const TierRankLabel = ({
     <motion.div
       animate={
         details[rank]?.color
-          ? { backgroundColor: details[rank].color }
+          ? {
+              backgroundColor: details[rank].color,
+              color: rankTextColor(details[rank].color),
+            }
           : undefined
       }
       className={cn(
@@ -69,17 +74,25 @@ export const TierRankLabel = ({
         onClick={() => add(rank)}
         className={cn(addRankButtonClass, 'top-0')}
       >
-        <Plus aria-hidden="true" className="size-4" />
+        <Plus
+          aria-hidden="true"
+          className="size-[clamp(0.625rem,calc(var(--tier-size)*0.1),0.875rem)]"
+        />
       </button>
 
       <button
         type="button"
         aria-label={`Delete ${label}`}
         onClick={() => setConfirming(true)}
-        className="absolute top-1 right-1 z-30 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+        className="absolute top-0 right-0 z-30 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
       >
-        <Trash2 aria-hidden="true" className="size-4" />
+        <Trash2
+          aria-hidden="true"
+          className="size-[clamp(0.625rem,calc(var(--tier-size)*0.1),0.875rem)]"
+        />
       </button>
+
+      <TierRankMove rank={rank} label={label} />
 
       {editing ? (
         <Input
@@ -115,8 +128,11 @@ export const TierRankLabel = ({
         </button>
       )}
 
-      <div className="absolute right-1 bottom-1 flex size-6 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
-        <SwatchBook aria-hidden="true" className="size-4" />
+      <div className="absolute right-0 bottom-0 flex size-6 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
+        <SwatchBook
+          aria-hidden="true"
+          className="size-[clamp(0.625rem,calc(var(--tier-size)*0.1),0.875rem)]"
+        />
         <input
           type="color"
           name="tierColor"
@@ -139,7 +155,10 @@ export const TierRankLabel = ({
           onClick={() => add()}
           className={cn(addRankButtonClass, 'bottom-0')}
         >
-          <Plus aria-hidden="true" className="size-4" />
+          <Plus
+            aria-hidden="true"
+            className="size-[clamp(0.625rem,calc(var(--tier-size)*0.1),0.875rem)]"
+          />
         </button>
       )}
 

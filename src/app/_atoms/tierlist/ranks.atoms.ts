@@ -3,6 +3,24 @@ import type { TierRank } from '@/app/_types/tierlist.types';
 import { tierItemsAtom } from './items.atoms';
 import { enabledTierRanksAtom, rankDetailsAtom } from './settings.atoms';
 
+export const rankDropTargetAtom = atom<TierRank | null>(null);
+
+export const moveRankAtom = atom(
+  null,
+  (get, set, { rank, target }: { rank: TierRank; target: TierRank }) => {
+    const ranks = [...get(enabledTierRanksAtom)];
+    const from = ranks.indexOf(rank);
+    const to = ranks.indexOf(target);
+    if (from < 0 || to < 0 || from === to) {
+      return;
+    }
+
+    ranks.splice(from, 1);
+    ranks.splice(to, 0, rank);
+    set(enabledTierRanksAtom, ranks);
+  },
+);
+
 export const addRankAtom = atom(null, (get, set, before?: TierRank) => {
   const ranks = [...get(enabledTierRanksAtom)];
   const id: TierRank = `custom-${crypto.randomUUID()}`;

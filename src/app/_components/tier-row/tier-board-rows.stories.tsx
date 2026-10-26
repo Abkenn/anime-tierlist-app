@@ -14,6 +14,7 @@ const meta = {
       targetRank: null,
       visibleRank: (item) => item.rank,
       lines: () => 1,
+      searchPosition: () => ({ left: '0.25rem', top: '50%' }),
     },
   },
   argTypes: { interaction: { control: false } },

@@ -3,16 +3,14 @@
 import { cn } from 'cn';
 import { useAtom } from 'jotai';
 import { posterSizeAtom } from '@/app/_atoms/tierlist/settings.atoms';
+import { SegmentedControl } from '@/app/_components/ui/segmented-control';
 import type { PosterSize, TierImageMode } from '@/app/_types/tierlist.types';
 
 type TierBoardToolbarProps = {
   rankCount: number;
   itemCount: number;
   keyboardMode: boolean;
-  settingsOpen: boolean;
-  optionsId: string;
   imageMode: TierImageMode;
-  onToggleOptions: () => void;
   onImageModeChange: (mode: TierImageMode) => void;
 };
 
@@ -20,10 +18,7 @@ export const TierBoardToolbar = ({
   rankCount,
   itemCount,
   keyboardMode,
-  settingsOpen,
-  optionsId,
   imageMode,
-  onToggleOptions,
   onImageModeChange,
 }: TierBoardToolbarProps) => {
   const [posterSize, setPosterSize] = useAtom(posterSizeAtom);
@@ -37,60 +32,47 @@ export const TierBoardToolbar = ({
           </p>
 
           <p role="status" className="mt-1 text-xs">
-            {keyboardMode
-              ? 'Keyboard mode · ↑↓ / W S tier · ←→ / A D order · Esc exit'
-              : 'Drag to rank · Tab to select · Enter after click'}
+            {keyboardMode ? (
+              'Keyboard mode · ↑↓ / W S tier · ←→ / A D order · Esc exit'
+            ) : (
+              <>
+                <span className="hidden pointer-fine:inline">
+                  Drag to arrange · Right-click to edit
+                </span>
+
+                <span className="pointer-fine:hidden">
+                  Drag to arrange · Tap ⋯ to edit
+                </span>
+              </>
+            )}
           </p>
         </div>
-
-        <button
-          type="button"
-          className="min-h-11 underline underline-offset-4"
-          aria-expanded={settingsOpen}
-          aria-controls={optionsId}
-          onClick={onToggleOptions}
-        >
-          {settingsOpen ? 'close options' : 'tier options'}
-        </button>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <label className="flex items-center gap-2 text-muted-foreground">
-          Images
-          <select
-            name="imageMode"
-            aria-label="Image sizing"
-            value={imageMode === 'natural' ? 'natural' : 'cover'}
-            className="min-h-9 border border-divider bg-background px-2 text-foreground"
-            onChange={(event) =>
-              onImageModeChange(
-                event.currentTarget.value === 'natural' ? 'natural' : 'cover',
-              )
-            }
-          >
-            <option value="natural">Custom ratio</option>
+        <SegmentedControl
+          name="imageMode"
+          label="Image sizing"
+          value={imageMode === 'natural' ? 'natural' : 'cover'}
+          onChange={onImageModeChange}
+          options={[
+            { value: 'natural', label: 'Custom ratio', shortLabel: 'Custom' },
+            { value: 'cover', label: 'Square cells', shortLabel: 'Square' },
+          ]}
+        />
 
-            <option value="cover">Square cells</option>
-          </select>
-        </label>
-
-        <label className="flex items-center gap-2 text-muted-foreground">
-          Size
-          <select
-            name="posterSize"
-            aria-label="Poster size"
-            value={posterSize}
-            onChange={(event) =>
-              setPosterSize(event.target.value as PosterSize)
-            }
-            className="min-h-9 border border-divider bg-background px-2 text-foreground"
-          >
-            <option value="dynamic">Dynamic</option>
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-          </select>
-        </label>
+        <SegmentedControl<PosterSize>
+          name="posterSize"
+          label="Poster size"
+          value={posterSize}
+          onChange={setPosterSize}
+          options={[
+            { value: 'dynamic', label: 'Auto' },
+            { value: 'small', label: 'Small', shortLabel: 'S' },
+            { value: 'medium', label: 'Medium', shortLabel: 'M' },
+            { value: 'large', label: 'Large', shortLabel: 'L' },
+          ]}
+        />
 
         {imageMode !== 'natural' && (
           <fieldset

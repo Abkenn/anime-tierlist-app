@@ -1,8 +1,25 @@
 import { createStore } from 'jotai/vanilla';
 import { expect, it } from 'vitest';
 import { tierItemsAtom } from './items.atoms';
-import { removeRankAtom } from './ranks.atoms';
+import { moveRankAtom, removeRankAtom } from './ranks.atoms';
 import { enabledTierRanksAtom } from './settings.atoms';
+
+it('reorders ranks without changing their posters or edits', () => {
+  const store = createStore();
+  store.set(enabledTierRanksAtom, ['S', 'A', 'Watching']);
+  const items = [
+    {
+      id: 'poster',
+      label: 'Poster',
+      rank: 'Watching' as const,
+      crop: { x: 0.2, y: 0.7 },
+    },
+  ];
+  store.set(tierItemsAtom, items);
+  store.set(moveRankAtom, { rank: 'Watching', target: 'S' });
+  expect(store.get(enabledTierRanksAtom)).toEqual(['Watching', 'S', 'A']);
+  expect(store.get(tierItemsAtom)).toBe(items);
+});
 
 it('moves deleted tier posters to the beginning of the next tier and preserves a final tier', () => {
   const store = createStore();

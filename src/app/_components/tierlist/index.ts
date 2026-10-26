@@ -15,4 +15,3 @@ export { TierItemTitleEditor } from '../tier-item/tier-item-title-editor';
 export { TierBoardRows } from '../tier-row/tier-board-rows';
 export { TierRow } from '../tier-row/tier-row';
 export { TierBoardToolbar } from '../tier-settings/tier-board-toolbar';
-export { TierRankOptions } from '../tier-settings/tier-rank-options';

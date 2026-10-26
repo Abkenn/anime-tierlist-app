@@ -1,10 +1,12 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useAtomValue } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
-import { type PropsWithChildren, useState } from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   type AnimeSearchConfig,
+  animeSearchClientAtom,
   animeSearchConfigAtom,
 } from '@/app/_atoms/tierlist/search.atoms';
 
@@ -16,7 +18,7 @@ export const AnimeSearchProvider = ({
 }: AnimeSearchProviderProps) => {
   useHydrateAtoms([[animeSearchConfigAtom, config]]);
 
-  const [client] = useState(() => new QueryClient());
+  const client = useAtomValue(animeSearchClientAtom);
 
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 };

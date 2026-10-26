@@ -24,11 +24,13 @@ export const useAnimeSearch = (
   const { catalogSearchEnabled = true } = useAtomValue(animeSearchConfigAtom);
   const [debounced, setDebounced] = useState(initialQuery);
   const sentinel = useRef<HTMLDivElement>(null);
-  const classification = classifySearchInput(debounced);
+  const activeInput = input.trim().length >= 2;
+  const settledInput = activeInput ? debounced : '';
+  const classification = classifySearchInput(settledInput);
   const url = classification.kind === 'image' ? classification.url : null;
   const urlError =
     classification.kind === 'invalid' ? classification.message : null;
-  const query = normalizeAnimeQuery(debounced);
+  const query = normalizeAnimeQuery(settledInput);
   const search = useInfiniteQuery(
     animeSearchQueries.searchAnime.infiniteOptions({
       input: (page: number) => ({ query, page }),
@@ -94,6 +96,6 @@ export const useAnimeSearch = (
     urlError,
     debounced,
     submitQuery: (value: string) => setDebounced(value.trim()),
-    waiting: input.trim() !== debounced,
+    waiting: activeInput && input.trim() !== debounced,
   };
 };

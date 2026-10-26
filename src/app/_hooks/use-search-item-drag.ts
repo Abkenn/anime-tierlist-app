@@ -1,6 +1,6 @@
 'use client';
 
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   cancelFrame,
   frame,
@@ -20,6 +20,7 @@ import {
   searchDragPointAtom,
   searchDropSlotAtom,
 } from '@/app/_atoms/tierlist/search.atoms';
+import { rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { toast } from '@/app/_components/ui/toast';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
 import type { TierItemData } from '@/app/_types/tierlist.types';
@@ -40,6 +41,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
   const commitDrop = useSetAtom(dropSearchItemAtom);
   const importItem = useSetAtom(addTierItemAtom);
   const removeItem = useSetAtom(removeTierItemAtom);
+  const ranks = useAtomValue(rankDetailsAtom);
 
   const cancel = () => {
     dragged.current = true;
@@ -78,7 +80,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
 
         if (added) {
           const id = toast.add({
-            title: `${added.label} added to ${added.rank}`,
+            title: `${added.label} added to ${ranks[added.rank]?.label ?? added.rank}`,
             actionProps: {
               children: 'Undo',
               onClick: () => {

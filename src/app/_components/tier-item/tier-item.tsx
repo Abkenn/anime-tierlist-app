@@ -258,6 +258,8 @@ export const TierItem = ({
   return (
     <>
       <TierItemMenu
+        position={position}
+        dragging={drag.dragging}
         itemId={id}
         finalFocus={itemRef}
         hasImage={Boolean(image)}

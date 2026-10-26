@@ -48,7 +48,7 @@ export const LocalTierlist = ({
           status.needsReconnect ? status.reconnectLabel : '',
         ]}
       >
-        <div className="mb-3 flex min-h-9 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
+        <div className="mb-2 flex min-h-9 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
           <p role="status" className="min-w-0 max-w-full">
             <TerminalText
               segments={[

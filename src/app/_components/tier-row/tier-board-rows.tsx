@@ -2,6 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { ViewTransition } from 'react';
+import { rankDropTargetAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import {
   imageModeAtom,
   posterSizeAtom,
@@ -17,7 +18,7 @@ type TierBoardRowsProps = {
   layout: 'single-line' | 'two-line';
   interaction: Pick<
     ReturnType<typeof useTierItems>,
-    'items' | 'targetRank' | 'visibleRank' | 'lines'
+    'items' | 'targetRank' | 'visibleRank' | 'lines' | 'searchPosition'
   >;
 };
 
@@ -28,6 +29,7 @@ export const TierBoardRows = ({
 }: TierBoardRowsProps) => {
   const mode = useAtomValue(posterSizeAtom);
   const imageMode = useAtomValue(imageModeAtom);
+  const rankDropTarget = useAtomValue(rankDropTargetAtom);
   const size = getPosterSize({
     mode,
     imageMode,
@@ -46,9 +48,10 @@ export const TierBoardRows = ({
             key={rank}
             rank={rank}
             color={tierColors[rank] ?? 'stone'}
-            active={interaction.targetRank === rank}
+            active={interaction.targetRank === rank || rankDropTarget === rank}
             fixedItemSize={layout === 'two-line'}
             lines={interaction.lines(rank)}
+            searchPosition={interaction.searchPosition(rank)}
             itemCount={
               interaction.items.filter(
                 (item) => interaction.visibleRank(item) === rank,

@@ -1,10 +1,12 @@
 'use client';
 
+import { useAtomValue } from 'jotai';
 import { ImageOff } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { searchDestinationAtom } from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useSearchItemDrag } from '@/app/_hooks/use-search-item-drag';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
@@ -30,11 +32,12 @@ export const AnimeSearchResultCard = ({
       : { status: 'loading' },
   );
   const reducedMotion = useReducedMotion();
+  const destination = useAtomValue(searchDestinationAtom);
   const image = state.status === 'ready' ? state.image : undefined;
   const drag = useSearchItemDrag({
     id: result.id,
     label: result.title,
-    rank: 'Watching',
+    rank: destination.rank,
     image,
   });
 
@@ -71,7 +74,7 @@ export const AnimeSearchResultCard = ({
         <motion.button
           type="button"
           disabled={!image}
-          title={`${result.title} · Drag to a rank or click to add to Watching`}
+          title={`${result.title} · Drag to a rank or click to add to ${destination.label}`}
           className="relative block w-full touch-none cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
           drag={Boolean(image)}
           dragSnapToOrigin
@@ -108,6 +111,7 @@ export const AnimeSearchResultCard = ({
           ) : (
             <Image
               draggable={false}
+              loading="eager"
               unoptimized
               src={result.imageUrl}
               crossOrigin={posterCrossOrigin(result.imageUrl)}
