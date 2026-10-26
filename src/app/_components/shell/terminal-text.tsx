@@ -66,46 +66,31 @@ const TypedTerminalText = ({
   let offset = 0;
 
   return (
-    <span className="inline-grid max-w-full align-baseline font-mono">
-      <span
-        aria-hidden="true"
-        data-text={text}
-        className="invisible col-start-1 row-start-1 whitespace-pre-wrap after:content-[attr(data-text)]"
-      >
-        {pending && <span className="inline-block w-[1ch]">▍</span>}
-      </span>
+    <span className="max-w-full whitespace-pre-wrap align-baseline font-mono">
+      {parts.map((part) => {
+        const start = offset;
+        offset += Array.from(part.text).length;
 
-      <span className="col-start-1 row-start-1 whitespace-pre-wrap">
-        {parts.map((part) => {
-          const start = offset;
-          offset += Array.from(part.text).length;
+        return (
+          <TypedSegment key={part.id} part={part} start={start} typed={typed} />
+        );
+      })}
 
-          return (
-            <TypedSegment
-              key={part.id}
-              part={part}
-              start={start}
-              typed={typed}
-            />
-          );
-        })}
-
-        {pending && (
-          <motion.span
-            aria-hidden="true"
-            className="inline-block w-[1ch]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: reducedMotion ? 1 : [1, 1, 0, 0] }}
-            transition={
-              reducedMotion
-                ? { duration: 0 }
-                : { duration: 0.9, repeat: Infinity, times: [0, 0.49, 0.5, 1] }
-            }
-          >
-            {cursor}
-          </motion.span>
-        )}
-      </span>
+      {pending && (
+        <motion.span
+          aria-hidden="true"
+          className="inline-block w-[1ch]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: reducedMotion ? 1 : [1, 1, 0, 0] }}
+          transition={
+            reducedMotion
+              ? { duration: 0 }
+              : { duration: 0.9, repeat: Infinity, times: [0, 0.49, 0.5, 1] }
+          }
+        >
+          {cursor}
+        </motion.span>
+      )}
     </span>
   );
 };
@@ -124,11 +109,15 @@ const TypedSegment = ({ part, start, typed }: TypedSegmentProps) => {
       .join(''),
   );
   const content = (
-    <>
-      <span className="sr-only select-none">{part.text}</span>
+    <span className="inline-grid max-w-full align-baseline">
+      <span className="col-start-1 row-start-1 whitespace-pre-wrap opacity-0">
+        {part.text}
+      </span>
 
-      <motion.span aria-hidden="true">{visible}</motion.span>
-    </>
+      <motion.span aria-hidden="true" className="col-start-1 row-start-1">
+        {visible}
+      </motion.span>
+    </span>
   );
 
   return part.render ? part.render(content) : content;

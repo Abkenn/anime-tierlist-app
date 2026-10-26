@@ -7,6 +7,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useSearchItemDrag } from '@/app/_hooks/use-search-item-drag';
+import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
 
@@ -109,6 +110,7 @@ export const AnimeSearchResultCard = ({
               draggable={false}
               unoptimized
               src={result.imageUrl}
+              crossOrigin={posterCrossOrigin(result.imageUrl)}
               alt={result.title}
               width={image?.width ?? 160}
               height={image?.height ?? 240}
@@ -163,6 +165,7 @@ export const AnimeSearchResultCard = ({
             <Image
               unoptimized
               src={image.src}
+              crossOrigin={posterCrossOrigin(image.src)}
               alt=""
               width={image.width}
               height={image.height}

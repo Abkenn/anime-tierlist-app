@@ -54,6 +54,16 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const editingItemId = useAtomValue(editingItemIdAtom);
   const query = useDeferredValue(useAtomValue(tierFindQueryAtom));
   const actions = useTierItemActions(interaction);
+  const priorityItem = interaction.items.find((item) => {
+    const poster = geometry.get(item.id);
+
+    return (
+      item.image &&
+      poster &&
+      poster.y < window.bottom &&
+      poster.y + poster.height >= window.top
+    );
+  });
 
   return (
     <TierItemActionsContext value={actions}>
@@ -125,6 +135,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                 rank={rank}
                 editing={editingItemId === item.id}
                 image={item.image}
+                priority={item.id === priorityItem?.id}
                 title={item.title}
                 crop={item.crop}
                 trim={item.trim}

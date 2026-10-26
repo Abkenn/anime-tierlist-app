@@ -43,7 +43,7 @@ export const TierViewport = ({
       <section
         ref={ref}
         data-tier-viewport=""
-        className="min-w-0"
+        className="@container min-w-0"
         aria-label="Tierlist board viewport"
       >
         {children}
@@ -65,7 +65,7 @@ export const TierViewport = ({
               aria-label="Tierlist board scroll"
             />
           ),
-          className: 'lg:overscroll-contain',
+          className: '@container lg:overscroll-contain',
           tabIndex: 0,
         }}
       >

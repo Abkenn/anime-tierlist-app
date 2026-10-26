@@ -35,7 +35,7 @@ export const TierRankLabel = ({
   const [confirming, setConfirming] = useState(false);
   const label = details[rank]?.label ?? rank;
   const addRankButtonClass =
-    'absolute left-1/2 z-20 flex h-5 w-1/2 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40';
+    'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-40';
   const commit = () => {
     setEditing(false);
     if (!draft.trim()) {
@@ -76,7 +76,7 @@ export const TierRankLabel = ({
         type="button"
         aria-label={`Delete ${label}`}
         onClick={() => setConfirming(true)}
-        className="absolute top-1 right-1 z-30 flex size-4 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+        className="absolute top-1 right-1 z-30 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
       >
         <Trash2 aria-hidden="true" className="size-4" />
       </button>
@@ -85,6 +85,7 @@ export const TierRankLabel = ({
         <Input
           autoFocus
           aria-label="Tier name"
+          name="tierName"
           value={draft}
           maxLength={100}
           onChange={(event) => setDraft(event.target.value)}
@@ -107,17 +108,18 @@ export const TierRankLabel = ({
             setDraft(label);
             setEditing(true);
           }}
-          className="w-full cursor-text wrap-break-word px-1 py-3 text-center hover:underline"
+          className="w-full cursor-text wrap-break-word p-1 text-center hover:underline"
           aria-label={`Rename ${label}`}
         >
           {label}
         </button>
       )}
 
-      <div className="absolute right-1 bottom-1 flex size-4 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
+      <div className="absolute right-1 bottom-1 flex size-6 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
         <SwatchBook aria-hidden="true" className="size-4" />
         <input
           type="color"
+          name="tierColor"
           aria-label={`Color for ${label}`}
           value={details[rank]?.color ?? '#e68e8e'}
           onChange={(event) =>

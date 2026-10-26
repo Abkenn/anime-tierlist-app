@@ -20,6 +20,7 @@ type TierItemButtonProps = HTMLMotionProps<'button'> & {
   label: string;
   rank: string;
   image?: TierImage;
+  priority?: boolean;
   itemTitle?: ItemTitle;
   crop: TierCrop;
   trim?: TierImageTrim;
@@ -34,6 +35,7 @@ export const TierItemButton = ({
   label,
   rank,
   image,
+  priority = false,
   itemTitle,
   crop,
   trim,
@@ -88,6 +90,7 @@ export const TierItemButton = ({
               mode={imageMode}
               crop={crop}
               trim={trim}
+              priority={priority}
             />
           </span>
         </>

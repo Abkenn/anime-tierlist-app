@@ -5,6 +5,7 @@ import { cn } from 'cn';
 import { type HTMLAttributes, type RefObject, useId, useState } from 'react';
 import { useTierImageTrim } from '@/app/_hooks/use-tier-image-trim';
 import { keyboardBehaviors } from '@/app/_lib/keybindings';
+import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { fullImageTrim, type TierTrimEdge } from '@/app/_lib/tier-image-trim';
 import type { TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 
@@ -150,6 +151,7 @@ export const TierImageTrimEditor = ({
                   </defs>
 
                   <image
+                    crossOrigin={posterCrossOrigin(image.src)}
                     href={image.src}
                     width="1"
                     height="1"

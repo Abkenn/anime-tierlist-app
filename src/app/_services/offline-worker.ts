@@ -47,7 +47,9 @@ const cacheOfflineHomepage = async () => {
   }
 
   await cache.addAll(
-    [...assets].map((url) => new Request(url, { cache: 'reload' })),
+    [...assets].map(
+      (url) => new Request(url, { cache: 'force-cache', priority: 'low' }),
+    ),
   );
 
   const fonts = new Set<string>();
@@ -75,7 +77,13 @@ const cacheOfflineHomepage = async () => {
   }
 
   await cache.addAll(
-    ['/icon.svg', ...fonts].map((url) => new Request(url, { cache: 'reload' })),
+    ['/icon.svg', ...fonts].map(
+      (url) =>
+        new Request(url, {
+          cache: url === '/icon.svg' ? 'reload' : 'force-cache',
+          priority: 'low',
+        }),
+    ),
   );
   await cache.put('/offline', homepage);
 };
@@ -166,11 +174,21 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         const posters = await caches.open('tierlist-posters-v1');
+        const saved = await posters.match(request.url, { ignoreVary: true });
+        if (saved && !(request.mode === 'cors' && saved.type === 'opaque')) {
+          return saved;
+        }
 
-        return (
-          (await posters.match(request.url, { ignoreVary: true })) ??
-          fetch(request)
+        const response = await fetch(
+          url.origin === self.location.origin
+            ? request
+            : new Request(request, { credentials: 'omit' }),
         );
+        if (saved && response.ok) {
+          event.waitUntil(posters.put(request.url, response.clone()));
+        }
+
+        return response;
       })(),
     );
 

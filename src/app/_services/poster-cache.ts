@@ -14,6 +14,7 @@ export const cacheTierlistPosters = async (
     const cache = await caches.open(posterCacheName);
     const progress = { total: urls.length, saved: 0, failed: 0 };
     let index = 0;
+    let lastPublished = 0;
     const worker = async () => {
       while (!signal.aborted && index < urls.length) {
         const source = urls[index++];
@@ -28,6 +29,7 @@ export const cacheTierlistPosters = async (
               response = await fetch(url, {
                 mode: 'cors',
                 credentials: 'omit',
+                priority: 'low',
                 signal,
               });
             } catch (error) {
@@ -37,6 +39,7 @@ export const cacheTierlistPosters = async (
               response = await fetch(url, {
                 mode: 'no-cors',
                 credentials: 'omit',
+                priority: 'low',
                 signal,
               });
             }
@@ -52,7 +55,13 @@ export const cacheTierlistPosters = async (
           }
           progress.failed += 1;
         }
-        if (!signal.aborted) {
+        const now = performance.now();
+        if (
+          !signal.aborted &&
+          (progress.saved + progress.failed === progress.total ||
+            now - lastPublished >= 100)
+        ) {
+          lastPublished = now;
           publish({ ...progress });
         }
       }

@@ -72,7 +72,10 @@ export const PosterOfflineCache = () => {
   }
 
   return (
-    <p role="status" className="mb-2 text-xs text-muted-foreground">
+    <p
+      role="status"
+      className="absolute bottom-2 left-0 z-40 max-w-full border border-divider bg-background/95 px-3 py-2 text-xs text-muted-foreground shadow-sm"
+    >
       {progress.saved + progress.failed < progress.total
         ? `Saving posters offline… ${progress.saved}/${progress.total}`
         : `${progress.failed} posters unavailable offline.`}

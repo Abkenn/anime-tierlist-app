@@ -6,7 +6,7 @@ import { Pool } from 'pg';
 const baseURL =
   process.env.BETTER_AUTH_URL ??
   process.env.SITE_URL ??
-  (process.env.NODE_ENV === 'production'
+  (process.env.VERCEL === '1'
     ? 'https://anime-tierlist-app.vercel.app'
     : 'http://localhost:3000');
 const authGlobal = globalThis as typeof globalThis & {

@@ -34,6 +34,7 @@ import { TierItemTitleEditor } from './tier-item-title-editor';
 
 type TierItemProps = {
   dimmed?: boolean;
+  priority?: boolean;
   id: string;
   label: string;
   rank: string;
@@ -57,6 +58,7 @@ type TierItemProps = {
 
 export const TierItem = ({
   dimmed = false,
+  priority = false,
   id,
   label,
   image,
@@ -283,6 +285,7 @@ export const TierItem = ({
             label={label}
             rank={rank}
             image={image}
+            priority={priority}
             itemTitle={textEditing ? (titleDraft ?? undefined) : title}
             crop={cropEditor.editing ? draftCrop : crop}
             trim={activeTrim}

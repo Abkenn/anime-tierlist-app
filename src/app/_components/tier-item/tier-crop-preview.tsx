@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { type RefObject, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTierCropOverlay } from '@/app/_hooks/use-tier-crop-overlay';
+import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { getTrimViewBox } from '@/app/_lib/tier-image-trim';
 import type {
   TierCrop,
@@ -80,6 +81,7 @@ export const TierCropPreview = ({
           </defs>
 
           <image
+            crossOrigin={posterCrossOrigin(image.src)}
             href={image.src}
             width={image.width}
             height={image.height}
@@ -101,7 +103,12 @@ export const TierCropPreview = ({
       >
         <title>Trimmed-out image preview</title>
 
-        <image href={image.src} width={image.width} height={image.height} />
+        <image
+          href={image.src}
+          crossOrigin={posterCrossOrigin(image.src)}
+          width={image.width}
+          height={image.height}
+        />
       </svg>
     );
   }

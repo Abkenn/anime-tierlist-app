@@ -58,6 +58,7 @@ export const TierBoardToolbar = ({
         <label className="flex items-center gap-2 text-muted-foreground">
           Images
           <select
+            name="imageMode"
             aria-label="Image sizing"
             value={imageMode === 'natural' ? 'natural' : 'cover'}
             className="min-h-9 border border-divider bg-background px-2 text-foreground"
@@ -76,6 +77,7 @@ export const TierBoardToolbar = ({
         <label className="flex items-center gap-2 text-muted-foreground">
           Size
           <select
+            name="posterSize"
             aria-label="Poster size"
             value={posterSize}
             onChange={(event) =>

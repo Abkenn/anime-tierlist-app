@@ -17,6 +17,7 @@ import {
   useState,
 } from 'react';
 import { useMobileBoardScroll } from '@/app/_hooks/use-mobile-board-scroll';
+import { transferBoardScroll } from '@/app/_lib/touch-scroll';
 
 export const HomeWorkspace = ({
   search,
@@ -98,13 +99,7 @@ export const HomeWorkspace = ({
           }
 
           // Consume forward board scrolling with the search reveal first.
-          const remaining =
-            viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop;
-          const transfer = Math.min(Math.max(0, remaining), board.scrollTop);
-          if (transfer > 0) {
-            viewport.scrollTop += transfer;
-            board.scrollTop -= transfer;
-          }
+          transferBoardScroll(viewport, board);
         }}
       >
         <div className="flex min-h-full min-w-0 flex-col gap-4 lg:h-full lg:flex-row">

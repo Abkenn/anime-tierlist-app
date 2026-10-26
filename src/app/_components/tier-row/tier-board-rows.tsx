@@ -1,8 +1,7 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { motion } from 'motion/react';
-import { useLayoutEffect, useRef, useState, ViewTransition } from 'react';
+import { ViewTransition } from 'react';
 import {
   imageModeAtom,
   posterSizeAtom,
@@ -29,37 +28,17 @@ export const TierBoardRows = ({
 }: TierBoardRowsProps) => {
   const mode = useAtomValue(posterSizeAtom);
   const imageMode = useAtomValue(imageModeAtom);
-  const element = useRef<HTMLOListElement>(null);
-  const [width, setWidth] = useState(1000);
   const size = getPosterSize({
     mode,
     imageMode,
     items: interaction.items,
-    width,
   });
-
-  useLayoutEffect(() => {
-    const board = element.current;
-    if (!board) {
-      return;
-    }
-    const measure = () =>
-      setWidth(board.parentElement?.clientWidth ?? board.clientWidth);
-    const observer = new ResizeObserver(measure);
-    observer.observe(board.parentElement ?? board);
-    measure();
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <ViewTransition default="none" enter="preview-change" exit="preview-change">
-      <motion.ol
-        ref={element}
-        initial={false}
-        animate={{ '--tier-base-size': `${size}rem` }}
-        transition={{ duration: 0 }}
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
+      <ol
+        style={{ '--tier-base-size': size } as React.CSSProperties}
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-max-size:11rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank) => (
@@ -77,7 +56,7 @@ export const TierBoardRows = ({
             }
           />
         ))}
-      </motion.ol>
+      </ol>
     </ViewTransition>
   );
 };

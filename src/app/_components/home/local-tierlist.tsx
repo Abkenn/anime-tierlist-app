@@ -37,7 +37,7 @@ export const LocalTierlist = ({
   const [accountHandle] = useState(() => Popover.createHandle());
 
   return (
-    <>
+    <div className="relative flex min-h-0 flex-1 flex-col">
       <TerminalSequence
         identity={`${status.statusText}:${sync.status === 'offline' ? status.backupMessage : ''}`}
         lines={[
@@ -48,7 +48,7 @@ export const LocalTierlist = ({
           status.needsReconnect ? status.reconnectLabel : '',
         ]}
       >
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
+        <div className="mb-3 flex min-h-9 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
           <p role="status" className="min-w-0 max-w-full">
             <TerminalText
               segments={[
@@ -153,6 +153,6 @@ export const LocalTierlist = ({
       >
         {children}
       </div>
-    </>
+    </div>
   );
 };

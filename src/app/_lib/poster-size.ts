@@ -9,17 +9,11 @@ type PosterSizeInput = {
   mode: PosterSize;
   imageMode: TierImageMode;
   items: TierItemData[];
-  width: number;
 };
 
-export const getPosterSize = ({
-  mode,
-  imageMode,
-  items,
-  width,
-}: PosterSizeInput) => {
+export const getPosterSize = ({ mode, imageMode, items }: PosterSizeInput) => {
   if (mode !== 'dynamic') {
-    return { small: 6, medium: 8, large: 11 }[mode];
+    return { small: '6rem', medium: '8rem', large: '11rem' }[mode];
   }
 
   const rowWidths = new Map<string, number>();
@@ -31,7 +25,5 @@ export const getPosterSize = ({
     );
   });
   const longest = Math.max(1, ...rowWidths.values());
-  const maximum = width < 640 ? 7 : 11;
-
-  return Math.max(6, Math.min(maximum, (width * 0.42) / longest / 16));
+  return `clamp(6rem, calc(42cqw / ${longest}), var(--tier-max-size, 11rem))`;
 };

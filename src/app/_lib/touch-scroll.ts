@@ -1,3 +1,24 @@
+export const transferBoardScroll = (
+  workspace: HTMLElement,
+  board: HTMLElement,
+) => {
+  const remaining =
+    workspace.scrollHeight - workspace.clientHeight - workspace.scrollTop;
+
+  // Fractional device pixels can leave an unconsumable gap at the scroll limit.
+  if (remaining <= 1 || board.scrollTop <= 0) {
+    return;
+  }
+
+  const before = workspace.scrollTop;
+  workspace.scrollTop += Math.min(remaining, board.scrollTop);
+  const consumed = workspace.scrollTop - before;
+
+  if (consumed > 0) {
+    board.scrollTop = Math.max(0, board.scrollTop - consumed);
+  }
+};
+
 export const getTouchScrollState = (
   viewport: HTMLElement,
   workspace = viewport.matches('[data-tier-viewport]')

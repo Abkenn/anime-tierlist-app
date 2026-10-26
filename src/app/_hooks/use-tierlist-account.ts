@@ -195,6 +195,18 @@ export const useTierlistAccount = (
         errorCallbackURL: '/?google=failed',
       });
       if (result.error) {
+        if (result.error.status === 429) {
+          throw new Error(
+            'Too many sign-in attempts. Wait a moment and try again.',
+          );
+        }
+
+        if (result.error.code === 'INVALID_ORIGIN') {
+          throw new Error(
+            'Google sign-in is unavailable at this site address.',
+          );
+        }
+
         throw new Error(
           result.error.code === 'PROVIDER_NOT_FOUND'
             ? 'Google sign-in is not configured on this server yet.'

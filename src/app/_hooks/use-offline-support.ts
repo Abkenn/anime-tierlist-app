@@ -53,6 +53,15 @@ export const useOfflineSupport = () => {
   }, []);
 
   useEffect(() => {
-    void setupOfflineWorker();
+    if (document.readyState === 'complete') {
+      void setupOfflineWorker();
+
+      return;
+    }
+
+    const setup = () => void setupOfflineWorker();
+    window.addEventListener('load', setup, { once: true });
+
+    return () => window.removeEventListener('load', setup);
   }, []);
 };
