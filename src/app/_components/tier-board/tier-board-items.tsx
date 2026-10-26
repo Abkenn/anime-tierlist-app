@@ -101,7 +101,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
             initial={false}
             animate={interaction.dropPosition}
             transition={{ duration: 0.12 }}
-            className="absolute left-0 top-0 z-0 border border-dashed border-white/80 bg-white/15"
+            className="absolute left-0 top-0 z-1 border border-dashed border-white/80 bg-white/15"
           />
         )}
 

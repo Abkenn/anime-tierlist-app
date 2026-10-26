@@ -143,7 +143,13 @@ export const KeyboardOrdering: Story = {
     const first = await canvas.findByRole('button', { name: 'Item 1 in S+' });
     const second = await canvas.findByRole('button', { name: 'Item 2 in S+' });
 
-    first.focus();
+    canvas.getByRole('radio', { name: 'Auto' }).focus();
+    await userEvent.tab();
+    await expect(first).toHaveFocus();
+    await userEvent.tab();
+    await expect(second).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    await expect(first).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(canvas.getByText(/Keyboard mode/)).toBeVisible();
     await expect(

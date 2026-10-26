@@ -41,7 +41,7 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
         aria-label={`Add anime to ${label}`}
         title={`Add anime to ${label}`}
         style={position}
-        className="pointer-events-none absolute left-1 top-1/2 z-20 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground/60 opacity-0 transition-opacity hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100"
+        className="pointer-events-none absolute left-1 top-1/2 z-20 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground/60 opacity-0 transition-opacity hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-has-focus-visible/row:pointer-events-auto group-has-focus-visible/row:opacity-100 pointer-coarse:group-focus-within/row:pointer-events-auto pointer-coarse:group-focus-within/row:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100"
       >
         <Plus aria-hidden="true" className="size-3.5" />
       </Popover.Trigger>

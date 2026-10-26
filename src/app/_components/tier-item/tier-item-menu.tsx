@@ -95,10 +95,11 @@ export const TierItemMenu = ({
           <motion.div
             initial={false}
             animate={position}
-            className="pointer-events-none invisible absolute left-0 top-0 z-20 group-hover/item:visible group-focus-within/item:visible pointer-coarse:visible"
+            className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:visible`}
           >
             <Menu.Trigger
               aria-label="Edit poster"
+              tabIndex={-1}
               onContextMenu={(event) => {
                 event.preventDefault();
                 changeOpen(true);

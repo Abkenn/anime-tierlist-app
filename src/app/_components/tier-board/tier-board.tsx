@@ -85,13 +85,13 @@ export const TierBoard = ({
           transition={{ duration: 0 }}
           className={cn('relative', scrollable && 'min-w-full')}
         >
+          <TierBoardItems interaction={interaction} />
+
           <TierBoardRows
             ranks={ranks}
             layout={layout}
             interaction={interaction}
           />
-
-          <TierBoardItems interaction={interaction} />
         </motion.div>
       </TierViewport>
     </section>
