@@ -52,7 +52,9 @@ it('offers a separate share seed and requires confirmation before replacing an a
   expect(
     screen.getByRole('button', { name: 'Replace tierlist' }),
   ).toBeDisabled();
-  expect(screen.getByText('Enter a valid 64-character seed.')).toBeVisible();
+  await waitFor(() =>
+    expect(screen.getByText('Enter a valid 64-character seed.')).toBeVisible(),
+  );
   const form = seedInput.closest('form');
   if (!form) {
     throw new Error('Seed input must belong to its submission form.');
