@@ -20,7 +20,8 @@
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:storybook": "vitest run --config vitest.storybook.config.ts"
+    "test:storybook": "vitest run --config vitest.storybook.config.ts",
+    "test:navigation": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -54,6 +55,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.2",
+    "@next/playwright": "16.4.2",
+    "@playwright/test": "1.64.1",
     "@storybook/addon-a11y": "11.0.0-alpha.7",
     "@storybook/addon-docs": "11.0.0-alpha.7",
     "@storybook/addon-themes": "11.0.0-alpha.7",

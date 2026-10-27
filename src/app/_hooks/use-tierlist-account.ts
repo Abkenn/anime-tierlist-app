@@ -3,6 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useAccountDisplayHint } from '@/app/_hooks/use-account-display-hint';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
+import { useProjectImport } from '@/app/_hooks/use-project-import';
 import { usePromiseValue } from '@/app/_hooks/use-promise-value';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
 import { authClient } from '@/app/_lib/auth-client';
@@ -13,6 +14,12 @@ import {
 } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { readGoogleTierlist } from '@/app/_services/google-auth.actions';
+import {
+  activateDeviceTierlist,
+  backupLocalTierlist,
+  readLocalTierlist,
+  saveLocalTierlist,
+} from '@/app/_services/local-tierlist';
 import { OFFLINE_RECOVERED_EVENT } from '@/app/_services/offline-mode';
 import {
   connectTierlist,
@@ -20,6 +27,10 @@ import {
   disconnectTierlist,
   replaceAccountFromSeed,
 } from '@/app/_services/tierlist.actions';
+import {
+  prepareShare,
+  publishShare,
+} from '@/app/_services/tierlist-share.actions';
 import type { AccountSnapshot } from '@/app/_types/account-snapshot';
 
 const unavailableAccount: AccountSnapshot = { status: 'unavailable' };
@@ -53,9 +64,15 @@ export const useTierlistAccount = (
     storage.snapshot?.accountOwnerId ||
       (googleProfileKey && googleProfileKey === storage.seed),
   );
+  const projectImport = useProjectImport({
+    storage,
+    ready: identityReady && !busy,
+    accountProfileKey: googleProfileKey,
+  });
   const sync = useTierlistSync(
     storage,
     busy ||
+      projectImport.opening ||
       !identityReady ||
       (googleConnected &&
         (!accountVerified ||
@@ -66,7 +83,7 @@ export const useTierlistAccount = (
   const status = getTierlistAccountStatus({
     storage,
     sync,
-    busy,
+    busy: busy || projectImport.opening,
     error,
     googleConnected,
     googleName,
@@ -163,6 +180,52 @@ export const useTierlistAccount = (
     return result.value;
   };
 
+  const shareInput = async () => {
+    await sync.saveNow();
+    const snapshot = await storage.refresh();
+    if (
+      !snapshot?.sync ||
+      snapshot.sync.syncedLocalRevision !== snapshot.revision
+    ) {
+      throw new Error('Wait for your changes to save online before sharing.');
+    }
+
+    return {
+      ownerId: snapshot.sync.ownerId,
+      revision: snapshot.sync.serverRevision,
+      seed: googleConnected ? undefined : snapshot.seed,
+    };
+  };
+
+  const prepareSharing = async () => {
+    const input = await shareInput();
+    const result = await prepareShare(input);
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    return {
+      ...result.value,
+      ownerId: input.ownerId,
+      revision: input.revision,
+    };
+  };
+
+  const publishSharing = async (input: {
+    ownerId: string;
+    revision: number;
+  }) => {
+    const result = await publishShare({
+      ownerId: input.ownerId,
+      revision: input.revision,
+    });
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    return new URL(`/${result.value}`, window.location.origin).href;
+  };
+
   const restoreDevice = () =>
     perform(async () => {
       if (sessionUserId) {
@@ -230,6 +293,76 @@ export const useTierlistAccount = (
       setAccountOpen(false);
     });
 
+  const returnFromProject = () =>
+    perform(async () => {
+      const project = projectImport.project;
+      if (!project) {
+        return;
+      }
+      await storage.selectProfile(project.returnSeed);
+      projectImport.clear();
+      setAccountOpen(false);
+      sync.retry();
+    });
+
+  const replaceFromProject = () =>
+    perform(async () => {
+      const project = projectImport.project;
+      if (!project) {
+        return;
+      }
+      if (project.returnAccount) {
+        const account = await readGoogleTierlist();
+        if (!account || account.profileKey !== project.returnSeed) {
+          throw new Error(
+            'Sign in to the original Google account before replacing its tierlist.',
+          );
+        }
+        const original = await readLocalTierlist(project.returnSeed);
+        const source = await storage.refresh();
+        if (
+          !source?.sync ||
+          source.sync.syncedLocalRevision !== source.revision
+        ) {
+          throw new Error(
+            'Wait for this project to finish saving before replacing your tierlist.',
+          );
+        }
+        const result = await replaceAccountFromSeed({
+          seed: source.seed,
+          ownerId: account.remote.ownerId,
+          revision: account.remote.revision,
+        });
+        if (!result.ok) {
+          throw new Error(result.message);
+        }
+        await backupLocalTierlist(original);
+        await saveLocalTierlist(
+          {
+            ...original,
+            ...result.value.document,
+            seed: original.seed,
+            accountOwnerId: original.accountOwnerId,
+            revision: original.revision + 1,
+            sync: {
+              ownerId: result.value.ownerId,
+              serverRevision: result.value.revision,
+              syncedLocalRevision: original.revision + 1,
+            },
+          },
+          original.revision,
+        );
+        await storage.selectProfile(account.profileKey);
+      } else if (storage.imported) {
+        await storage.replaceDeviceProfile();
+      } else {
+        await activateDeviceTierlist();
+      }
+      projectImport.clear();
+      setAccountOpen(false);
+      sync.retry();
+    });
+
   const reloadApp = () =>
     perform(async () => {
       await storage.flush();
@@ -257,14 +390,16 @@ export const useTierlistAccount = (
     }
 
     try {
+      const localProfile =
+        new URL(window.location.href).searchParams.get('profile') === 'local';
       const fromServer =
         initial?.status === 'ready' && initial.userId === userId;
-      if (session.error && !fromServer) {
+      if (session.error && !fromServer && !localProfile) {
         throw new Error('Unable to check your account right now.');
       }
 
-      let account = fromServer ? initial.account : null;
-      if (!account && userId) {
+      let account = fromServer && !localProfile ? initial.account : null;
+      if (!account && userId && !localProfile) {
         account = await readGoogleTierlist();
       }
 
@@ -276,7 +411,11 @@ export const useTierlistAccount = (
         accountHint.clear();
       }
 
-      if (account && account.profileKey !== storage.seed) {
+      if (
+        account &&
+        account.profileKey !== storage.seed &&
+        !projectImport.project
+      ) {
         await perform(async () => {
           await storage.importAccountProfile(
             account.profileKey,
@@ -382,11 +521,12 @@ export const useTierlistAccount = (
   return {
     storage,
     sync,
-    busy,
+    busy: busy || projectImport.opening,
     error,
     accountOpen,
     setAccountOpen,
     googleConnected,
+    project: projectImport.project,
     accountUnavailable: Boolean(
       storage.snapshot?.accountOwnerId &&
         sessionReady &&
@@ -396,10 +536,12 @@ export const useTierlistAccount = (
     status,
     actions: {
       importSeed,
-      restoreDevice,
-      replaceDevice,
+      restoreDevice: projectImport.project ? returnFromProject : restoreDevice,
+      replaceDevice: projectImport.project ? replaceFromProject : replaceDevice,
       signIn,
       shareSeed,
+      prepareSharing,
+      publishSharing,
       reloadApp,
       keepDeviceChanges: () => perform(sync.keepDeviceChanges),
       acceptOnlineChanges: () => perform(sync.acceptOnlineChanges),

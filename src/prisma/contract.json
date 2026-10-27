@@ -39,6 +39,10 @@
     "TierlistSession": {
       "model": "TierlistSession",
       "namespace": "public"
+    },
+    "TierlistShare": {
+      "model": "TierlistShare",
+      "namespace": "public"
     }
   },
   "domain": {
@@ -767,6 +771,74 @@
               "namespaceId": "public",
               "table": "TierlistSession"
             }
+          },
+          "TierlistShare": {
+            "fields": {
+              "document": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "fingerprint": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "owner": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "ownerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "TierlistOwner",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "document": {
+                  "column": "document"
+                },
+                "fingerprint": {
+                  "column": "fingerprint"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "ownerId": {
+                  "column": "ownerId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TierlistShare"
+            }
           }
         }
       }
@@ -1382,6 +1454,75 @@
                 ]
               },
               "uniques": []
+            },
+            "TierlistShare": {
+              "columns": {
+                "document": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "fingerprint": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "ownerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "TierlistShare_ownerId_idx_e2d0c1ef"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "ownerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistShare"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistOwner"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "ownerId"
+                  ],
+                  "name": "TierlistShare_ownerId_idx_e2d0c1ef",
+                  "prefix": "TierlistShare_ownerId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "ownerId",
+                    "fingerprint"
+                  ]
+                }
+              ]
             }
           }
         },
@@ -1389,7 +1530,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "eda1d7384f147b892a213e7ed7c98991ad1c95906f8eed0db797afd54d33a153"
+    "storageHash": "5bc0b4e495c64da653b42ec0d32a9c3f4a5aea1dc6fb5689571fb9083558df10"
   },
   "capabilities": {
     "postgres": {

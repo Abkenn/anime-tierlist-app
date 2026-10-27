@@ -13,6 +13,7 @@ type UserSeedProps = {
   seed: string;
   statusAnchor?: RefObject<HTMLElement | null>;
   imported: boolean;
+  projectReturn?: 'account' | 'device';
   busy: boolean;
   error?: string;
   open: boolean;
@@ -33,6 +34,7 @@ export const UserSeed = ({
   seed,
   statusAnchor,
   imported,
+  projectReturn,
   busy,
   error,
   open,
@@ -104,6 +106,9 @@ export const UserSeed = ({
     '',
   );
   const displayedSeed = googleConnected ? shareSeed : seed;
+  const anonymousHeading = projectReturn
+    ? 'Project seed'
+    : 'Or stay anonymous. Save your seed.';
   const importLabel = googleConnected ? 'Replace tierlist' : 'Import seed';
 
   const submitImport = async (value = importSeed) => {
@@ -183,30 +188,34 @@ export const UserSeed = ({
             aria-label="Sign in and user seed"
             className="w-84 max-h-(--available-height) max-w-[calc(100vw-2rem)] origin-(--transform-origin) overflow-y-auto border border-divider bg-popover p-4 text-xs leading-relaxed text-popover-foreground shadow-md"
           >
-            <button
-              type="button"
-              disabled={busy || (!googleConnected && !canSignIn)}
-              title={
-                !googleConnected && !canSignIn
-                  ? 'Waiting for changes to save'
-                  : undefined
-              }
-              onClick={() => {
-                void (googleConnected ? onGoogleSignOut() : onGoogleSignIn());
-              }}
-              className="flex min-h-11 w-full cursor-pointer items-center justify-center rounded-md border border-transparent bg-foreground px-4 font-sans text-sm font-medium text-background shadow-sm hover:bg-foreground/90 active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-default disabled:opacity-60"
-            >
-              {googleConnected ? 'Sign out from Google' : 'Sign in with Google'}
-            </button>
+            {!projectReturn && (
+              <button
+                type="button"
+                disabled={busy || (!googleConnected && !canSignIn)}
+                title={
+                  !googleConnected && !canSignIn
+                    ? 'Waiting for changes to save'
+                    : undefined
+                }
+                onClick={() => {
+                  void (googleConnected ? onGoogleSignOut() : onGoogleSignIn());
+                }}
+                className="flex min-h-11 w-full cursor-pointer items-center justify-center rounded-md border border-transparent bg-foreground px-4 font-sans text-sm font-medium text-background shadow-sm hover:bg-foreground/90 active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-default disabled:opacity-60"
+              >
+                {googleConnected
+                  ? 'Sign out from Google'
+                  : 'Sign in with Google'}
+              </button>
+            )}
 
             <section
               aria-label="Anonymous seed"
-              className="mt-4 border-t border-divider pt-3"
+              className={
+                projectReturn ? '' : 'mt-4 border-t border-divider pt-3'
+              }
             >
               <p className="mb-2 font-medium">
-                {googleConnected
-                  ? 'Share seed'
-                  : 'Or stay anonymous. Save your seed.'}
+                {googleConnected ? 'Share seed' : anonymousHeading}
               </p>
 
               {googleConnected && !shareSeed ? (
@@ -318,6 +327,10 @@ export const UserSeed = ({
               </p>
             </form>
 
+            <p className="mt-2 text-muted-foreground">
+              Drop a .anime project file anywhere to open it.
+            </p>
+
             <SeedReplaceConfirmation
               open={confirmReplace}
               busy={busy}
@@ -325,7 +338,7 @@ export const UserSeed = ({
               onConfirm={() => submitImport()}
             />
 
-            {imported && !googleConnected && (
+            {(imported || projectReturn) && !googleConnected && (
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
                 <button
                   type="button"
@@ -333,7 +346,9 @@ export const UserSeed = ({
                   onClick={() => void onUseDevice()}
                   className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
                 >
-                  Go back to local
+                  {projectReturn === 'account'
+                    ? 'Go back to Google tierlist'
+                    : 'Go back to local'}
                 </button>
                 <button
                   type="button"
@@ -341,14 +356,16 @@ export const UserSeed = ({
                   onClick={() => setConfirmLocalReplace(true)}
                   className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
                 >
-                  Replace local with this
+                  {projectReturn === 'account'
+                    ? 'Replace my tierlist with this'
+                    : 'Replace local with this'}
                 </button>
               </div>
             )}
 
             <SeedReplaceConfirmation
               open={confirmLocalReplace}
-              target="device"
+              target={projectReturn === 'account' ? 'account' : 'device'}
               busy={busy}
               onOpenChange={setConfirmLocalReplace}
               onConfirm={async () => {

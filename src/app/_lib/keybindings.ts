@@ -15,6 +15,10 @@ export const keyboardBehaviors = {
   up: { codes: ['ArrowUp', 'KeyW'] },
   down: { codes: ['ArrowDown', 'KeyS'] },
   find: { codes: ['KeyF'], modifiers: { primary: true, alt: false } },
+  save: {
+    codes: ['KeyS'],
+    modifiers: { primary: true, alt: false, shift: false },
+  },
 } as const satisfies Record<string, KeyboardBehavior>;
 
 export type KeyboardBehaviorName = keyof typeof keyboardBehaviors;

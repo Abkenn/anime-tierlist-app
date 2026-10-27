@@ -93,6 +93,37 @@ export const useTierlistSync = (
     setState({ status: 'outdated', message: tierlistUpdateMessage });
   };
 
+  const saveNow = async () => {
+    const active = scope.current;
+    if (!active || paused || state.status === 'conflict') {
+      throw new Error(
+        'Finish connecting or resolve the conflict before sharing.',
+      );
+    }
+
+    await withTierlistSyncLock(async () => {
+      const latest = await storage.refresh();
+      if (!latest || scope.current !== active || latest.seed !== active.seed) {
+        throw new Error('Your tierlist changed. Reopen Save & Share.');
+      }
+      const result = await synchronizeTierlist({
+        local: latest,
+        account,
+        storage,
+        isCurrent: () => scope.current === active,
+      });
+      if (!result || scope.current !== active) {
+        throw new Error('Your tierlist changed. Reopen Save & Share.');
+      }
+      active.remote = result.remote;
+      if (result.status === 'conflict') {
+        setState({ status: 'conflict', conflict: result.remote });
+        throw new Error('Choose which tierlist to keep before sharing.');
+      }
+      setState({ status: 'saved' });
+    });
+  };
+
   const keepDeviceChanges = async () => {
     if (!local || state.status !== 'conflict') {
       return;
@@ -346,6 +377,7 @@ export const useTierlistSync = (
   return {
     ...state,
     retry,
+    saveNow,
     requireReload,
     keepDeviceChanges,
     acceptOnlineChanges,

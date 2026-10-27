@@ -19,6 +19,16 @@ model TierlistSession {
   @@index([expiresAt])
 }
 
+model TierlistShare {
+  id String @id
+  ownerId String
+  owner TierlistOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  fingerprint String
+  document Jsonb
+
+  @@unique([ownerId, fingerprint])
+}
+
 model TierlistRateLimit {
   id        String @id
   attempts  Int

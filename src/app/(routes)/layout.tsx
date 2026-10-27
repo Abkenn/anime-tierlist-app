@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { Suspense, ViewTransition } from 'react';
 import { OfflineStatus } from '@/app/_components/offline/offline-status';
+import { AppFrame } from '@/app/_components/shell/app-frame';
 
 import { HomeLink } from '@/app/_components/shell/home-link';
 import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     'A home for your favorite anime. Create your own anime rankings.',
 };
 
-const RootLayout = ({ children }: RootLayoutProps) => (
+const RootLayout = ({ children, preview }: RootLayoutProps) => (
   <html
     lang="en"
     suppressHydrationWarning
@@ -31,7 +32,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
   >
     <body className="flex h-dvh flex-col overflow-x-hidden overflow-y-auto lg:overflow-hidden">
       <ThemeProvider>
-        <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+        <AppFrame className="flex h-full min-h-0 flex-col bg-background text-foreground">
           <header className="flex w-full shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-6">
             <Suspense
               fallback={
@@ -58,7 +59,9 @@ const RootLayout = ({ children }: RootLayoutProps) => (
           <ViewTransition default="page-change" update="none">
             {children}
           </ViewTransition>
-        </div>
+
+          {preview}
+        </AppFrame>
 
         <Toaster />
       </ThemeProvider>

@@ -21,7 +21,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'eda1d7384f147b892a213e7ed7c98991ad1c95906f8eed0db797afd54d33a153'>;
+  StorageHashBase<'5bc0b4e495c64da653b42ec0d32a9c3f4a5aea1dc6fb5689571fb9083558df10'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -306,6 +306,12 @@ export type FieldOutputTypes = {
       readonly ownerId: CodecTypes['pg/text@1']['output'];
       readonly tokenHash: CodecTypes['pg/text@1']['output'];
     };
+    readonly TierlistShare: {
+      readonly document: CodecTypes['pg/jsonb@1']['output'];
+      readonly fingerprint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+    };
   };
 };
 export type FieldInputTypes = {
@@ -379,6 +385,12 @@ export type FieldInputTypes = {
       readonly expiresAt: CodecTypes['pg/int8@1']['input'];
       readonly ownerId: CodecTypes['pg/text@1']['input'];
       readonly tokenHash: CodecTypes['pg/text@1']['input'];
+    };
+    readonly TierlistShare: {
+      readonly document: CodecTypes['pg/jsonb@1']['input'];
+      readonly fingerprint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -454,6 +466,12 @@ export type StorageColumnTypes = {
       readonly ownerId: CodecTypes['pg/text@1']['output'];
       readonly tokenHash: CodecTypes['pg/text@1']['output'];
     };
+    readonly TierlistShare: {
+      readonly document: CodecTypes['pg/jsonb@1']['output'];
+      readonly fingerprint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+    };
   };
 };
 export type StorageColumnInputTypes = {
@@ -527,6 +545,12 @@ export type StorageColumnInputTypes = {
       readonly expiresAt: CodecTypes['pg/int8@1']['input'];
       readonly ownerId: CodecTypes['pg/text@1']['input'];
       readonly tokenHash: CodecTypes['pg/text@1']['input'];
+    };
+    readonly TierlistShare: {
+      readonly document: CodecTypes['pg/jsonb@1']['input'];
+      readonly fingerprint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -615,6 +639,14 @@ export namespace Models {
     owner: public_TierlistOwner;
     readonly [RelationKeys]?: 'owner';
   };
+  export type public_TierlistShare = {
+    document: CodecTypes['pg/jsonb@1']['output'];
+    fingerprint: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    ownerId: CodecTypes['pg/text@1']['output'];
+    owner: public_TierlistOwner;
+    readonly [RelationKeys]?: 'owner';
+  };
 }
 
 export declare const models: {
@@ -628,6 +660,7 @@ export declare const models: {
     TierlistOwner: Models.public_TierlistOwner;
     TierlistRateLimit: Models.public_TierlistRateLimit;
     TierlistSession: Models.public_TierlistSession;
+    TierlistShare: Models.public_TierlistShare;
   };
 };
 
@@ -1158,6 +1191,58 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly TierlistShare: {
+              columns: {
+                readonly document: {
+                  readonly dataType: 'pg/jsonb';
+                  readonly codecId: 'pg/jsonb@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly fingerprint: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly ownerId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['ownerId', 'fingerprint'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'TierlistShare_ownerId_idx_e2d0c1ef';
+                  readonly prefix: 'TierlistShare_ownerId_idx';
+                  readonly columns: readonly ['ownerId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TierlistShare';
+                    readonly columns: readonly ['ownerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TierlistOwner';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
           };
         };
       };
@@ -1201,6 +1286,10 @@ type ContractBase = Omit<
     readonly TierlistSession: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'TierlistSession';
+    };
+    readonly TierlistShare: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'TierlistShare';
     };
   };
   readonly domain: {
@@ -1663,6 +1752,50 @@ type ContractBase = Omit<
                 readonly expiresAt: { readonly column: 'expiresAt' };
                 readonly ownerId: { readonly column: 'ownerId' };
                 readonly tokenHash: { readonly column: 'tokenHash' };
+              };
+            };
+          };
+          readonly TierlistShare: {
+            readonly fields: {
+              readonly document: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
+              };
+              readonly fingerprint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly owner: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'TierlistOwner';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['ownerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'TierlistShare';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly document: { readonly column: 'document' };
+                readonly fingerprint: { readonly column: 'fingerprint' };
+                readonly id: { readonly column: 'id' };
+                readonly ownerId: { readonly column: 'ownerId' };
               };
             };
           };

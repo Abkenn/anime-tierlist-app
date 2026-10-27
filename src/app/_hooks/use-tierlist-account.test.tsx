@@ -5,6 +5,10 @@ import { Provider } from 'jotai';
 import type { PropsWithChildren } from 'react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import type { LocalTierlist } from '@/app/_lib/local-tierlist';
+import {
+  pendingProjectKey,
+  readProjectSession,
+} from '@/app/_lib/project-session';
 import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import {
   activateAccountTierlist,
@@ -22,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   refetch: vi.fn(),
   connect: vi.fn(),
   readAccount: vi.fn(),
+  replaceAccount: vi.fn(),
 }));
 
 vi.mock('@/app/_lib/auth-client', () => ({
@@ -33,12 +38,16 @@ vi.mock('@/app/_lib/auth-client', () => ({
 vi.mock('@/app/_services/google-auth.actions', () => ({
   readGoogleTierlist: mocks.readAccount,
 }));
+vi.mock('@/app/_services/tierlist-share.actions', () => ({
+  prepareShare: vi.fn(),
+  publishShare: vi.fn(),
+}));
 vi.mock('@/app/_services/tierlist.actions', () => ({
   connectTierlist: mocks.connect,
   syncTierlist: vi.fn(),
   createShareSeed: vi.fn(),
   disconnectTierlist: vi.fn(),
-  replaceAccountFromSeed: vi.fn(),
+  replaceAccountFromSeed: mocks.replaceAccount,
 }));
 
 const device: LocalTierlist = {
@@ -72,10 +81,107 @@ const wrapper = ({ children }: PropsWithChildren) => (
 beforeEach(async () => {
   await clear(database);
   localStorage.clear();
+  sessionStorage.clear();
   vi.clearAllMocks();
   mocks.session = { data: null, isPending: false, error: null };
   mocks.connect.mockResolvedValue({ ok: true, value: remote });
   await loadLocalTierlist(device);
+});
+
+it('opens a dropped project temporarily, retains it on refresh, and returns to Google without signing out', async () => {
+  const projectSeed = 'c'.repeat(64);
+  const shared = {
+    ...remote,
+    ownerId: '27a123b1-0b05-4702-a749-965faee5a5d4',
+    document: {
+      ...remote.document,
+      items: [
+        { id: 'project', label: 'Project copy', rank: 'Watching' as const },
+      ],
+    },
+  };
+  await activateAccountTierlist(accountKey, remote);
+  await activateImportedTierlist(projectSeed, shared, true);
+  sessionStorage.setItem(pendingProjectKey, projectSeed);
+  mocks.session.data = { user: { id: 'google-user' } };
+  mocks.readAccount.mockResolvedValue({
+    profileKey: accountKey,
+    displayName: 'Account',
+    remote,
+  });
+  const first = renderHook(() => useTierlistAccount(), { wrapper });
+  await waitFor(() =>
+    expect(first.result.current.storage.seed).toBe(projectSeed),
+  );
+  expect(readProjectSession()).toEqual({
+    seed: projectSeed,
+    returnSeed: accountKey,
+    returnAccount: true,
+  });
+  expect((await loadLocalTierlist(device)).seed).toBe(accountKey);
+  first.unmount();
+  const second = renderHook(() => useTierlistAccount(), { wrapper });
+  await waitFor(() =>
+    expect(second.result.current.storage.seed).toBe(projectSeed),
+  );
+  await act(async () => {
+    await second.result.current.actions.restoreDevice();
+  });
+  await waitFor(() =>
+    expect(second.result.current.storage.seed).toBe(accountKey),
+  );
+  expect(second.result.current.storage.snapshot?.items).toEqual(
+    remote.document.items,
+  );
+  expect(readProjectSession()).toBeNull();
+  expect(mocks.session.data?.user.id).toBe('google-user');
+});
+
+it('replaces the Google document from a temporary project only through the explicit replace action', async () => {
+  const projectSeed = 'c'.repeat(64);
+  const shared = {
+    ...remote,
+    ownerId: '27a123b1-0b05-4702-a749-965faee5a5d4',
+    document: {
+      ...remote.document,
+      items: [
+        { id: 'project', label: 'Project copy', rank: 'Watching' as const },
+      ],
+    },
+  };
+  await activateAccountTierlist(accountKey, remote);
+  await activateImportedTierlist(projectSeed, shared, true);
+  sessionStorage.setItem(pendingProjectKey, projectSeed);
+  mocks.session.data = { user: { id: 'google-user' } };
+  mocks.readAccount.mockResolvedValue({
+    profileKey: accountKey,
+    displayName: 'Account',
+    remote,
+  });
+  mocks.replaceAccount.mockResolvedValue({
+    ok: true,
+    value: { ...remote, revision: 3, document: shared.document },
+  });
+  const { result } = renderHook(() => useTierlistAccount(), { wrapper });
+  await waitFor(() => expect(result.current.storage.seed).toBe(projectSeed));
+  await waitFor(() => {
+    expect(result.current.project?.seed).toBe(projectSeed);
+    expect(result.current.busy).toBe(false);
+  });
+  expect(mocks.replaceAccount).not.toHaveBeenCalled();
+  await act(async () => {
+    expect(await result.current.actions.replaceDevice()).toBe(true);
+  });
+  await waitFor(() => expect(result.current.storage.seed).toBe(accountKey));
+  expect(mocks.replaceAccount).toHaveBeenCalledOnce();
+  expect(result.current.storage.snapshot).toMatchObject({
+    accountOwnerId: remote.ownerId,
+    items: shared.document.items,
+    sync: { ownerId: remote.ownerId, serverRevision: 3 },
+  });
+  expect((await loadLocalTierlist(device)).seed).toBe(accountKey);
+  expect(readProjectSession()).toBeNull();
+  expect(mocks.session.data?.user.id).toBe('google-user');
 });
 
 it('restores the device list after confirmed sign-out without syncing the account draft', async () => {
@@ -107,6 +213,23 @@ it('keeps an offline account draft without syncing it and restores the device wh
   rerender();
 
   await waitFor(() => expect(result.current.storage.seed).toBe(device.seed));
+});
+
+it('keeps an explicitly chosen local copy open while preserving Google sign-in', async () => {
+  window.history.replaceState(null, '', '/?profile=local');
+  mocks.session.data = { user: { id: 'google-user' } };
+  try {
+    const { result } = renderHook(() => useTierlistAccount(), { wrapper });
+    await waitFor(() =>
+      expect(result.current.status.verifyingIdentity).toBe(false),
+    );
+    expect(result.current.storage.seed).toBe(device.seed);
+    expect(result.current.googleConnected).toBe(false);
+    expect(mocks.readAccount).not.toHaveBeenCalled();
+    expect(mocks.session.data?.user.id).toBe('google-user');
+  } finally {
+    window.history.replaceState(null, '', '/');
+  }
 });
 
 it('returns an old unmarked account profile to the device list after authorization is rejected', async () => {

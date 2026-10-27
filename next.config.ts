@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
     },
   ],
   experimental: {
+    exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === '1',
     serverActions: { bodySizeLimit: '4mb' },
     turbopackRustReactCompiler: true,
     turbopackPluginRuntimeStrategy: 'workerThreads',

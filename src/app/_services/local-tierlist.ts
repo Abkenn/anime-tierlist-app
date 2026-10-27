@@ -18,6 +18,7 @@ import {
 import {
   getTierlistDocument,
   type RemoteTierlist,
+  type TierlistDocument,
 } from '@/app/_lib/tierlist-sync';
 import { notifyTierlistTabs } from '@/app/_lib/tierlist-tabs';
 
@@ -137,6 +138,7 @@ export const saveLocalTierlist = async (
 export const activateImportedTierlist = async (
   seed: string,
   remote: RemoteTierlist,
+  temporary = false,
 ) => {
   const target = await profileKey(seed);
   const existing = await get<unknown>(target, storage);
@@ -156,7 +158,7 @@ export const activateImportedTierlist = async (
   await setMany(
     [
       [target, snapshot],
-      [activeKey, seed],
+      ...(temporary ? [] : [[activeKey, seed] as [string, string]]),
     ],
     storage,
   );
@@ -222,6 +224,43 @@ export const replaceDeviceTierlist = async (input: ReplaceDeviceInput) => {
   notifyTierlistTabs();
 
   return snapshot;
+};
+
+export const adoptPublicTierlist = async (
+  document: TierlistDocument,
+  expected: { seed: string; revision: number },
+) => {
+  await storage('readwrite', async (store) => {
+    const complete = promisifyRequest(store.transaction);
+    const copy = async () => {
+      const device = localTierlistSchema.parse(
+        await promisifyRequest(store.get(key)),
+      );
+      if (
+        device.seed !== expected.seed ||
+        device.revision !== expected.revision ||
+        device.accountOwnerId
+      ) {
+        throw new LocalTierlistChangedError();
+      }
+      const snapshot = localTierlistSchema.parse({
+        ...device,
+        ...document,
+        revision: device.revision + 1,
+        updatedAt: Date.now(),
+      });
+      try {
+        store.put(device, `before-replace:${device.seed}`);
+        store.put(snapshot, key);
+        store.put(device.seed, activeKey);
+      } catch (error) {
+        store.transaction.abort();
+        throw error;
+      }
+    };
+    await Promise.all([copy(), complete]);
+  });
+  notifyTierlistTabs();
 };
 
 export const activateAccountTierlist = async (

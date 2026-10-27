@@ -15,6 +15,7 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
   const controls = useAnimationControls();
   const reducedMotion = useReducedMotion();
   const elapsed = useRef(0);
+  const timeout = item.timeout ?? 6000;
   const title = typeof item.title === 'string' ? item.title : '';
   const action =
     typeof item.actionProps?.children === 'string'
@@ -29,12 +30,12 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
     }
 
     const started = performance.now();
-    const remaining = Math.max(0, 6000 - elapsed.current);
+    const remaining = Math.max(0, timeout - elapsed.current);
     controls.set({ opacity: Math.min(1, remaining / 2000) });
     void controls.start({
       opacity: 0,
       transition: {
-        delay: Math.max(0, 4000 - elapsed.current) / 1000,
+        delay: Math.max(0, timeout - 2000 - elapsed.current) / 1000,
         duration: Math.min(2000, remaining) / 1000,
         ease: 'linear',
       },
@@ -44,7 +45,7 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
       controls.stop();
       elapsed.current += performance.now() - started;
     };
-  }, [paused, reducedMotion, controls]);
+  }, [paused, reducedMotion, controls, timeout]);
 
   return (
     <Toast.Root

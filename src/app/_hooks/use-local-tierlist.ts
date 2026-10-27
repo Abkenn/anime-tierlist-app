@@ -62,8 +62,19 @@ export const useLocalTierlist = () => {
     setProfileSeed(seed);
   };
 
-  const importProfile = (seed: string, remote: RemoteTierlist) =>
-    changeProfile(seed, () => activateImportedTierlist(seed, remote));
+  const importProfile = (
+    seed: string,
+    remote: RemoteTierlist,
+    temporary = false,
+  ) =>
+    changeProfile(seed, () =>
+      activateImportedTierlist(seed, remote, temporary),
+    );
+
+  const selectProfile = (seed: string) =>
+    changeProfile(seed, async () => {
+      await readLocalTierlist(seed);
+    });
 
   const importAccountProfile = (profileKey: string, remote: RemoteTierlist) =>
     changeProfile(profileKey, () =>
@@ -122,10 +133,8 @@ export const useLocalTierlist = () => {
           return;
         }
 
-        if (profileSeed && current.seed !== profileSeed) {
-          throw new Error(
-            'The active tierlist changed in another tab. Reload to continue.',
-          );
+        if (profileSeed) {
+          current = await readLocalTierlist(profileSeed);
         }
 
         const device = await getDeviceTierlist();
@@ -343,6 +352,7 @@ export const useLocalTierlist = () => {
     snapshot,
     imported: Boolean(snapshot && snapshot.seed !== deviceSeed),
     importProfile,
+    selectProfile,
     importAccountProfile,
     restoreDeviceProfile,
     replaceDeviceProfile,

@@ -19,6 +19,7 @@ import {
   activateAccountTierlist,
   activateDeviceTierlist,
   activateImportedTierlist,
+  adoptPublicTierlist,
   getDeviceTierlist,
   loadLocalTierlist,
   readLocalTierlist,
@@ -43,6 +44,26 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('copies a public snapshot into the local identity and refuses a stale replacement', async () => {
+    await loadLocalTierlist(initial);
+    const document = {
+      ...initial,
+      items: [{ id: 'shared', label: 'Shared', rank: 'S+' as const }],
+      imageMode: 'cover' as const,
+    };
+    await adoptPublicTierlist(document, initial);
+    const saved = await loadLocalTierlist(initial);
+    expect(saved).toMatchObject({
+      seed: initial.seed,
+      revision: 1,
+      items: document.items,
+      imageMode: 'cover',
+    });
+    await expect(
+      adoptPublicTierlist({ ...document, items: [] }, initial),
+    ).rejects.toBeInstanceOf(tierlistPersistence.LocalTierlistChangedError);
+    expect(await getDeviceTierlist()).toEqual(saved);
+  });
   it('adopts an imported copy as the default without adopting its identity or changing its source', async () => {
     const device = {
       ...initial,

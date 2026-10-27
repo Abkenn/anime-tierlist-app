@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { SaveShare } from '@/app/_components/sharing/save-share';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useTierlistAccount } from '@/app/_hooks/use-tierlist-account';
@@ -29,12 +30,14 @@ export const LocalTierlist = ({
     accountOpen,
     setAccountOpen,
     googleConnected,
+    project,
     accountUnavailable,
     status,
     actions,
   } = useTierlistAccount(initialAccount);
   const statusAnchor = useRef<HTMLButtonElement>(null);
   const [accountHandle] = useState(() => Popover.createHandle());
+  const projectTarget = project?.returnAccount ? 'account' : 'device';
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -94,31 +97,42 @@ export const LocalTierlist = ({
             />
           </p>
 
-          <UserSeed
-            seed={
-              googleConnected || storage.snapshot?.accountOwnerId
-                ? ''
-                : storage.seed
-            }
-            open={accountOpen}
-            handle={accountHandle}
-            statusAnchor={statusAnchor}
-            onOpenChange={setAccountOpen}
-            imported={storage.imported}
-            busy={status.controlsBusy}
-            error={status.visibleError}
-            onImport={actions.importSeed}
-            onUseDevice={actions.restoreDevice}
-            onReplaceDevice={actions.replaceDevice}
-            resolvingIdentity={status.verifyingIdentity}
-            googleConnected={
-              googleConnected || Boolean(status.restoringAccount)
-            }
-            canSignIn={status.backedUp || sync.status === 'unauthorized'}
-            onGoogleSignIn={actions.signIn}
-            onGoogleSignOut={actions.restoreDevice}
-            onShare={actions.shareSeed}
-          />
+          <div className="flex items-center gap-4">
+            <SaveShare
+              key={storage.seed}
+              document={storage.snapshot}
+              disabled={status.controlsBusy}
+              onPrepare={actions.prepareSharing}
+              onPublish={actions.publishSharing}
+            />
+
+            <UserSeed
+              seed={
+                googleConnected || storage.snapshot?.accountOwnerId
+                  ? ''
+                  : storage.seed
+              }
+              open={accountOpen}
+              handle={accountHandle}
+              statusAnchor={statusAnchor}
+              onOpenChange={setAccountOpen}
+              imported={storage.imported}
+              projectReturn={project ? projectTarget : undefined}
+              busy={status.controlsBusy}
+              error={status.visibleError}
+              onImport={actions.importSeed}
+              onUseDevice={actions.restoreDevice}
+              onReplaceDevice={actions.replaceDevice}
+              resolvingIdentity={status.verifyingIdentity}
+              googleConnected={
+                googleConnected || Boolean(status.restoringAccount)
+              }
+              canSignIn={status.backedUp || sync.status === 'unauthorized'}
+              onGoogleSignIn={actions.signIn}
+              onGoogleSignOut={actions.restoreDevice}
+              onShare={actions.shareSeed}
+            />
+          </div>
         </div>
 
         <TierlistSyncFeedback
