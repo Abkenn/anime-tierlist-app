@@ -12,6 +12,17 @@ export type TierRow = { rank: TierRank; x: number; y: number; size: number };
 export type TierDropSlot = { id: string; rank: TierRank; index: number };
 const itemGapRem = tierItemGap;
 
+export const readTierRowTranslation = (row: HTMLElement) => {
+  const transform = getComputedStyle(row).transform;
+  if (!transform || transform === 'none') {
+    return { x: 0, y: 0 };
+  }
+
+  const matrix = new DOMMatrixReadOnly(transform);
+
+  return { x: matrix.m41, y: matrix.m42 };
+};
+
 export const getVisibleRank = (item: TierItemData, ranks: TierRank[]) =>
   ranks.includes(item.rank) ? item.rank : ranks[0];
 
@@ -27,11 +38,12 @@ export const measureTierRows = (
   ).map((row) => {
     const cells = row.lastElementChild?.getBoundingClientRect();
     const rect = row.getBoundingClientRect();
+    const translation = readTierRowTranslation(row);
 
     return {
       rank: row.dataset.tierRank as TierRank,
-      x: (cells?.left ?? rect.left) - bounds.left,
-      y: (cells?.top ?? rect.top) - bounds.top,
+      x: (cells?.left ?? rect.left) - bounds.left - translation.x,
+      y: (cells?.top ?? rect.top) - bounds.top - translation.y,
       size: wrapItems
         ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect()
             .height ?? rem * 4.125)

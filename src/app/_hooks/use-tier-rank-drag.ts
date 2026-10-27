@@ -16,6 +16,7 @@ import {
 import { moveRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
+import { readTierRowTranslation } from '@/app/_lib/tier-board-geometry';
 import {
   getRankOffset,
   projectRankDrag,
@@ -110,9 +111,13 @@ export const useTierRankDrag = (rank: TierRank) => {
 
     if (commit) {
       const original = current.rows.map((row) => row.rank).join();
-      setRanks((latest) =>
-        latest.join() === original ? current.order : latest,
-      );
+      if (
+        store.get(enabledTierRanksAtom).join() === original &&
+        current.order.join() !== original
+      ) {
+        setRanks(current.order);
+        return;
+      }
     }
     setDragged(null);
   };
@@ -186,10 +191,11 @@ export const useTierRankDrag = (rank: TierRank) => {
           ?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? []),
       ].map((row) => {
         const bounds = row.getBoundingClientRect();
+        const translation = readTierRowTranslation(row);
 
         return {
           rank: row.dataset.tierRank as TierRank,
-          top: bounds.top,
+          top: bounds.top - translation.y,
           height: bounds.height,
         };
       });
@@ -214,7 +220,7 @@ export const useTierRankDrag = (rank: TierRank) => {
       point.current = info.point;
       project();
     },
-    onPanEnd: () => void settle(true),
+    onPanEnd: (event) => void settle(event.type !== 'pointercancel'),
     onPointerCancel: () => void settle(false),
     onKeyDown: (event) => {
       const offset =

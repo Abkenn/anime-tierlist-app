@@ -2,12 +2,11 @@
 
 import { useAtomValue } from 'jotai';
 import { ImageOff } from 'lucide-react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { searchDestinationAtom } from '@/app/_atoms/tierlist/search.atoms';
-import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useSearchItemDrag } from '@/app/_hooks/use-search-item-drag';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
@@ -16,29 +15,27 @@ import type { TierImage } from '@/app/_types/tierlist.types';
 type AnimeSearchResultProps = {
   result: AnimeSearchResult;
   onLoaded: (id: string, image: TierImage | null) => void;
+  reveal?: boolean;
 };
 
 export const AnimeSearchResultCard = ({
   result,
   onLoaded,
+  reveal = true,
 }: AnimeSearchResultProps) => {
   type ImageState =
     | { status: 'loading' }
     | { status: 'ready'; image: TierImage }
     | { status: 'error' };
-  const [state, setState] = useState<ImageState>(
-    result.image
-      ? { status: 'ready', image: result.image }
-      : { status: 'loading' },
-  );
-  const reducedMotion = useReducedMotion();
+  const [state, setState] = useState<ImageState>({ status: 'loading' });
   const destination = useAtomValue(searchDestinationAtom);
   const image = state.status === 'ready' ? state.image : undefined;
+  const dimensions = image ?? result.image;
   const drag = useSearchItemDrag({
     id: result.id,
     label: result.title,
     rank: destination.rank,
-    image,
+    image: reveal ? image : undefined,
   });
 
   const reportFailure = useEffectEvent(() => onLoaded(result.id, null));
@@ -66,39 +63,25 @@ export const AnimeSearchResultCard = ({
   return (
     <>
       <div
-        className="relative max-w-full"
+        className={`relative max-w-full${reveal ? '' : ' invisible'}`}
         style={{
-          width: image ? `${(image.width / image.height) * 6}rem` : '100%',
+          width: dimensions
+            ? `${(dimensions.width / dimensions.height) * 6}rem`
+            : '4rem',
         }}
       >
         <motion.button
           type="button"
-          disabled={!image}
+          disabled={!image || !reveal}
           title={`${result.title} · Drag to a rank or click to add to ${destination.label}`}
-          className="relative block w-full touch-none cursor-grab overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
-          drag={Boolean(image)}
+          className="relative flex h-24 w-full touch-none cursor-grab items-center justify-center overflow-hidden text-xs transition-opacity hover:opacity-80 active:cursor-grabbing disabled:cursor-default disabled:opacity-60"
+          drag={Boolean(image && reveal)}
           dragSnapToOrigin
           dragMomentum={false}
           dragElastic={0}
           {...drag.triggerProps}
           animate={{ opacity: drag.dragging ? 0 : 1 }}
         >
-          {state.status === 'loading' && (
-            <motion.span
-              aria-hidden="true"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: reducedMotion ? 0.7 : [0.5, 0.85, 0.5] }}
-              transition={{
-                duration: 1.4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-              className="absolute inset-0 flex min-h-16 items-center justify-center bg-muted text-[0.625rem] text-muted-foreground"
-            >
-              <TerminalText text="Loading..." />
-            </motion.span>
-          )}
-
           {state.status === 'error' ? (
             <span
               role="img"
@@ -116,9 +99,9 @@ export const AnimeSearchResultCard = ({
               src={result.imageUrl}
               crossOrigin={posterCrossOrigin(result.imageUrl)}
               alt={result.title}
-              width={image?.width ?? 160}
-              height={image?.height ?? 240}
-              className="mx-auto block size-auto max-h-24 max-w-full"
+              width={dimensions?.width ?? 160}
+              height={dimensions?.height ?? 240}
+              className={`mx-auto block size-auto max-h-24 max-w-full${!image || !reveal ? ' invisible' : ''}`}
               onLoad={(event) => {
                 const element = event.currentTarget;
                 const loaded = {

@@ -169,6 +169,77 @@ export const KeyboardOrdering: Story = {
   },
 };
 
+export const ReorderPopulatedRows: Story = {
+  args: {
+    initialItems: aspectRatioTierItems.slice(0, 6).map((item, index) => ({
+      ...item,
+      rank: index < 3 ? 'S+' : 'S',
+    })),
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const source = canvas.getByRole('listitem', { name: 'S+ tier, 3 items' });
+    const target = canvas.getByRole('listitem', { name: 'S tier, 3 items' });
+    const handle = within(source).getByRole('button', { name: 'Move S+' });
+    const start = handle.getBoundingClientRect();
+    const destination = target.getBoundingClientRect();
+    const clientX = start.left + start.width / 2;
+
+    const pointer = {
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      button: 0,
+      buttons: 1,
+      clientX,
+    };
+    fireEvent.pointerDown(handle, {
+      ...pointer,
+      clientY: start.top + start.height / 2,
+    });
+    fireEvent.pointerMove(window, {
+      ...pointer,
+      clientY: destination.bottom - 8,
+    });
+    await waitFor(() =>
+      expect(source.getBoundingClientRect().top).toBeGreaterThan(
+        destination.top - 20,
+      ),
+    );
+    fireEvent.pointerUp(window, {
+      ...pointer,
+      buttons: 0,
+      clientY: destination.bottom - 8,
+    });
+    await waitFor(() => {
+      expect(canvas.getAllByRole('listitem')[0]).toHaveAttribute(
+        'data-tier-rank',
+        'S',
+      );
+      const rows = [
+        ...canvasElement.querySelectorAll<HTMLElement>('[data-tier-rank]'),
+      ];
+      const posters = [
+        ...canvasElement.querySelectorAll<HTMLElement>('[data-tier-item-id]'),
+      ];
+      expect(posters).toHaveLength(6);
+      posters.forEach((poster) => {
+        const rank = poster.getAttribute('aria-label')?.split(' in ').at(-1);
+        const cells = rows.find(
+          (row) => row.dataset.tierRank === rank,
+        )?.lastElementChild;
+        expect(cells).toBeDefined();
+        expect(
+          Math.abs(
+            poster.getBoundingClientRect().top -
+              (cells?.getBoundingClientRect().top ?? 0) -
+              2,
+          ),
+        ).toBeLessThan(1);
+      });
+    });
+  },
+};
+
 export const GamerKeys: Story = {
   play: async ({ canvas, userEvent }) => {
     const item = await canvas.findByRole('button', { name: 'Item 1 in S+' });

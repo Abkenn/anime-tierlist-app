@@ -1,3 +1,4 @@
+import { useAtomValue } from 'jotai';
 import {
   cancelFrame,
   frame,
@@ -11,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { draggedRankAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
 
@@ -45,6 +47,7 @@ export const useTierItemDrag = ({
   onCancel,
 }: TierItemDragInput) => {
   const controls = useAnimationControls();
+  const rowDragging = useAtomValue(draggedRankAtom) !== null;
   const reducedMotion = useReducedMotion();
   const session = useRef<DragSession | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -188,6 +191,17 @@ export const useTierItemDrag = ({
       return;
     }
 
+    if (rowDragging) {
+      controls.stop();
+      controls.set({
+        x: position.x,
+        y: position.y,
+        width: position.width,
+        height: position.height,
+      });
+      return;
+    }
+
     void controls.start({
       x: position.x,
       y: position.y,
@@ -204,6 +218,7 @@ export const useTierItemDrag = ({
     position.width,
     position.height,
     reducedMotion,
+    rowDragging,
   ]);
 
   useLayoutEffect(() => () => session.current?.stopFrame?.(), []);

@@ -17,6 +17,7 @@ import {
 } from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
+import { Skeleton } from '@/app/_components/ui/skeleton';
 import { useAnimeSearch } from '@/app/_hooks/use-anime-search';
 import { useSearchDisplacement } from '@/app/_hooks/use-search-displacement';
 import { useSearchImageRecovery } from '@/app/_hooks/use-search-image-recovery';
@@ -120,9 +121,11 @@ export const AnimeSearchResults = ({
       ? [{ result, index }]
       : [],
   );
-  const loadingImages = rendered.some(
-    ({ result }) => !result.image && !Object.hasOwn(dimensions, result.id),
-  );
+  const pendingImages = rendered.filter(
+    ({ result }) => !Object.hasOwn(dimensions, result.id),
+  ).length;
+  const loadingImages = pendingImages > 0;
+  const mostlyLoading = loadingImages && pendingImages >= rendered.length / 2;
   const failedImages = rendered.filter(
     ({ result }) => dimensions[result.id] === null,
   );
@@ -292,9 +295,13 @@ export const AnimeSearchResults = ({
                       }
                 }
               >
+                {mostlyLoading && (
+                  <Skeleton className="absolute h-24 w-16 rounded-none" />
+                )}
                 <AnimeSearchResultCard
                   key={`${recoveryScope}:${result.id}:${result.imageUrl}:${imageAttempts[`${recoveryScope}:${result.id}`] ?? 0}`}
                   result={result}
+                  reveal={!mostlyLoading}
                   onLoaded={loaded}
                 />
               </motion.div>

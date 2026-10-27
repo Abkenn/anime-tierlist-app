@@ -1,9 +1,11 @@
 'use client';
 
 import { cn } from 'cn';
+import { useSetAtom } from 'jotai';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { markPosterSettledAtom } from '@/app/_atoms/tierlist/poster-loading.atoms';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
 import type {
@@ -31,6 +33,18 @@ export const TierItemImage = ({
   priority = false,
 }: TierItemImageProps) => {
   const [failedSource, setFailedSource] = useState<string | null>(null);
+  const [loadedSource, setLoadedSource] = useState<string | null>(null);
+  const markSettled = useSetAtom(markPosterSettledAtom);
+  const loading = loadedSource !== image.src;
+
+  const loaded = () => {
+    setLoadedSource(image.src);
+    markSettled(image.src);
+  };
+  const failed = () => {
+    setFailedSource(image.src);
+    markSettled(image.src);
+  };
 
   if (failedSource === image.src) {
     return <span className="px-1 text-xs">{image.alt}</span>;
@@ -40,7 +54,10 @@ export const TierItemImage = ({
     return (
       <svg
         viewBox={getTrimViewBox(image, trim)}
-        className="pointer-events-none size-full overflow-hidden object-contain select-none"
+        className={cn(
+          'pointer-events-none size-full overflow-hidden object-contain select-none',
+          loading && 'invisible',
+        )}
         role="img"
         aria-label={image.alt}
       >
@@ -52,7 +69,8 @@ export const TierItemImage = ({
           width={image.width}
           height={image.height}
           {...(priority ? { fetchPriority: 'high' } : {})}
-          onError={() => setFailedSource(image.src)}
+          onError={failed}
+          onLoad={loaded}
         />
       </svg>
     );
@@ -72,13 +90,15 @@ export const TierItemImage = ({
       className={cn(
         'pointer-events-none select-none',
         mode === 'cover' ? 'object-cover' : 'object-contain',
+        loading && 'invisible',
       )}
       animate={{
         objectPosition:
           mode === 'cover' ? `${crop.x * 100}% ${crop.y * 100}%` : '50% 50%',
       }}
       transition={{ duration: 0 }}
-      onError={() => setFailedSource(image.src)}
+      onError={failed}
+      onLoad={loaded}
     />
   );
 };

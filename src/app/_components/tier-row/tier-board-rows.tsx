@@ -1,8 +1,12 @@
 'use client';
 
-import { useAtomValue } from 'jotai';
-import { useLayoutEffect, ViewTransition } from 'react';
-import { rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { cancelFrame, frame } from 'motion/react';
+import { useLayoutEffect, useRef, ViewTransition } from 'react';
+import {
+  draggedRankAtom,
+  rankOffsetsAtom,
+} from '@/app/_atoms/tierlist/layout.atoms';
 import {
   imageModeAtom,
   posterSizeAtom,
@@ -30,7 +34,10 @@ export const TierBoardRows = ({
   const mode = useAtomValue(posterSizeAtom);
   const imageMode = useAtomValue(imageModeAtom);
   const offsets = useAtomValue(rankOffsetsAtom);
+  const draggedRank = useAtomValue(draggedRankAtom);
+  const setDraggedRank = useSetAtom(draggedRankAtom);
   const rankKey = ranks.join();
+  const previousOrder = useRef(rankKey);
   const size = getPosterSize({
     mode,
     imageMode,
@@ -38,12 +45,22 @@ export const TierBoardRows = ({
   });
 
   useLayoutEffect(() => {
-    if (rankKey) {
+    const reordered = previousOrder.current !== rankKey;
+    previousOrder.current = rankKey;
+    if (rankKey && (reordered || draggedRank === null)) {
       offsets.forEach((offset) => {
         offset.jump(0);
       });
     }
-  }, [rankKey, offsets]);
+
+    if (reordered && draggedRank !== null) {
+      // Keep poster positions instant until the new row layout has rendered.
+      const finish = () => setDraggedRank(null);
+      frame.postRender(finish);
+
+      return () => cancelFrame(finish);
+    }
+  }, [rankKey, draggedRank, offsets, setDraggedRank]);
 
   return (
     <ViewTransition default="none" enter="preview-change" exit="preview-change">

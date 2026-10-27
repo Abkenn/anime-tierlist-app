@@ -15,8 +15,10 @@ import {
   draggedRankAtom,
   rankOffsetsAtom,
 } from '@/app/_atoms/tierlist/layout.atoms';
+import { settledPosterSourcesAtom } from '@/app/_atoms/tierlist/poster-loading.atoms';
 import { TierItem } from '@/app/_components/tier-item/tier-item';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
+import { Skeleton } from '@/app/_components/ui/skeleton';
 import { useTierItemActions } from '@/app/_hooks/use-tier-item-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
@@ -53,6 +55,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const offsets = useAtomValue(rankOffsetsAtom);
   const draggedRank = useAtomValue(draggedRankAtom);
+  const settledSources = useAtomValue(settledPosterSourcesAtom);
   const geometry = new Map(
     interaction.posterLayout.map((poster) => [poster.id, poster]),
   );
@@ -71,6 +74,23 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       poster.y + poster.height >= window.top
     );
   });
+  const visiblePosters = interaction.items.filter((item) => {
+    const poster = geometry.get(item.id);
+
+    return (
+      item.image &&
+      poster &&
+      poster.x + poster.width >= window.left &&
+      poster.x <= window.right &&
+      poster.y + poster.height >= window.top &&
+      poster.y <= window.bottom
+    );
+  });
+  const pendingPosters = visiblePosters.filter(
+    (item) => item.image && !settledSources.has(item.image.src),
+  ).length;
+  const batchLoading =
+    pendingPosters > 0 && pendingPosters >= visiblePosters.length / 2;
 
   return (
     <TierItemActionsContext value={actions}>
@@ -79,7 +99,8 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       </p>
 
       <div
-        inert={draggedRank !== null}
+        inert={draggedRank !== null || batchLoading}
+        aria-busy={batchLoading}
         className="pointer-events-none absolute inset-0"
         onFocusCapture={(event) =>
           setFocusedId(
@@ -144,38 +165,51 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                 style={{
                   y: getRankOffset(offsets, rank),
                   zIndex:
-                    draggedRank === rank || interaction.draggingId === item.id
+                    draggedRank === rank ||
+                    interaction.draggingId === item.id ||
+                    editingItemId === item.id
                       ? 40
-                      : undefined,
+                      : 10,
                 }}
               >
-                <TierItem
-                  key={item.id}
-                  id={item.id}
-                  label={getTierItemLabel(item)}
-                  dimmed={
-                    Boolean(query.trim()) && !matchesTierItemLabel(item, query)
-                  }
-                  rank={rank}
-                  editing={editingItemId === item.id}
-                  image={item.image}
-                  priority={item.id === priorityItem?.id}
-                  title={item.title}
-                  crop={item.crop}
-                  trim={item.trim}
-                  sizingControl={
-                    <TierItemSizing
-                      image={
-                        item.image && getTrimmedImage(item.image, item.trim)
-                      }
-                      expansion={item.rowHeightExpansion ?? 1}
-                      onChange={(rowHeightExpansion) =>
-                        interaction.updateItem(item.id, { rowHeightExpansion })
-                      }
-                    />
-                  }
-                  position={position}
-                />
+                {batchLoading && item.image && (
+                  <Skeleton
+                    className="pointer-events-none absolute left-0 top-0 rounded-none"
+                    style={position}
+                  />
+                )}
+                <div style={{ opacity: batchLoading ? 0 : 1 }}>
+                  <TierItem
+                    key={item.id}
+                    id={item.id}
+                    label={getTierItemLabel(item)}
+                    dimmed={
+                      Boolean(query.trim()) &&
+                      !matchesTierItemLabel(item, query)
+                    }
+                    rank={rank}
+                    editing={editingItemId === item.id}
+                    image={item.image}
+                    priority={item.id === priorityItem?.id}
+                    title={item.title}
+                    crop={item.crop}
+                    trim={item.trim}
+                    sizingControl={
+                      <TierItemSizing
+                        image={
+                          item.image && getTrimmedImage(item.image, item.trim)
+                        }
+                        expansion={item.rowHeightExpansion ?? 1}
+                        onChange={(rowHeightExpansion) =>
+                          interaction.updateItem(item.id, {
+                            rowHeightExpansion,
+                          })
+                        }
+                      />
+                    }
+                    position={position}
+                  />
+                </div>
               </motion.div>
             ) : null;
           })}
