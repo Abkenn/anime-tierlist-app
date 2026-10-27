@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table.TierlistPng",
+    "label": "Create table \"TierlistPng\"",
+    "summary": "Creates table \"TierlistPng\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TierlistPng"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TierlistPng\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistPng\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TierlistPng\"",
+        "sql": "CREATE TABLE \"public\".\"TierlistPng\" (\n  \"fingerprint\" text,\n  \"lastUsedAt\" int8 NOT NULL,\n  \"leaseToken\" text,\n  \"leaseUntil\" int8,\n  \"shareId\" text NOT NULL,\n  \"url\" text,\n  PRIMARY KEY (\"shareId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TierlistPng\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistPng\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TierlistPng.TierlistPng_lastUsedAt_idx_fee97fdf",
+    "label": "Create index \"TierlistPng_lastUsedAt_idx_fee97fdf\" on \"TierlistPng\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TierlistPng_lastUsedAt_idx_fee97fdf",
+        "table": "TierlistPng"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TierlistPng_lastUsedAt_idx_fee97fdf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistPng_lastUsedAt_idx_fee97fdf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TierlistPng_lastUsedAt_idx_fee97fdf\"",
+        "sql": "CREATE INDEX \"TierlistPng_lastUsedAt_idx_fee97fdf\" ON \"public\".\"TierlistPng\" (\"lastUsedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TierlistPng_lastUsedAt_idx_fee97fdf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TierlistPng_lastUsedAt_idx_fee97fdf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.TierlistPng.TierlistPng_shareId_fkey",
+    "label": "Add foreign key \"TierlistPng_shareId_fkey\" on \"TierlistPng\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "TierlistPng_shareId_fkey",
+        "table": "TierlistPng"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"TierlistPng_shareId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistPng_shareId_fkey",
+          "public",
+          "\"public\".\"TierlistPng\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"TierlistPng_shareId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"TierlistPng\"\nADD CONSTRAINT \"TierlistPng_shareId_fkey\"\nFOREIGN KEY (\"shareId\")\nREFERENCES \"public\".\"TierlistShare\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"TierlistPng_shareId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TierlistPng_shareId_fkey",
+          "public",
+          "\"public\".\"TierlistPng\""
+        ]
+      }
+    ]
+  }
+]

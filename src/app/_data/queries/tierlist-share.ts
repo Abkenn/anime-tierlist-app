@@ -2,4 +2,4 @@ import 'server-only';
 import { db } from '@/prisma/db';
 
 export const findTierlistShare = (id: string) =>
-  db.orm.public.TierlistShare.where({ id }).first();
+  db.orm.public.TierlistShare.where({ id: id.split('.')[0] }).first();

@@ -38,7 +38,7 @@ export const copyShareSeed = async (id: unknown) =>
     copyPublicTierlistSeed(
       z
         .string()
-        .regex(/^[A-Za-z0-9_-]{16}$/u)
+        .regex(/^[A-Za-z0-9_-]{16}(?:\.[a-f0-9]{16})?$/u)
         .parse(id),
     ),
   );

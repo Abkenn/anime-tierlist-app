@@ -32,6 +32,10 @@
       "model": "TierlistOwner",
       "namespace": "public"
     },
+    "TierlistPng": {
+      "model": "TierlistPng",
+      "namespace": "public"
+    },
     "TierlistRateLimit": {
       "model": "TierlistRateLimit",
       "namespace": "public"
@@ -671,6 +675,94 @@
               },
               "namespaceId": "public",
               "table": "TierlistOwner"
+            }
+          },
+          "TierlistPng": {
+            "fields": {
+              "fingerprint": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastUsedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "leaseToken": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "leaseUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "shareId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "url": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "share": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "shareId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "TierlistShare",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "fingerprint": {
+                  "column": "fingerprint"
+                },
+                "lastUsedAt": {
+                  "column": "lastUsedAt"
+                },
+                "leaseToken": {
+                  "column": "leaseToken"
+                },
+                "leaseUntil": {
+                  "column": "leaseUntil"
+                },
+                "shareId": {
+                  "column": "shareId"
+                },
+                "url": {
+                  "column": "url"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TierlistPng"
             }
           },
           "TierlistRateLimit": {
@@ -1354,6 +1446,78 @@
                 }
               ]
             },
+            "TierlistPng": {
+              "columns": {
+                "fingerprint": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "lastUsedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                },
+                "leaseToken": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "leaseUntil": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "shareId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "url": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "primaryKey": true
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "shareId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistPng"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TierlistShare"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "lastUsedAt"
+                  ],
+                  "name": "TierlistPng_lastUsedAt_idx_fee97fdf",
+                  "prefix": "TierlistPng_lastUsedAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "shareId"
+                ]
+              },
+              "uniques": []
+            },
             "TierlistRateLimit": {
               "columns": {
                 "attempts": {
@@ -1530,7 +1694,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5bc0b4e495c64da653b42ec0d32a9c3f4a5aea1dc6fb5689571fb9083558df10"
+    "storageHash": "0929f5da40c39f06c189aa3d3d83155c4281cd24cef8ddcf9631fb8f4e1fff18"
   },
   "capabilities": {
     "postgres": {

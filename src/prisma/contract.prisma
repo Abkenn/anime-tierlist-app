@@ -109,3 +109,15 @@ model AuthRateLimit {
   count Int
   lastRequest BigInt
 }
+
+model TierlistPng {
+  shareId String @id
+  share TierlistShare @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  url String?
+  fingerprint String?
+  lastUsedAt BigInt
+  leaseToken String?
+  leaseUntil BigInt?
+
+  @@index([lastUsedAt])
+}

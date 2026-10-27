@@ -33,7 +33,7 @@ export const PreviewControls = ({
   const [message, download, downloading] = useActionState(
     async (_previous: string, form: FormData) => {
       try {
-        const { downloadTierlistPng, downloadTierlistProject } = await import(
+        const { downloadTierlistProject } = await import(
           '@/app/_services/tierlist-download'
         );
         if (form.get('format') === 'project') {
@@ -45,11 +45,7 @@ export const PreviewControls = ({
 
           return '';
         }
-        const missing = await downloadTierlistPng(document);
-
-        return missing
-          ? `${missing} posters could not be exported. Their labels are included instead.`
-          : '';
+        return '';
       } catch {
         return 'Unable to export this tierlist on this device.';
       }
@@ -152,15 +148,13 @@ export const PreviewControls = ({
           Save project
         </FormSubmitButton>
 
-        <FormSubmitButton
-          name="format"
-          value="png"
-          disabled={downloading}
-          pendingLabel="Exporting..."
-          className="min-h-9 cursor-pointer underline underline-offset-4"
+        <a
+          href={`/api/tierlist-preview/${id}/image?download=1`}
+          download="tierlist.png"
+          className="inline-flex min-h-9 items-center underline underline-offset-4"
         >
           Download as PNG
-        </FormSubmitButton>
+        </a>
       </form>
 
       {(error || message || copyError) && (

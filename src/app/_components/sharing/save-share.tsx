@@ -240,15 +240,25 @@ export const SaveShare = ({
                 Save project
               </FormSubmitButton>
 
-              <FormSubmitButton
-                name="format"
-                value="png"
-                disabled={!document || downloading}
-                pendingLabel="Exporting..."
-                className="min-h-9 cursor-pointer underline underline-offset-4 disabled:opacity-50"
-              >
-                Download as PNG
-              </FormSubmitButton>
+              {prepared.url ? (
+                <a
+                  href={`/api/tierlist-preview/${new URL(prepared.url).pathname.slice(1)}/image?download=1`}
+                  download="tierlist.png"
+                  className="inline-flex min-h-9 items-center underline underline-offset-4"
+                >
+                  Download as PNG
+                </a>
+              ) : (
+                <FormSubmitButton
+                  name="format"
+                  value="png"
+                  disabled={!document || downloading}
+                  pendingLabel="Exporting..."
+                  className="min-h-9 cursor-pointer underline underline-offset-4 disabled:opacity-50"
+                >
+                  Download as PNG
+                </FormSubmitButton>
+              )}
             </form>
 
             {(download || copied) && (

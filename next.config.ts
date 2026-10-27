@@ -2,6 +2,12 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  outputFileTracingIncludes: {
+    '/api/tierlist-preview/**': [
+      './public/curated/**/*',
+      './public/tier-samples/**/*',
+    ],
+  },
   logging: {
     serverFunctions: false,
   },

@@ -2,6 +2,7 @@ import { navigation } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
+import { touchTierlistPng } from '@/app/_data/mutations/tierlist-png';
 import { findTierlistShare } from '@/app/_data/queries/tierlist-share';
 import { getGoogleIdentity } from '@/app/_services/google-session';
 import { readAnonymousTierlistOwner } from '@/app/_services/tierlist-identity';
@@ -12,6 +13,7 @@ import { TierlistPreviewBoard } from './tierlist-preview-board';
 const OwnerControls = async ({ id }: { id: string }) => {
   await navigation();
   await connection();
+  await touchTierlistPng(id.split('.')[0]);
   const [share, google, anonymous] = await Promise.all([
     findTierlistShare(id),
     getGoogleIdentity(),

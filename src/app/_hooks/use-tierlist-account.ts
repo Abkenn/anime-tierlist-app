@@ -223,7 +223,10 @@ export const useTierlistAccount = (
       throw new Error(result.message);
     }
 
-    return new URL(`/${result.value}`, window.location.origin).href;
+    return new URL(
+      `/${result.value.id}.${result.value.version}`,
+      window.location.origin,
+    ).href;
   };
 
   const restoreDevice = () =>

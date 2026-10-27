@@ -40,3 +40,5 @@ Thumbs.db
 # Storybook build and local cache
 /storybook-static/
 /.storybook-cache/
+
+.env*

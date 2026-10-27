@@ -9,7 +9,11 @@ const mocks = vi.hoisted(() => ({
   share: vi.fn(),
 }));
 vi.mock('server-only', () => ({}));
-vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }));
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
 vi.mock('./tierlist-identity', () => ({
   requireTierlistOwner: mocks.requireOwner,
   limitSeedAccess: vi.fn(),
@@ -73,15 +77,20 @@ it('requires ownership and rejects stale publishing without creating a public sn
 });
 
 it('creates public snapshots with independent IDs and strips every secret from public reads', async () => {
-  const id = await publishTierlist({ ownerId: 'owner', revision: 4 });
+  const { id } = await publishTierlist({ ownerId: 'owner', revision: 4 });
   expect(id).toMatch(/^[A-Za-z0-9_-]{16}$/u);
   mocks.share.mockResolvedValue({
     id,
+    fingerprint: 'b'.repeat(64),
     ownerId: 'private-owner',
     seed: 'private-seed',
     document,
   });
-  expect(await readPublicTierlist(id)).toEqual({ id, document });
+  expect(await readPublicTierlist(id)).toEqual({
+    id,
+    version: 'b'.repeat(16),
+    document,
+  });
   expect(await readPublicTierlist('bad')).toBeNull();
 });
 
@@ -111,6 +120,7 @@ it('saves a project from a public link as an independent copy, never the source 
   mocks.share.mockResolvedValue({
     id: 'a'.repeat(16),
     ownerId: 'owner',
+    fingerprint: 'c'.repeat(64),
     document,
   });
   const seed = await copyPublicTierlistSeed('a'.repeat(16));

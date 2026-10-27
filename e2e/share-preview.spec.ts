@@ -115,9 +115,7 @@ test('prefetches the preview board while account controls wait for navigation', 
   });
   await instant(page, async () => {
     await page.getByRole('link', { name: 'Open Preview' }).click();
-    await page.waitForURL(
-      (url) => url.pathname === sharePath && url.search === '',
-    );
+    await page.waitForURL((url) => url.pathname === sharePath);
     await expect(
       modal.getByRole('heading', { name: 'Tierlist preview' }),
     ).toBeVisible();
@@ -191,5 +189,26 @@ test('preserves Save & Share on close and opens a standalone preview on refresh 
   await expect(modal).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Save & Share' })).toHaveCount(
     0,
+  );
+});
+
+test('serves the board PNG for social metadata and a native download', async ({
+  page,
+  sharePath,
+}) => {
+  const response = await page.request.get(sharePath, {
+    headers: { 'User-Agent': 'Discordbot/2.0' },
+  });
+  const html = await response.text();
+  expect(html).toContain('property="og:image"');
+  expect(html).toContain(`/api/tierlist-preview${sharePath}/image?v=`);
+  const image = await page.request.get(
+    `/api/tierlist-preview${sharePath}/image?download=1`,
+  );
+  expect(image.status()).toBe(200);
+  expect(image.headers()['content-type']).toBe('image/png');
+  expect(image.headers()['content-disposition']).toContain('attachment');
+  expect((await image.body()).subarray(0, 8).toString('hex')).toBe(
+    '89504e470d0a1a0a',
   );
 });

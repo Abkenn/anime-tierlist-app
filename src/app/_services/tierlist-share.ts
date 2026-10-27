@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { cacheLife, cacheTag } from 'next/cache';
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
 import { createTierlistOwner } from '@/app/_data/mutations/tierlist';
 import { publishTierlistSnapshot } from '@/app/_data/mutations/tierlist-share';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
@@ -17,14 +17,18 @@ import {
 export const readPublicTierlist = async (id: string) => {
   'use cache';
   cacheLife('max');
-  cacheTag(`tierlist-share:${id}`);
-  if (!/^[A-Za-z0-9_-]{16}$/u.test(id)) {
+  cacheTag(`tierlist-share:${id.split('.')[0]}`);
+  if (!/^[A-Za-z0-9_-]{16}(?:\.[a-f0-9]{16})?$/u.test(id)) {
     return null;
   }
   const share = await findTierlistShare(id);
 
   return share
-    ? { id: share.id, document: tierlistDocumentSchema.parse(share.document) }
+    ? {
+        id: share.id,
+        version: share.fingerprint.slice(0, 16),
+        document: tierlistDocumentSchema.parse(share.document),
+      }
     : null;
 };
 
@@ -93,7 +97,9 @@ export const publishTierlist = async (input: {
     document,
   });
 
-  return share.id;
+  revalidateTag(`tierlist-share:${share.id}`, { expire: 0 });
+
+  return { id: share.id, version: fingerprint.slice(0, 16) };
 };
 
 export const copyPublicTierlistSeed = async (id: string) => {

@@ -50,6 +50,9 @@ it('opens with Ctrl+S, prepares the seed, prepares the preview automatically, an
   await waitFor(() =>
     expect(downloads.project).toHaveBeenCalledWith(share.seed),
   );
-  fireEvent.click(screen.getByRole('button', { name: 'Download as PNG' }));
-  await waitFor(() => expect(downloads.png).toHaveBeenCalledWith(document));
+  expect(screen.getByRole('link', { name: 'Download as PNG' })).toHaveAttribute(
+    'href',
+    '/api/tierlist-preview/abcd1234abcd1234/image?download=1',
+  );
+  expect(downloads.png).not.toHaveBeenCalled();
 });

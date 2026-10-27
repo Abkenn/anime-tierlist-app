@@ -82,7 +82,7 @@ export const TierlistPreviewBoard = async ({
                   </clipPath>
                 </defs>
                 <g clipPath={`url(#${clip})`}>
-                  {frame && box.item.image ? (
+                  {frame && box.item.image?.src ? (
                     <svg
                       x={frame.x}
                       y={frame.y}
