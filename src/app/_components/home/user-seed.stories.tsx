@@ -35,6 +35,7 @@ const AccountControls = () => {
         onImport={async () => false}
         onShare={async () => 'a'.repeat(64)}
         onUseDevice={async () => {}}
+        onReplaceDevice={async () => true}
         onGoogleSignIn={async () => {}}
         onGoogleSignOut={async () => {}}
       />

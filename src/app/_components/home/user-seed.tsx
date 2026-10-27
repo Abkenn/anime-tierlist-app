@@ -21,6 +21,7 @@ type UserSeedProps = {
   onImport: (seed: string) => Promise<boolean>;
   onShare: () => Promise<string>;
   onUseDevice: () => Promise<unknown>;
+  onReplaceDevice: () => Promise<boolean>;
   googleConnected: boolean;
   resolvingIdentity?: boolean;
   canSignIn: boolean;
@@ -39,6 +40,7 @@ export const UserSeed = ({
   onOpenChange,
   onImport,
   onUseDevice,
+  onReplaceDevice,
   googleConnected,
   resolvingIdentity = false,
   canSignIn,
@@ -75,6 +77,7 @@ export const UserSeed = ({
   const shareSeed = shareVisible && !sharing ? shareState.seed : '';
   const shareError = shareVisible && !sharing ? shareState.error : '';
   const [confirmReplace, setConfirmReplace] = useState(false);
+  const [confirmLocalReplace, setConfirmLocalReplace] = useState(false);
   const importId = useId();
   const validSeed = userSeedSchema.safeParse(importSeed).success;
   const validationMessage =
@@ -323,15 +326,37 @@ export const UserSeed = ({
             />
 
             {imported && !googleConnected && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void onUseDevice()}
-                className="mt-3 min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
-              >
-                Return to this device’s tierlist
-              </button>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onUseDevice()}
+                  className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
+                >
+                  Go back to local
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setConfirmLocalReplace(true)}
+                  className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
+                >
+                  Replace local with this
+                </button>
+              </div>
             )}
+
+            <SeedReplaceConfirmation
+              open={confirmLocalReplace}
+              target="device"
+              busy={busy}
+              onOpenChange={setConfirmLocalReplace}
+              onConfirm={async () => {
+                if (await onReplaceDevice()) {
+                  setConfirmLocalReplace(false);
+                }
+              }}
+            />
 
             {error && (
               <p role="status" className="mt-3">

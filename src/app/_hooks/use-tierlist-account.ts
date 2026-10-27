@@ -215,6 +215,21 @@ export const useTierlistAccount = (
       }
     });
 
+  const replaceDevice = () =>
+    perform(async () => {
+      if (googleConnected || !storage.imported) {
+        throw new Error('Open an imported anonymous tierlist first.');
+      }
+
+      await storage.replaceDeviceProfile();
+      try {
+        await disconnectTierlist();
+      } catch {
+        // The copied local list can reconnect with its own seed when online.
+      }
+      setAccountOpen(false);
+    });
+
   const reloadApp = () =>
     perform(async () => {
       await storage.flush();
@@ -382,6 +397,7 @@ export const useTierlistAccount = (
     actions: {
       importSeed,
       restoreDevice,
+      replaceDevice,
       signIn,
       shareSeed,
       reloadApp,

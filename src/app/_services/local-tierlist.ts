@@ -1,4 +1,12 @@
-import { createStore, entries, get, set, setMany, update } from 'idb-keyval';
+import {
+  createStore,
+  entries,
+  get,
+  promisifyRequest,
+  set,
+  setMany,
+  update,
+} from 'idb-keyval';
 import {
   type LocalTierlist,
   localTierlistSchema,
@@ -7,7 +15,10 @@ import {
   applyLocalTierlistEdit,
   type LocalTierlistContent,
 } from '@/app/_lib/tierlist-local-edit';
-import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
+import {
+  getTierlistDocument,
+  type RemoteTierlist,
+} from '@/app/_lib/tierlist-sync';
 import { notifyTierlistTabs } from '@/app/_lib/tierlist-tabs';
 
 const key = 'personal-tierlist';
@@ -153,6 +164,64 @@ export const activateImportedTierlist = async (
 
 export const activateDeviceTierlist = async () => {
   await set(activeKey, (await getDeviceTierlist()).seed, storage);
+};
+
+type ReplaceDeviceInput = { seed: string; revision: number };
+
+const copyImportedIntoDevice = async (
+  store: IDBObjectStore,
+  input: ReplaceDeviceInput,
+) => {
+  const [deviceValue, sourceValue] = await Promise.all([
+    promisifyRequest(store.get(key)),
+    promisifyRequest(store.get(`profile:${input.seed}`)),
+  ]);
+  const device = localTierlistSchema.parse(deviceValue);
+  const source = localTierlistSchema.parse(sourceValue);
+  if (source.revision !== input.revision) {
+    throw new LocalTierlistChangedError();
+  }
+  if (
+    source.accountOwnerId ||
+    device.accountOwnerId ||
+    source.seed === device.seed
+  ) {
+    throw new Error(
+      'Open an imported anonymous tierlist before replacing this device’s list.',
+    );
+  }
+
+  const snapshot = localTierlistSchema.parse({
+    ...device,
+    ...getTierlistDocument(source),
+    revision: device.revision + 1,
+    updatedAt: Date.now(),
+  });
+  try {
+    store.put(device, `before-replace:${device.seed}`);
+    store.put(snapshot, key);
+    store.put(device.seed, activeKey);
+  } catch (failure) {
+    store.transaction.abort();
+    throw failure;
+  }
+
+  return snapshot;
+};
+
+export const replaceDeviceTierlist = async (input: ReplaceDeviceInput) => {
+  const snapshot = await storage('readwrite', async (store) => {
+    const complete = promisifyRequest(store.transaction);
+    const [copied] = await Promise.all([
+      copyImportedIntoDevice(store, input),
+      complete,
+    ]);
+
+    return copied;
+  });
+  notifyTierlistTabs();
+
+  return snapshot;
 };
 
 export const activateAccountTierlist = async (

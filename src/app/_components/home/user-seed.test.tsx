@@ -7,9 +7,13 @@ import { UserSeed } from './user-seed';
 const Fixture = ({
   onImport,
   onShare,
+  onReplaceDevice = async () => true,
+  googleConnected = true,
 }: {
   onImport: () => Promise<boolean>;
   onShare: () => Promise<string>;
+  onReplaceDevice?: () => Promise<boolean>;
+  googleConnected?: boolean;
 }) => {
   const [handle] = useState(() => Popover.createHandle());
   const [open, setOpen] = useState(true);
@@ -18,7 +22,7 @@ const Fixture = ({
     <UserSeed
       seed=""
       imported
-      googleConnected
+      googleConnected={googleConnected}
       canSignIn
       busy={false}
       open={open}
@@ -27,11 +31,39 @@ const Fixture = ({
       onImport={onImport}
       onShare={onShare}
       onUseDevice={async () => {}}
+      onReplaceDevice={onReplaceDevice}
       onGoogleSignIn={async () => {}}
       onGoogleSignOut={async () => {}}
     />
   );
 };
+
+it('offers both local choices and confirms before adopting an imported copy', async () => {
+  const onReplaceDevice = vi.fn(async () => true);
+  render(
+    <Fixture
+      googleConnected={false}
+      onImport={async () => true}
+      onShare={async () => ''}
+      onReplaceDevice={onReplaceDevice}
+    />,
+  );
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Replace local with this' }),
+  );
+  expect(
+    screen.getByRole('button', { name: 'Go back to local', hidden: true }),
+  ).toBeInTheDocument();
+  expect(onReplaceDevice).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(onReplaceDevice).not.toHaveBeenCalled();
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Replace local with this' }),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
+  await waitFor(() => expect(onReplaceDevice).toHaveBeenCalledOnce());
+});
 
 it('offers a separate share seed and requires confirmation before replacing an account list', async () => {
   const onImport = vi.fn(async () => true);

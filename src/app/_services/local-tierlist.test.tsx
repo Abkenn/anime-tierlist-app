@@ -21,6 +21,8 @@ import {
   activateImportedTierlist,
   getDeviceTierlist,
   loadLocalTierlist,
+  readLocalTierlist,
+  replaceDeviceTierlist,
   saveLocalSyncMetadata,
   saveLocalTierlist,
   saveLocalTierlistEdit,
@@ -41,6 +43,82 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('adopts an imported copy as the default without adopting its identity or changing its source', async () => {
+    const device = {
+      ...initial,
+      sync: { ownerId: 'device', serverRevision: 2, syncedLocalRevision: 0 },
+    };
+    await loadLocalTierlist(device);
+    const sourceSeed = createUserSeed();
+    const document: LocalTierlist = {
+      ...initial,
+      seed: sourceSeed,
+      posterSize: 'large',
+      imageMode: 'cover',
+      rankDetails: { 'S+': { label: 'Favorites', color: '#ff4455' } },
+      items: [
+        {
+          id: 'poster',
+          label: 'Shared title',
+          rank: 'S+',
+          image: { src: '/poster.jpg', width: 200, height: 300, alt: 'Poster' },
+          crop: { x: 0.2, y: 0.7 },
+          trim: { left: 0.1, top: 0, right: 0.8, bottom: 1 },
+          rowHeightExpansion: 0.6,
+          title: {
+            text: 'My title',
+            color: '#ffffff',
+            wrap: true,
+            position: 'bottom',
+          },
+        },
+      ],
+    };
+    await activateImportedTierlist(sourceSeed, {
+      ownerId: 'source',
+      revision: 7,
+      document,
+    });
+    const source = await readLocalTierlist(sourceSeed);
+    const copied = await replaceDeviceTierlist({
+      seed: sourceSeed,
+      revision: source.revision,
+    });
+
+    expect(copied).toMatchObject({
+      seed: device.seed,
+      revision: 1,
+      sync: device.sync,
+      items: document.items,
+      ranks: document.ranks,
+      rankDetails: document.rankDetails,
+      posterSize: 'large',
+      imageMode: 'cover',
+    });
+    expect(await loadLocalTierlist(initial)).toEqual(copied);
+    expect(await readLocalTierlist(sourceSeed)).toEqual(source);
+    expect(await get(`before-replace:${device.seed}`, database)).toEqual(
+      device,
+    );
+  });
+
+  it('leaves both profiles unchanged if the imported copy changed before confirmation', async () => {
+    await loadLocalTierlist(initial);
+    const seed = createUserSeed();
+    await activateImportedTierlist(seed, {
+      ownerId: 'source',
+      revision: 1,
+      document: initial,
+    });
+    const source = await readLocalTierlist(seed);
+
+    await expect(
+      replaceDeviceTierlist({ seed, revision: source.revision + 1 }),
+    ).rejects.toBeInstanceOf(tierlistPersistence.LocalTierlistChangedError);
+    expect(await getDeviceTierlist()).toEqual(initial);
+    expect(await loadLocalTierlist(initial)).toEqual(source);
+  });
+
   it('rebases simultaneous tab edits without dropping another tab’s fields or new posters', async () => {
     const base: LocalTierlist = {
       ...initial,

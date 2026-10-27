@@ -109,6 +109,7 @@ export const LocalTierlist = ({
             error={status.visibleError}
             onImport={actions.importSeed}
             onUseDevice={actions.restoreDevice}
+            onReplaceDevice={actions.replaceDevice}
             resolvingIdentity={status.verifyingIdentity}
             googleConnected={
               googleConnected || Boolean(status.restoringAccount)

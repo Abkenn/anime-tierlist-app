@@ -9,6 +9,7 @@ type SeedReplaceConfirmationProps = {
   busy: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<void>;
+  target?: 'account' | 'device';
 };
 
 export const SeedReplaceConfirmation = ({
@@ -16,6 +17,7 @@ export const SeedReplaceConfirmation = ({
   busy,
   onOpenChange,
   onConfirm,
+  target = 'account',
 }: SeedReplaceConfirmationProps) => {
   const [, confirmAction, pending] = useActionState(async () => {
     await onConfirm();
@@ -38,12 +40,15 @@ export const SeedReplaceConfirmation = ({
 
         <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 w-84 max-w-[calc(100vw-2rem)] -translate-1/2 border border-divider bg-popover p-4 text-sm text-popover-foreground shadow-md">
           <AlertDialog.Title className="font-medium">
-            Replace your tierlist?
+            {target === 'device'
+              ? 'Replace this device’s tierlist?'
+              : 'Replace your tierlist?'}
           </AlertDialog.Title>
 
           <AlertDialog.Description className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Your account’s current tierlist will be permanently replaced. This
-            cannot be undone.
+            {target === 'device'
+              ? 'This device’s current list will be replaced with this copy.'
+              : 'Your account’s current tierlist will be permanently replaced. This cannot be undone.'}
           </AlertDialog.Description>
 
           <form action={confirmAction} className="mt-4 flex justify-end gap-4">

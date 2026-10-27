@@ -24,6 +24,7 @@ import {
   LocalTierlistChangedError,
   loadLocalTierlist,
   readLocalTierlist,
+  replaceDeviceTierlist,
   saveLocalSyncMetadata,
   saveLocalTierlist,
   saveLocalTierlistEdit,
@@ -71,6 +72,20 @@ export const useLocalTierlist = () => {
 
   const restoreDeviceProfile = () =>
     changeProfile(deviceSeed, activateDeviceTierlist);
+
+  const replaceDeviceProfile = async () => {
+    const source = await controller.current?.refresh();
+    if (!source) {
+      throw new Error('Wait for this tierlist to finish saving.');
+    }
+
+    await changeProfile(deviceSeed, async () => {
+      await replaceDeviceTierlist({
+        seed: source.seed,
+        revision: source.revision,
+      });
+    });
+  };
 
   const updateSync = async (remote: RemoteTierlist, localRevision: number) => {
     await controller.current?.metadata(remote, localRevision);
@@ -330,6 +345,7 @@ export const useLocalTierlist = () => {
     importProfile,
     importAccountProfile,
     restoreDeviceProfile,
+    replaceDeviceProfile,
     updateSync,
     replaceRemote,
     refresh: async () => controller.current?.refresh(),
