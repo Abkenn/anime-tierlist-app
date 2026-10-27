@@ -257,7 +257,7 @@ export const AnimeSearchResults = ({
         viewportProps={{
           className: inline
             ? 'overscroll-contain pr-3'
-            : 'overscroll-contain pr-3 max-lg:max-h-[calc(35dvh-7rem)]',
+            : 'overscroll-x-contain overscroll-y-auto pr-3 max-lg:max-h-[calc(35dvh-7rem)] lg:overscroll-contain',
         }}
         aria-busy={waiting || search.isFetching || loadingImages}
       >

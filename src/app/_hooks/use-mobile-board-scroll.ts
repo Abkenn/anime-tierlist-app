@@ -97,9 +97,14 @@ export const useMobileBoardScroll = ({
         return;
       }
 
-      event.preventDefault();
       const scroll = getScroll();
-      scroll?.moveTo(Math.min(scroll.max, scroll.position + delta));
+      if (!scroll || (delta < 0 && scroll.position <= 1)) {
+        gesture = undefined;
+        return;
+      }
+
+      event.preventDefault();
+      scroll.moveTo(Math.min(scroll.max, scroll.position + delta));
       gesture.velocity =
         (0.7 * delta) / Math.max(1, event.timeStamp - gesture.time) +
         0.3 * gesture.velocity;

@@ -44,6 +44,12 @@ it('continues the same swipe into search reveal without intercepting posters or 
   touch(board, 'touchmove', 350);
   expect(viewport.scrollTop).toBe(0);
 
+  touch(board, 'touchstart', 350);
+  expect(touch(board, 'touchmove', 400).defaultPrevented).toBe(false);
+  expect(touch(board, 'touchmove', 450).defaultPrevented).toBe(false);
+  expect(viewport.scrollTop).toBe(0);
+  expect(board.scrollTop).toBe(0);
+
   const poster = document.createElement('button');
   const scrollbar = document.createElement('div');
   scrollbar.dataset.slot = 'scroll-area-scrollbar';

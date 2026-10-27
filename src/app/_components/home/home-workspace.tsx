@@ -85,7 +85,7 @@ export const HomeWorkspace = ({
       <div
         ref={viewportRef}
         data-tier-workspace-scroll=""
-        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none lg:overflow-visible"
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-x-contain overscroll-y-auto scrollbar-none lg:overflow-visible lg:overscroll-contain"
         onScrollCapture={(event) => {
           const viewport = viewportRef.current;
           const board = event.target;

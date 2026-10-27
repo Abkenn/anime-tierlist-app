@@ -29,7 +29,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
     suppressHydrationWarning
     className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
   >
-    <body className="flex h-dvh flex-col overflow-hidden">
+    <body className="flex h-dvh flex-col overflow-x-hidden overflow-y-auto lg:overflow-hidden">
       <ThemeProvider>
         <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
           <header className="flex w-full shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-6">
