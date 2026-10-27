@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { env } from '@/env';
 
 export const siteUrl = new URL(
   '/',
-  process.env.SITE_URL ?? 'https://anime-tierlist-app.vercel.app/',
+  env.SITE_URL ?? 'https://anime-tierlist-app.vercel.app/',
 );
 export const siteName = 'Anime Tierlist';
 export const siteTitle = 'Anime Tierlist | Your anime. Your order.';

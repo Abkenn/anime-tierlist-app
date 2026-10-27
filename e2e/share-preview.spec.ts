@@ -113,6 +113,7 @@ test('prefetches the preview board while account controls wait for navigation', 
     name: 'Tierlist preview',
     exact: true,
   });
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await instant(page, async () => {
     await page.getByRole('link', { name: 'Open Preview' }).click();
     await page.waitForURL((url) => url.pathname === sharePath);
@@ -123,6 +124,9 @@ test('prefetches the preview board while account controls wait for navigation', 
       modal.getByRole('img', { name: 'Shared anime tierlist', exact: true }),
     ).toBeVisible();
     await expect(modal).toHaveCSS('opacity', '1');
+    await expect(
+      page.getByRole('region', { name: 'Notifications' }),
+    ).toContainText('Preview link copied to clipboard');
     await page.screenshot({
       path: '.storybook-cache/preview-prefetched.png',
       animations: 'disabled',
@@ -211,4 +215,67 @@ test('serves the board PNG for social metadata and a native download', async ({
   expect((await image.body()).subarray(0, 8).toString('hex')).toBe(
     '89504e470d0a1a0a',
   );
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByRole('link', { name: 'Open Preview' }).click();
+  const modal = page.getByRole('dialog', {
+    name: 'Tierlist preview',
+    exact: true,
+  });
+  await expect(
+    modal.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  await expect(modal.locator('img')).toHaveCount(1);
+  await expect(modal.locator('svg[role="img"]')).toHaveCount(0);
+  await page.keyboard.press('Control+f');
+  const find = modal.getByRole('textbox', { name: 'Find anime in tierlist' });
+  await expect(find).toBeFocused();
+  await find.fill('Navigation');
+  await expect(modal.getByText('1 found', { exact: true })).toBeVisible();
+  await expect(modal.locator('[data-preview-match="true"]')).toHaveCount(1);
+  await find.fill('absent');
+  await expect(modal.getByText('0 found', { exact: true })).toBeVisible();
+  await expect(modal.locator('[data-preview-match="false"]')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(find).toHaveCount(0);
+
+  await modal.getByRole('button', { name: 'Copy PNG', exact: true }).click();
+  await expect(
+    page.getByRole('region', { name: 'Notifications' }),
+  ).toContainText('PNG copied to clipboard');
+});
+
+test('shows a complete loading placeholder to a fresh visitor instead of partial posters', async ({
+  browser,
+  sharePath,
+}) => {
+  const context = await browser.newContext({ serviceWorkers: 'block' });
+  const visitor = await context.newPage();
+  const ready = Promise.withResolvers<void>();
+  const images: string[] = [];
+  visitor.on('request', (request) => {
+    if (request.resourceType() === 'image') {
+      images.push(request.url());
+    }
+  });
+  await visitor.route('**/api/tierlist-preview/**/image*', async (route) => {
+    await ready.promise;
+    await route.continue();
+  });
+  try {
+    await visitor.goto(`http://localhost:3046${sharePath}`, {
+      waitUntil: 'domcontentloaded',
+    });
+    const poster = visitor.getByRole('img', { name: 'Shared anime tierlist' });
+    await expect(poster).toHaveCSS('opacity', '0');
+    await expect(
+      visitor.getByRole('status').filter({ hasText: 'Loading tierlist...' }),
+    ).toBeVisible();
+    ready.resolve();
+    await expect(poster).toHaveCSS('opacity', '1');
+    expect(images).toHaveLength(1);
+    expect(images[0]).toContain('/api/tierlist-preview/');
+  } finally {
+    ready.resolve();
+    await context.close();
+  }
 });

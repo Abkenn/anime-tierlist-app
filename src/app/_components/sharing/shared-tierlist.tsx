@@ -4,11 +4,12 @@ import { connection } from 'next/server';
 import { Suspense } from 'react';
 import { touchTierlistPng } from '@/app/_data/mutations/tierlist-png';
 import { findTierlistShare } from '@/app/_data/queries/tierlist-share';
+import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import { getGoogleIdentity } from '@/app/_services/google-session';
 import { readAnonymousTierlistOwner } from '@/app/_services/tierlist-identity';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
 import { PreviewControls } from './preview-controls';
-import { TierlistPreviewBoard } from './tierlist-preview-board';
+import { PreviewImage } from './preview-image';
 
 const OwnerControls = async ({ id }: { id: string }) => {
   await navigation();
@@ -42,6 +43,8 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
     notFound();
   }
 
+  const board = layoutExportBoard(share.document);
+
   return (
     <>
       <Suspense
@@ -55,7 +58,13 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
       </Suspense>
 
       <div className="overflow-x-auto">
-        <TierlistPreviewBoard document={share.document} />
+        <PreviewImage
+          key={`${share.id}.${share.version}`}
+          id={`${share.id}.${share.version}`}
+          width={board.width}
+          height={board.height}
+          posters={board.rows.flatMap((row) => row.posters)}
+        />
       </div>
     </>
   );

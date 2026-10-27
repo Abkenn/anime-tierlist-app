@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import {
   exportImageFrame,
   exportPosterSize,
@@ -8,14 +7,11 @@ import {
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 
-export const TierlistPreviewBoard = async ({
+export const TierlistPreviewBoard = ({
   document,
 }: {
   document: TierlistDocument;
 }) => {
-  'use cache';
-  cacheLife('max');
-  cacheTag('public-tierlist-boards');
   const board = layoutExportBoard(document);
 
   return (

@@ -106,7 +106,7 @@ const ToastList = () => {
             setFocused(false);
           }
         }}
-        className="fixed inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-50 mx-auto flex max-w-md flex-col gap-2 outline-none"
+        className="fixed inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-100 mx-auto flex max-w-md flex-col gap-2 outline-none"
       >
         {toasts.map((item) => (
           <ToastMessage key={item.id} item={item} paused={hovered || focused} />

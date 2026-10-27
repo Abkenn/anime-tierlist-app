@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import 'server-only';
 import { createHash, randomBytes } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
@@ -47,7 +48,7 @@ export const hashTierlistSecret = (secret: string) =>
 
 export const limitSeedAccess = async () => {
   const requestHeaders = await headers();
-  const address = process.env.VERCEL
+  const address = env.VERCEL
     ? (requestHeaders.get('x-vercel-forwarded-for') ?? 'unknown')
     : 'local';
   const allowed = await consumeTierlistRateLimit({
@@ -89,7 +90,7 @@ export const issueTierlistSession = async (ownerId: string) => {
   });
   jar.set(cookieName, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: sessionSeconds,

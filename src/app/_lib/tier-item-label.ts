@@ -7,7 +7,10 @@ export const getTierItemLabel = (
     ? item.label.trim()
     : item.title?.text.trim().replace(/\s+/gu, ' ') || 'Unknown';
 
-export const matchesTierItemLabel = (item: TierItemData, query: string) =>
+export const matchesTierItemLabel = (
+  item: Pick<TierItemData, 'label' | 'title'>,
+  query: string,
+) =>
   getTierItemLabel(item)
     .normalize('NFKC')
     .toLocaleLowerCase()

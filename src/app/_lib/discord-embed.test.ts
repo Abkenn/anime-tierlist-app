@@ -1,5 +1,7 @@
+vi.mock('server-only', () => ({}));
+
 import { fromPayload, toComponentEmbedJson } from 'discord-component-embed';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { GET as getOembed } from '@/app/api/oembed/route';
 import { discordEmbedJson } from './discord-embed';
 import { homepageMetadata, siteUrl } from './site-metadata';

@@ -54,5 +54,10 @@ export const useTierTitleFrame = ({ image, mode, trim }: TitleFrameInput) => {
     return () => observer.disconnect();
   }, []);
 
-  return { ref, frame };
+  return {
+    ref,
+    frame,
+    width: fitted ? source.width * scale : bounds.width,
+    height: fitted ? source.height * scale : bounds.height,
+  };
 };

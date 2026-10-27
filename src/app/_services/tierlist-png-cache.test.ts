@@ -1,3 +1,11 @@
+vi.mock('@/env', () => ({
+  env: {
+    get BLOB_READ_WRITE_TOKEN() {
+      return process.env.BLOB_READ_WRITE_TOKEN;
+    },
+  },
+}));
+
 import { beforeEach, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({

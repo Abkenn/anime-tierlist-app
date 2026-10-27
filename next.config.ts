@@ -1,11 +1,16 @@
 import type { NextConfig } from 'next';
+import { parseEnv } from './src/env-schema';
+
+const env = parseEnv(process.env);
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
   outputFileTracingIncludes: {
+    '/*': ['./src/app/_assets/fonts/**/*'],
     '/api/tierlist-preview/**': [
       './public/curated/**/*',
       './public/tier-samples/**/*',
+      './src/app/_assets/fonts/**/*',
     ],
   },
   logging: {
@@ -27,7 +32,7 @@ const nextConfig: NextConfig = {
     },
   ],
   experimental: {
-    exposeTestingApiInProductionBuild: process.env.EXPOSE_TESTING_API === '1',
+    exposeTestingApiInProductionBuild: env.EXPOSE_TESTING_API,
     serverActions: { bodySizeLimit: '4mb' },
     turbopackRustReactCompiler: true,
     turbopackPluginRuntimeStrategy: 'workerThreads',

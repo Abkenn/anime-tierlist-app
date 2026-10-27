@@ -3,19 +3,13 @@
 import { cn } from 'cn';
 import { motion } from 'motion/react';
 import { useTierTitleFrame } from '@/app/_hooks/use-tier-title-frame';
+import { getTierTitleLayout } from '@/app/_lib/tier-title-layout';
 import type {
   TierItemTitle as ItemTitle,
   TierImage,
   TierImageMode,
   TierImageTrim,
 } from '@/app/_types/tierlist.types';
-
-const fontSizes = [
-  'text-[clamp(0.25rem,min(24cqi,calc((100cqb-0.5rem)/1.25)),0.875rem)]',
-  'text-[clamp(0.25rem,min(24cqi,calc((100cqb-0.5rem)/2.5)),0.875rem)]',
-  'text-[clamp(0.25rem,min(24cqi,calc((100cqb-0.5rem)/3.75)),0.875rem)]',
-  'text-[clamp(0.25rem,min(24cqi,calc((100cqb-0.5rem)/5)),0.875rem)]',
-];
 
 type TierItemTitleProps = {
   title: ItemTitle;
@@ -30,8 +24,12 @@ export const TierItemTitle = ({
   mode,
   trim,
 }: TierItemTitleProps) => {
-  const { ref, frame } = useTierTitleFrame({ image, mode, trim });
-  const lines = title.wrap ? 4 : Math.min(4, title.text.split('\n').length);
+  const { ref, frame, width, height } = useTierTitleFrame({
+    image,
+    mode,
+    trim,
+  });
+  const layout = getTierTitleLayout(title, width, height);
 
   return (
     <span
@@ -48,11 +46,10 @@ export const TierItemTitle = ({
       >
         <motion.span
           initial={false}
-          animate={{ color: title.color }}
+          animate={{ color: title.color, fontSize: layout.fontSize }}
           transition={{ duration: 0 }}
           className={cn(
             'absolute inset-x-0 px-1 text-center font-sans font-semibold [text-shadow:0_0.0625rem_0.125rem_var(--ink),0_0_0.125rem_var(--ink)]',
-            fontSizes[lines - 1],
             'leading-tight',
             {
               'top-1': title.position === 'top',
@@ -69,7 +66,7 @@ export const TierItemTitle = ({
                 : 'whitespace-pre',
             )}
           >
-            {title.text}
+            {layout.lines.join('\n')}
           </span>
         </motion.span>
       </motion.span>

@@ -7,6 +7,7 @@ import { rankTextColor } from './rank-text-color';
 import { tierColors } from './tier-colors';
 import { fullImageTrim } from './tier-image-trim';
 import { getTierItemSize } from './tier-item-layout';
+import { getTierTitleLayout } from './tier-title-layout';
 import type { TierlistDocument } from './tierlist-sync';
 
 export const exportPosterSize = 160;
@@ -168,16 +169,10 @@ export const exportTitle = (
   }
   const image = exportImageFrame(box, mode);
   const frame = mode === 'contain' && image ? image : box;
-  const lineCount = title.wrap ? 4 : Math.min(4, title.text.split('\n').length);
-  const fontSize = Math.max(
-    4,
-    Math.min(20, frame.width * 0.24, (frame.height - 8) / (lineCount * 1.25)),
-  );
-  const lines = exportTextLines(
-    title.text,
-    frame.width - 8,
-    fontSize,
-    title.wrap,
+  const { fontSize, lines } = getTierTitleLayout(
+    title,
+    frame.width,
+    frame.height,
   );
   const height = lines.length * fontSize * 1.25;
   const y = {

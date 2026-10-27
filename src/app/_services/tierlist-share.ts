@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
@@ -13,6 +14,7 @@ import {
   requireTierlistOwner,
   TierlistAccessError,
 } from './tierlist-identity';
+import { getTierlistPng } from './tierlist-png-cache';
 
 export const readPublicTierlist = async (id: string) => {
   'use cache';
@@ -88,7 +90,7 @@ export const publishTierlist = async (input: {
   const document = tierlistDocumentSchema.parse(owner.document);
   const { updatedAt: _updatedAt, ...content } = document;
   const fingerprint = createHash('sha256')
-    .update(JSON.stringify(content))
+    .update(JSON.stringify({ previewFormat: 4, document: content }))
     .digest('hex');
   const share = await publishTierlistSnapshot({
     id: randomBytes(12).toString('base64url'),
@@ -98,6 +100,16 @@ export const publishTierlist = async (input: {
   });
 
   revalidateTag(`tierlist-share:${share.id}`, { expire: 0 });
+
+  if (env.BLOB_READ_WRITE_TOKEN) {
+    const image = await getTierlistPng(share.id);
+    if (image?.status !== 'ready') {
+      throw new TierlistAccessError(
+        'invalid',
+        'The preview image is still preparing. Try opening sharing again.',
+      );
+    }
+  }
 
   return { id: share.id, version: fingerprint.slice(0, 16) };
 };

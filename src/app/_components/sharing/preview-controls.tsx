@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { SeedReplaceConfirmation } from '@/app/_components/home/seed-replace-confirmation';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
+import { toast } from '@/app/_components/ui/toast';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -14,6 +15,7 @@ import {
   getDeviceTierlist,
   loadLocalTierlist,
 } from '@/app/_services/local-tierlist';
+import { copyPreviewPng } from '@/app/_services/preview-clipboard';
 import { disconnectTierlist } from '@/app/_services/tierlist.actions';
 import { copyShareSeed } from '@/app/_services/tierlist-share.actions';
 
@@ -30,6 +32,7 @@ export const PreviewControls = ({
   const [local, setLocal] = useState<LocalTierlist>();
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [copyingPng, setCopyingPng] = useState(false);
   const [message, download, downloading] = useActionState(
     async (_previous: string, form: FormData) => {
       try {
@@ -81,6 +84,22 @@ export const PreviewControls = ({
       active = false;
     };
   }, []);
+
+  const copyPng = async () => {
+    setCopyingPng(true);
+    try {
+      await copyPreviewPng(id);
+      toast.add({ title: 'PNG copied to clipboard', timeout: 5000 });
+    } catch (error) {
+      toast.add({
+        title:
+          error instanceof Error ? error.message : 'Unable to copy the PNG.',
+        timeout: 5000,
+      });
+    } finally {
+      setCopyingPng(false);
+    }
+  };
 
   const adoptCopy = async () => {
     if (!local) {
@@ -137,7 +156,10 @@ export const PreviewControls = ({
         )}
       </div>
 
-      <form action={download} className="flex gap-4">
+      <form
+        action={download}
+        className="flex flex-wrap items-center gap-x-4 gap-y-1"
+      >
         <FormSubmitButton
           name="format"
           value="project"
@@ -147,6 +169,15 @@ export const PreviewControls = ({
         >
           Save project
         </FormSubmitButton>
+
+        <button
+          type="button"
+          disabled={copyingPng}
+          onClick={() => void copyPng()}
+          className="min-h-9 cursor-pointer underline underline-offset-4 disabled:opacity-50"
+        >
+          {copyingPng ? 'Copying PNG...' : 'Copy PNG'}
+        </button>
 
         <a
           href={`/api/tierlist-preview/${id}/image?download=1`}

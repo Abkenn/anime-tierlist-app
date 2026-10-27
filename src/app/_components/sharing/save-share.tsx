@@ -11,13 +11,15 @@ import {
   useEffectEvent,
   useState,
 } from 'react';
+import { preload } from 'react-dom';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
-import { toast } from '@/app/_components/ui/toast';
+import { Skeleton } from '@/app/_components/ui/skeleton';
 import {
   keyboardBehaviors,
   matchesKeyboardBehavior,
 } from '@/app/_lib/keybindings';
+import { copyPreviewLink } from '@/app/_lib/preview-clipboard';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 
 type PreparedShare = {
@@ -43,14 +45,15 @@ export const SaveShare = ({
   const reducedMotion = useReducedMotion();
   const [prepared, prepare, preparing] = useActionState(
     async () => {
+      let share: PreparedShare | null = null;
       try {
-        const share = await onPrepare();
+        share = await onPrepare();
         const url = await onPublish(share);
 
         return { share, url, error: '' };
       } catch (error) {
         return {
-          share: null,
+          share,
           url: '',
           error:
             error instanceof Error
@@ -90,6 +93,13 @@ export const SaveShare = ({
     '',
   );
 
+  if (prepared.url && !preparing) {
+    preload(
+      `/api/tierlist-preview/${new URL(prepared.url).pathname.slice(1)}/image`,
+      { as: 'image', fetchPriority: 'high' },
+    );
+  }
+
   const changeOpen = (value: boolean) => {
     if (downloading && !value) {
       return;
@@ -121,18 +131,6 @@ export const SaveShare = ({
       setCopied(`${label} copied`);
     } catch {
       setCopied('Select the text to copy it.');
-    }
-  };
-
-  const copyPreview = async () => {
-    try {
-      await navigator.clipboard.writeText(prepared.url);
-      toast.add({ title: 'Preview link copied to clipboard', timeout: 5000 });
-    } catch {
-      toast.add({
-        title: 'Could not copy the link. Copy it from the preview address bar.',
-        timeout: 5000,
-      });
     }
   };
 
@@ -173,9 +171,10 @@ export const SaveShare = ({
             </Dialog.Description>
 
             {preparing && (
-              <p role="status">
-                <TerminalText text="Preparing share options..." />
-              </p>
+              <div aria-busy="true" className="space-y-2">
+                <p>Seed</p>
+                <Skeleton className="h-11 w-full" />
+              </div>
             )}
 
             {!preparing && prepared.share && (
@@ -213,10 +212,20 @@ export const SaveShare = ({
                   href={prepared.url}
                   prefetch={true}
                   scroll={false}
-                  onClick={() => void copyPreview()}
+                  onClick={(event) =>
+                    void copyPreviewLink(
+                      prepared.url,
+                      !(
+                        event.ctrlKey ||
+                        event.metaKey ||
+                        event.shiftKey ||
+                        event.altKey
+                      ),
+                    )
+                  }
                   onAuxClick={(event) => {
                     if (event.button === 1) {
-                      void copyPreview();
+                      void copyPreviewLink(prepared.url, false);
                     }
                   }}
                   className="inline-flex min-h-9 items-center underline underline-offset-4 hover:text-muted-foreground"
@@ -224,6 +233,15 @@ export const SaveShare = ({
                   Open Preview
                 </Link>
               ) : null}
+
+              {preparing && (
+                <p
+                  role="status"
+                  className="flex min-h-9 items-center text-muted-foreground"
+                >
+                  <TerminalText text="Preparing preview..." />
+                </p>
+              )}
             </div>
 
             <form
@@ -240,7 +258,7 @@ export const SaveShare = ({
                 Save project
               </FormSubmitButton>
 
-              {prepared.url ? (
+              {prepared.url && !preparing ? (
                 <a
                   href={`/api/tierlist-preview/${new URL(prepared.url).pathname.slice(1)}/image?download=1`}
                   download="tierlist.png"
@@ -252,7 +270,7 @@ export const SaveShare = ({
                 <FormSubmitButton
                   name="format"
                   value="png"
-                  disabled={!document || downloading}
+                  disabled={!document || preparing || downloading}
                   pendingLabel="Exporting..."
                   className="min-h-9 cursor-pointer underline underline-offset-4 disabled:opacity-50"
                 >

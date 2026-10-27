@@ -1,3 +1,11 @@
+vi.mock('@/env', () => ({
+  env: {
+    get BLOB_READ_WRITE_TOKEN() {
+      return process.env.BLOB_READ_WRITE_TOKEN;
+    },
+  },
+}));
+
 import { beforeEach, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -7,8 +15,10 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   publish: vi.fn(),
   share: vi.fn(),
+  png: vi.fn(),
 }));
 vi.mock('server-only', () => ({}));
+vi.mock('./tierlist-png-cache', () => ({ getTierlistPng: mocks.png }));
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
@@ -129,4 +139,18 @@ it('saves a project from a public link as an independent copy, never the source 
     expect.objectContaining({ document, seedHash: `hash:${seed}` }),
   );
   expect(mocks.requireOwner).not.toHaveBeenCalled();
+});
+
+it('prepares the stored PNG before returning a shareable URL', async () => {
+  vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'test-token');
+  mocks.png.mockResolvedValue({
+    status: 'ready',
+    url: 'https://example.com/ready.png',
+  });
+  try {
+    const published = await publishTierlist({ ownerId: 'owner', revision: 4 });
+    expect(mocks.png).toHaveBeenCalledWith(published.id);
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

@@ -8,6 +8,7 @@ import {
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { embedExportPoster } from './export-poster';
+import { renderExportTextPaths } from './export-text-paths';
 
 export const renderTierlistPng = async (document: TierlistDocument) => {
   const sources = [
@@ -40,9 +41,13 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
         : undefined,
     })),
   };
-  const element = await TierlistPreviewBoard({ document: printable });
+  const element = TierlistPreviewBoard({ document: printable });
   const { prelude } = await prerender(element);
-  const svg = await new Response(prelude).text();
+  const markup = await new Response(prelude).text();
+  const outlines = await renderExportTextPaths(printable);
+  const withoutText = markup.replace(/<text\b[^>]*>[\s\S]*?<\/text>/gu, '');
+  const end = withoutText.lastIndexOf('</svg>');
+  const svg = `${withoutText.slice(0, end)}${outlines}</svg>`;
   const board = layoutExportBoard(document);
   const output = exportCanvasSize(board.width, board.height);
 

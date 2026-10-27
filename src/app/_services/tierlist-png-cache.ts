@@ -1,4 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
+import { env } from '@/env';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { consumeTierlistRateLimit } from '@/app/_data/mutations/tierlist';
@@ -35,7 +36,7 @@ export const getTierlistPng = async (slug: string) => {
 
     return renderTierlistPng(tierlistDocumentSchema.parse(share.document));
   };
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!env.BLOB_READ_WRITE_TOKEN) {
     return { status: 'generated' as const, png: await generate() };
   }
   const identity = {
