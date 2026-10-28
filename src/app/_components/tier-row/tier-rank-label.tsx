@@ -4,7 +4,7 @@ import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Input } from '@base-ui/react/input';
 import { cn } from 'cn';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Plus, SwatchBook, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
@@ -12,6 +12,7 @@ import {
   enabledTierRanksAtom,
   rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
+import { ColorPicker } from '@/app/_components/ui/color-picker';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
 import { tierColorClasses } from '@/app/_lib/tier-colors';
 import type {
@@ -130,7 +131,7 @@ export const TierRankLabel = ({
               setEditing(false);
             }
           }}
-          className="w-full border-b border-current bg-transparent text-center text-xs outline-none"
+          className="min-w-0 w-full px-3 border-b border-current bg-transparent text-center text-xs outline-none"
         />
       ) : (
         <button
@@ -139,32 +140,20 @@ export const TierRankLabel = ({
             setDraft(label);
             setEditing(true);
           }}
-          className="w-full cursor-text wrap-break-word p-1 text-center hover:underline"
+          className="min-w-0 w-full cursor-text wrap-anywhere px-3 py-1 text-center hover:underline"
           aria-label={`Rename ${label}`}
         >
           {label}
         </button>
       )}
 
-      <div className="absolute right-0 bottom-0 flex size-6 items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 max-lg:opacity-60">
-        <SwatchBook
-          aria-hidden="true"
-          className="size-[clamp(0.625rem,calc(var(--tier-size)*0.1),0.875rem)]"
-        />
-        <input
-          type="color"
-          name="tierColor"
-          aria-label={`Color for ${label}`}
-          value={details[rank]?.color ?? presetColor}
-          onChange={(event) =>
-            setDetails({
-              ...details,
-              [rank]: { label, color: event.target.value as HexColor },
-            })
-          }
-          className="absolute inset-0 size-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
-        />
-      </div>
+      <ColorPicker
+        label={`Color for ${label}`}
+        color={details[rank]?.color ?? presetColor}
+        onChange={(next) =>
+          setDetails({ ...details, [rank]: { label, color: next } })
+        }
+      />
 
       {rank === ranks.at(-1) && (
         <button

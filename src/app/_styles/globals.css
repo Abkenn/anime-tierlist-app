@@ -250,3 +250,13 @@
   outline: 2px solid var(--ring);
   outline-offset: 5px;
 }
+
+.tier-color-picker .react-colorful__saturation,
+.tier-color-picker .react-colorful__hue {
+  border-radius: 0;
+}
+
+.tier-color-picker .react-colorful__pointer {
+  width: 16px;
+  height: 16px;
+}
