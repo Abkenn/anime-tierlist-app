@@ -5,6 +5,7 @@ import {
   startTransition,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -24,6 +25,14 @@ export const usePreviewReturn = (beforeNavigate?: () => void) => {
     href: string;
   } | null>(null);
   const returning = state.navigation === router.bfcacheId && state.returning;
+
+  useLayoutEffect(() => {
+    return () => {
+      destination.current = null;
+      setState((current) => ({ ...current, returning: false }));
+    };
+  }, []);
+
   const requestReturn = useEffectEvent((event: Event) => {
     if (!(event instanceof CustomEvent) || typeof event.detail !== 'string') {
       return;

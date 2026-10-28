@@ -1,6 +1,7 @@
 'use client';
 
 import { Dialog } from '@base-ui/react/dialog';
+import { cn } from 'cn';
 import { Maximize2, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
@@ -14,7 +15,6 @@ import {
   useState,
 } from 'react';
 import { usePreviewReturn } from '@/app/_hooks/use-preview-return';
-import { previewLeaveEvent } from '@/app/_lib/tierlist-share-id';
 
 type PreviewParams = Promise<{ shareId: string }>;
 
@@ -28,12 +28,13 @@ const MaximizePreview = ({ params, onMaximize }: MaximizePreviewProps) => {
 
   return (
     <Link
-      href={`/preview/${shareId}`}
-      prefetch={true}
-      replace
+      href={`/${shareId}`}
       aria-label="Maximize preview"
       title="Open full page"
-      onNavigate={onMaximize}
+      onNavigate={(event) => {
+        event.preventDefault();
+        onMaximize();
+      }}
       className="flex size-9 items-center justify-center hover:bg-accent focus-visible:outline-2"
     >
       <Maximize2 aria-hidden="true" className="size-4" />
@@ -46,6 +47,7 @@ export const PreviewModal = ({
   params,
 }: PropsWithChildren<{ params: PreviewParams }>) => {
   const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
   const [visibility, setVisibility] = useState({
     navigation: router.bfcacheId,
     open: true,
@@ -60,6 +62,11 @@ export const PreviewModal = ({
   // Next retains inactive routes; reopen before paint on a restored visit.
   useLayoutEffect(() => {
     setVisibility({ navigation: router.bfcacheId, open: true });
+
+    return () => {
+      setExpanded(false);
+      setVisibility({ navigation: router.bfcacheId, open: false });
+    };
   }, [router.bfcacheId]);
 
   return (
@@ -91,6 +98,7 @@ export const PreviewModal = ({
           <Dialog.Popup
             render={
               <motion.div
+                layout={!reducedMotion}
                 initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                 animate={
                   leaving
@@ -114,7 +122,12 @@ export const PreviewModal = ({
               />
             }
             data-preview-modal=""
-            className="fixed left-1/2 top-1/2 z-60 flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-7xl -translate-1/2 flex-col border border-divider bg-popover p-4 text-popover-foreground shadow-md"
+            className={cn(
+              'fixed z-60 flex flex-col border border-divider bg-popover p-4 text-popover-foreground shadow-md',
+              expanded
+                ? 'inset-0 h-dvh w-full'
+                : 'left-1/2 top-1/2 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-7xl -translate-1/2',
+            )}
           >
             <div className="mb-3 flex shrink-0 items-center justify-between gap-4">
               <Dialog.Title className="text-sm font-medium">
@@ -122,29 +135,27 @@ export const PreviewModal = ({
               </Dialog.Title>
 
               <div className="flex items-center gap-1">
-                <Suspense
-                  fallback={
-                    <span
-                      aria-hidden="true"
-                      className="flex size-9 items-center justify-center opacity-40"
-                    >
-                      <Maximize2 className="size-4" />
-                    </span>
-                  }
-                >
-                  <MaximizePreview
-                    params={params}
-                    onMaximize={() => {
-                      startTransition(() => {
-                        setVisibility({
-                          navigation: router.bfcacheId,
-                          open: false,
+                {!expanded && (
+                  <Suspense
+                    fallback={
+                      <span
+                        aria-hidden="true"
+                        className="flex size-9 items-center justify-center opacity-40"
+                      >
+                        <Maximize2 className="size-4" />
+                      </span>
+                    }
+                  >
+                    <MaximizePreview
+                      params={params}
+                      onMaximize={() => {
+                        startTransition(() => {
+                          setExpanded(true);
                         });
-                        window.dispatchEvent(new Event(previewLeaveEvent));
-                      });
-                    }}
-                  />
-                </Suspense>
+                      }}
+                    />
+                  </Suspense>
+                )}
 
                 <Dialog.Close
                   aria-label="Close preview"

@@ -382,6 +382,39 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     const scale =
       bounds.width /
       (await poster.evaluate((node) => Number(node.getAttribute('width'))));
+    // The first gesture is a row drag, before any poster sprite can warm a cache.
+    const firstHandle = await visitor
+      .getByRole('button', {
+        name: 'Drag preview tier Watching',
+      })
+      .boundingBox();
+    if (!firstHandle) {
+      throw new Error('Preview row handle missing');
+    }
+    await visitor.mouse.move(firstHandle.x + 12, firstHandle.y + 12);
+    await visitor.mouse.down();
+    await visitor.mouse.move(firstHandle.x + 12, firstHandle.y + 175 * scale, {
+      steps: 8,
+    });
+    await expect(visitor.locator('[data-preview-displaced] img')).toHaveCount(
+      3,
+    );
+    await expect
+      .poll(() =>
+        visitor
+          .locator('[data-preview-displaced] img')
+          .evaluateAll((images) =>
+            images.every(
+              (image) =>
+                image instanceof HTMLImageElement &&
+                image.complete &&
+                image.naturalWidth > 0,
+            ),
+          ),
+      )
+      .toBe(true);
+    await visitor.mouse.up();
+    await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
     await visitor.mouse.move(bounds.x + 200 * scale, bounds.y + 80 * scale);
     await visitor.mouse.down();
     await visitor.mouse.move(bounds.x + 380 * scale, bounds.y + 90 * scale, {
@@ -470,13 +503,21 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     await expect(
       visitor.getByRole('button', { name: 'Share', exact: true }),
     ).toBeEnabled();
+    await visitor.goBack();
+    await expect(visitor.locator('[data-preview-page]')).toHaveCSS(
+      'opacity',
+      '1',
+    );
+    await expect(
+      visitor.getByRole('img', { name: 'Shared anime tierlist' }),
+    ).toHaveCSS('opacity', '1');
   } finally {
     ready.resolve();
     await context.close();
   }
 });
 
-test('maximizes the loaded preview without a second image loading state', async ({
+test('maximizes the loaded preview at the same share URL without loading again', async ({
   page,
   sharePath,
 }) => {
@@ -490,17 +531,20 @@ test('maximizes the loaded preview without a second image loading state', async 
   ).toHaveCSS('opacity', '1');
   const maximize = async () => {
     await modal.getByRole('link', { name: 'Maximize preview' }).click();
-    await page.waitForURL((url) => url.pathname === `/preview${sharePath}`);
+    await expect(page).toHaveURL(new RegExp(`${sharePath}$`, 'u'));
+    await expect
+      .poll(async () => {
+        const box = await modal.boundingBox();
+        return (
+          box &&
+          Math.abs(box.x) < 1 &&
+          Math.abs(box.y) < 1 &&
+          Math.abs(box.width - (page.viewportSize()?.width ?? 0)) < 1
+        );
+      })
+      .toBe(true);
     await expect(
-      page.locator('header').getByRole('link').first(),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('dialog', { name: 'Tierlist preview', exact: true }),
-    ).toHaveCount(0);
-    await expect(
-      page
-        .getByRole('main')
-        .getByRole('img', { name: 'Shared anime tierlist' }),
+      modal.getByRole('img', { name: 'Shared anime tierlist' }),
     ).toHaveCSS('opacity', '1');
     await expect(
       page.getByRole('status').filter({ hasText: 'Loading tierlist...' }),
@@ -516,12 +560,15 @@ test('maximizes the loaded preview without a second image loading state', async 
   await page.screenshot({ path: '.storybook-cache/preview-maximized.png' });
   await page.goBack();
   await page.waitForURL((url) => url.pathname === '/');
-  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Share tierlist', exact: true }),
+  ).toBeVisible();
   await page.getByRole('link', { name: 'Open Preview' }).click();
   await expect(
     modal.getByRole('img', { name: 'Shared anime tierlist' }),
   ).toHaveCSS('opacity', '1');
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
   await instant(page, maximize);
   await expect(
     page.getByRole('button', { name: 'Save project', exact: true }),
@@ -691,6 +738,16 @@ test('minimizes the preview modal when returning to edit mode', async ({
   await expect(
     page.getByRole('button', { name: 'Share', exact: true }),
   ).toBeEnabled();
+  await page.goBack();
+  await expect(modal).toBeVisible();
+  await expect(modal).toHaveCSS('opacity', '1');
+  await expect(
+    modal.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  await page.goForward();
+  await expect(
+    page.getByRole('button', { name: 'Share', exact: true }),
+  ).toBeEnabled();
 });
 
 test('softens standalone preview return and respects reduced motion', async ({
@@ -702,6 +759,13 @@ test('softens standalone preview return and respects reduced motion', async ({
   await page
     .getByRole('link', { name: 'Go to edit mode', exact: true })
     .click();
+  await expect(page).toHaveURL('http://localhost:3046/');
+  await page.goBack();
+  await expect(page.locator('[data-preview-page]')).toHaveCSS('opacity', '1');
+  await expect(
+    page.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  await page.goForward();
   await expect(page).toHaveURL('http://localhost:3046/');
   await expect
     .poll(() =>
@@ -722,4 +786,34 @@ test('softens standalone preview return and respects reduced motion', async ({
       Array.from(Reflect.get(window, 'previewAnimations') as Set<string>),
     ),
   ).not.toContain('page-returning');
+});
+
+test('restores fresh visitor previews through Back and Forward at both URL forms', async ({
+  browser,
+  sharePath,
+}) => {
+  for (const prefix of ['', '/preview']) {
+    const context = await browser.newContext({ serviceWorkers: 'block' });
+    try {
+      const visitor = await context.newPage();
+      await visitor.goto(`http://localhost:3046${prefix}${sharePath}`);
+      const image = visitor.getByRole('img', { name: 'Shared anime tierlist' });
+      const frame = visitor.locator('[data-preview-page]');
+      await expect(image).toHaveCSS('opacity', '1');
+      await visitor
+        .getByRole('link', { name: 'Create your own tierlist' })
+        .click();
+      await expect(visitor).toHaveURL('http://localhost:3046/');
+      await visitor.goBack();
+      await expect(frame).toHaveCSS('opacity', '1');
+      await expect(image).toHaveCSS('opacity', '1');
+      await visitor.goForward();
+      await expect(visitor).toHaveURL('http://localhost:3046/');
+      await visitor.goBack();
+      await expect(frame).toHaveCSS('opacity', '1');
+      await expect(image).toHaveCSS('opacity', '1');
+    } finally {
+      await context.close();
+    }
+  }
 });
