@@ -366,6 +366,10 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     ).toBeVisible();
     ready.resolve();
     await expect(poster).toHaveCSS('opacity', '1');
+    // Dragging must reuse the decoded image, even if its endpoint is now offline.
+    await visitor.route('**/api/tierlist-preview/**/image*', (route) =>
+      route.abort(),
+    );
     await visitor.evaluate(() => {
       window.addEventListener('tierlist-preview-drag-ended', () => {
         document.body.dataset.previewReturned = 'true';
@@ -421,6 +425,18 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
       { steps: 8 },
     );
     await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(3);
+    await expect
+      .poll(() =>
+        visitor
+          .locator('[data-preview-displaced] img')
+          .evaluateAll((images) =>
+            images.every(
+              (image) =>
+                image instanceof HTMLImageElement && image.naturalWidth > 0,
+            ),
+          ),
+      )
+      .toBe(true);
     await visitor.screenshot({ path: '.storybook-cache/preview-row-drag.png' });
     await visitor.mouse.up();
     await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
@@ -446,6 +462,7 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     await expect(
       visitor.getByRole('link', { name: 'Create your own tierlist' }),
     ).toBeVisible();
+    await visitor.unroute('**/api/tierlist-preview/**/image*');
     await visitor.route('**/tier-samples/*.svg', (route) => route.abort());
     await visitor.getByRole('button', { name: 'Use as a template' }).click();
     await expect(visitor).toHaveURL(/\/\?profile=local$/);

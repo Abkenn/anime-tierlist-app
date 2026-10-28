@@ -38,6 +38,7 @@ export const PreviewImage = ({
   );
   const matchingIds = new Set(matches.map((poster) => poster.item.id));
   const source = `/api/tierlist-preview/${id}/image`;
+  const imageSource = attempt ? `${source}?retry=${attempt}` : source;
 
   useEffect(() => {
     if (state === 'ready') {
@@ -49,7 +50,7 @@ export const PreviewImage = ({
     <div className="relative min-w-160" aria-busy={state === 'loading'}>
       <Image
         key={attempt}
-        src={attempt ? `${source}?retry=${attempt}` : source}
+        src={imageSource}
         alt="Shared anime tierlist"
         width={width}
         height={height}
@@ -73,7 +74,7 @@ export const PreviewImage = ({
       {state === 'ready' && (
         <PreviewDisplacement
           id={id}
-          source={source}
+          source={imageSource}
           width={width}
           height={height}
           rows={rows}
