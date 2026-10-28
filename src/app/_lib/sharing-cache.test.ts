@@ -11,3 +11,14 @@ it('reuses published previews until the local revision changes without preparing
   await cache.preview({ ...input, revision: 2 });
   expect(onPublish).toHaveBeenCalledTimes(2);
 });
+
+it('reuses a recovered server preview and discards it after edits', async () => {
+  const cache = createSharingCache();
+  const onPublish = vi.fn(async () => '/new');
+  const onFindPreview = vi.fn(async () => '/existing');
+  const input = { revision: 1, onPublish, onFindPreview };
+  expect(await cache.find(input)).toBe('/existing');
+  expect(await cache.preview(input)).toBe('/existing');
+  expect(onPublish).not.toHaveBeenCalled();
+  expect(await cache.preview({ ...input, revision: 2 })).toBe('/new');
+});

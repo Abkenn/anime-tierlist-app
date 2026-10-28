@@ -8,6 +8,7 @@ import {
   copyPublicTierlistSeed,
   prepareTierlistShare,
   publishTierlist,
+  readExistingTierlistPreview,
 } from './tierlist-share';
 
 const inputSchema = z.object({
@@ -38,3 +39,6 @@ export const copyShareSeed = async (id: unknown) =>
   handleShare(() =>
     copyPublicTierlistSeed(z.string().regex(tierlistShareIdPattern).parse(id)),
   );
+
+export const findExistingPreview = async (input: unknown) =>
+  handleShare(() => readExistingTierlistPreview(inputSchema.parse(input)));

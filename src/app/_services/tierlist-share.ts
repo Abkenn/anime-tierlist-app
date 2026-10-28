@@ -10,8 +10,15 @@ import { createTierlistOwner } from '@/app/_data/mutations/tierlist';
 import { publishTierlistSnapshot } from '@/app/_data/mutations/tierlist-share';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
 import { findOwnerById } from '@/app/_data/queries/tierlist';
-import { findTierlistShare } from '@/app/_data/queries/tierlist-share';
-import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
+import {
+  findOwnerTierlistShare,
+  findStoredTierlistPng,
+  findTierlistShare,
+} from '@/app/_data/queries/tierlist-share';
+import {
+  type TierlistDocument,
+  tierlistDocumentSchema,
+} from '@/app/_lib/tierlist-sync';
 import {
   hashTierlistSecret,
   limitSeedAccess,
@@ -21,6 +28,52 @@ import {
 import { getTierlistPng } from './tierlist-png-cache';
 
 const previewFormat = 4;
+
+const previewFingerprint = (revision: number, document: TierlistDocument) => {
+  const { updatedAt: _updatedAt, ...content } = document;
+  const digest = createHash('sha256')
+    .update(JSON.stringify({ previewFormat, document: content }))
+    .digest('hex');
+
+  return `v${revision}.${previewFormat}:${digest}`;
+};
+
+const findReadyTierlistPreview = async (
+  ownerId: string,
+  fingerprint: string,
+) => {
+  const share = await findOwnerTierlistShare(ownerId);
+  if (!share || share.fingerprint !== fingerprint) {
+    return null;
+  }
+  if (env.BLOB_READ_WRITE_TOKEN) {
+    const image = await findStoredTierlistPng(share.id);
+    if (!image?.url || image.fingerprint !== fingerprint) {
+      return null;
+    }
+  }
+
+  return { id: share.id, version: tierlistShareVersion(share.fingerprint) };
+};
+
+export const readExistingTierlistPreview = async (input: {
+  ownerId: string;
+  revision: number;
+}) => {
+  await requireTierlistOwner(input.ownerId);
+  const owner = await findOwnerById(input.ownerId);
+  if (!owner || owner.revision !== input.revision) {
+    return null;
+  }
+
+  return findReadyTierlistPreview(
+    owner.id,
+    previewFingerprint(
+      owner.revision,
+      tierlistDocumentSchema.parse(owner.document),
+    ),
+  );
+};
 
 export const readPublicTierlist = async (id: string) => {
   'use cache';
@@ -94,11 +147,11 @@ export const publishTierlist = async (input: {
     );
   }
   const document = tierlistDocumentSchema.parse(owner.document);
-  const { updatedAt: _updatedAt, ...content } = document;
-  const digest = createHash('sha256')
-    .update(JSON.stringify({ previewFormat, document: content }))
-    .digest('hex');
-  const fingerprint = `v${owner.revision}.${previewFormat}:${digest}`;
+  const fingerprint = previewFingerprint(owner.revision, document);
+  const existing = await findReadyTierlistPreview(input.ownerId, fingerprint);
+  if (existing) {
+    return existing;
+  }
   const share = await publishTierlistSnapshot({
     id: randomBytes(12).toString('base64url'),
     ownerId: owner.id,

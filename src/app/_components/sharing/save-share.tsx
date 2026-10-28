@@ -3,9 +3,15 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { Share2, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { startTransition, useActionState, useEffect, useState } from 'react';
+import Link, { useLinkStatus } from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useEffectEvent,
+  useState,
+} from 'react';
 import { preload } from 'react-dom';
 import { TerminalPending } from '@/app/_components/shell/terminal-pending';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
@@ -26,6 +32,7 @@ type SaveShareProps = {
   disabled: boolean;
   revision?: number;
   onPublish: () => Promise<string>;
+  onFindPreview?: () => Promise<string | null>;
 };
 
 export const SaveShare = ({
@@ -33,17 +40,26 @@ export const SaveShare = ({
   disabled,
   revision = 0,
   onPublish,
+  onFindPreview,
 }: SaveShareProps) => {
   const [open, setOpen] = useState(false);
-  const [opening, setOpening] = useState(false);
+  const [phase, setPhase] = useState<'idle' | 'generating' | 'opening'>('idle');
   const [cache] = useState(createSharingCache);
   const router = useRouter();
+  const pathname = usePathname();
   const reducedMotion = useReducedMotion();
-  const input = { revision, onPublish };
+  const input = { revision, onPublish, onFindPreview };
   const [prepared, prepare, preparing] = useActionState(
-    async () => {
+    async (
+      _previous: { url: string; error: string; revision: number },
+      mode: 'find' | 'generate',
+    ) => {
       try {
-        return { url: await cache.preview(input), error: '', revision };
+        const url =
+          mode === 'find'
+            ? await cache.find(input)
+            : await cache.preview(input);
+        return { url: url ?? '', error: '', revision };
       } catch (error) {
         return {
           url: '',
@@ -60,26 +76,47 @@ export const SaveShare = ({
   const current = prepared.revision === revision;
   const publishedUrl = current ? prepared.url : '';
 
-  useEffect(() => {
-    if (open && opening && publishedUrl) {
-      setOpening(false);
-      router.push(publishedUrl, { scroll: false });
-    } else if (opening && !preparing && prepared.error) {
-      setOpening(false);
+  const findPreview = useEffectEvent((localRevision: number) => {
+    if (localRevision !== prepared.revision || !prepared.url) {
+      startTransition(() => prepare('find'));
     }
-  }, [open, opening, publishedUrl, preparing, prepared.error, router]);
+  });
 
   useEffect(() => {
-    const close = () => setOpen(false);
+    if (open) {
+      findPreview(revision);
+    }
+  }, [open, revision]);
+
+  useEffect(() => {
+    if (open && phase === 'generating' && publishedUrl) {
+      setPhase('opening');
+      router.push(publishedUrl, { scroll: false });
+    } else if (phase === 'generating' && !preparing && prepared.error) {
+      setPhase('idle');
+    }
+  }, [open, phase, publishedUrl, preparing, prepared.error, router]);
+
+  useEffect(() => {
+    if (pathname !== '/') {
+      setPhase('idle');
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    const close = () => {
+      setOpen(false);
+      setPhase('idle');
+    };
     window.addEventListener(previewMaximizeEvent, close);
 
     return () => window.removeEventListener(previewMaximizeEvent, close);
   }, []);
 
   const openPreview = () => {
-    setOpening(true);
+    setPhase('generating');
     void copyPendingPreviewLink(cache.preview(input));
-    startTransition(() => prepare());
+    startTransition(() => prepare('generate'));
   };
 
   const [download, downloadAction, downloading] = useActionState(async () => {
@@ -113,7 +150,7 @@ export const SaveShare = ({
     }
     setOpen(value);
     if (!value) {
-      setOpening(false);
+      setPhase('idle');
     }
   };
 
@@ -167,12 +204,13 @@ export const SaveShare = ({
               )}
 
               <div className="mt-4 border-t border-divider pt-3">
-                {publishedUrl ? (
+                {publishedUrl && phase === 'idle' ? (
                   <Link
                     href={publishedUrl}
                     prefetch={true}
                     scroll={false}
-                    onClick={(event) =>
+                    onClick={(event) => {
+                      setPhase('idle');
                       void copyPreviewLink(
                         publishedUrl,
                         !(
@@ -181,8 +219,8 @@ export const SaveShare = ({
                           event.shiftKey ||
                           event.altKey
                         ),
-                      )
-                    }
+                      );
+                    }}
                     onAuxClick={(event) => {
                       if (event.button === 1) {
                         void copyPreviewLink(publishedUrl, false);
@@ -190,17 +228,23 @@ export const SaveShare = ({
                     }}
                     className="inline-flex min-h-9 items-center underline underline-offset-4 hover:text-muted-foreground"
                   >
-                    Open Preview
+                    <PreviewLinkLabel />
                   </Link>
                 ) : (
                   <button
                     type="button"
-                    disabled={opening}
+                    disabled={phase !== 'idle'}
                     onClick={openPreview}
                     className="inline-flex min-h-9 cursor-pointer items-center underline underline-offset-4 disabled:cursor-wait disabled:opacity-70"
                   >
-                    {opening ? (
-                      <TerminalPending text="Opening preview" />
+                    {phase !== 'idle' ? (
+                      <TerminalPending
+                        text={
+                          phase === 'opening'
+                            ? 'Opening preview'
+                            : 'Generating preview'
+                        }
+                      />
                     ) : (
                       'Open Preview'
                     )}
@@ -244,4 +288,10 @@ export const SaveShare = ({
       )}
     </Dialog.Root>
   );
+};
+
+const PreviewLinkLabel = () => {
+  const { pending } = useLinkStatus();
+
+  return pending ? <TerminalPending text="Opening preview" /> : 'Open Preview';
 };

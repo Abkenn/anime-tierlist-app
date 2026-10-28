@@ -27,6 +27,7 @@ import {
   replaceAccountFromSeed,
 } from '@/app/_services/tierlist.actions';
 import {
+  findExistingPreview,
   prepareShare,
   publishShare,
 } from '@/app/_services/tierlist-share.actions';
@@ -228,6 +229,28 @@ export const useTierlistAccount = (
     const task = run();
     sharingSeed.current = { key, task };
     return task;
+  };
+
+  const findSharingPreview = async () => {
+    const snapshot = storage.snapshot;
+    if (
+      !snapshot?.sync ||
+      snapshot.sync.syncedLocalRevision !== snapshot.revision
+    ) {
+      return null;
+    }
+    const result = await findExistingPreview({
+      ownerId: snapshot.sync.ownerId,
+      revision: snapshot.sync.serverRevision,
+    });
+    if (!result.ok || !result.value) {
+      return null;
+    }
+
+    return new URL(
+      `/${result.value.id}.${result.value.version}`,
+      window.location.origin,
+    ).href;
   };
 
   const publishSharing = async () => {
@@ -561,6 +584,7 @@ export const useTierlistAccount = (
       signIn,
       backupSeed,
       publishSharing,
+      findSharingPreview,
       reloadApp,
       keepDeviceChanges: () => perform(sync.keepDeviceChanges),
       acceptOnlineChanges: () => perform(sync.acceptOnlineChanges),

@@ -1,6 +1,7 @@
 type SharingInput = {
   revision: number;
   onPublish: () => Promise<string>;
+  onFindPreview?: () => Promise<string | null>;
 };
 
 export const createSharingCache = () => {
@@ -23,5 +24,21 @@ export const createSharingCache = () => {
     return entry.preview;
   };
 
-  return { preview };
+  const find = async (input: SharingInput) => {
+    if (current?.revision !== input.revision) {
+      current = { revision: input.revision };
+    }
+    const entry = current;
+    if (entry.preview) {
+      return entry.preview;
+    }
+    const url = await input.onFindPreview?.();
+    if (url && current === entry && !entry.preview) {
+      entry.preview = Promise.resolve(url);
+    }
+
+    return url ?? null;
+  };
+
+  return { preview, find };
 };

@@ -16,6 +16,8 @@ const mocks = vi.hoisted(() => ({
   publish: vi.fn(),
   share: vi.fn(),
   png: vi.fn(),
+  existing: vi.fn(),
+  storedPng: vi.fn(),
 }));
 vi.mock('server-only', () => ({}));
 vi.mock('./tierlist-png-cache', () => ({ getTierlistPng: mocks.png }));
@@ -43,6 +45,8 @@ vi.mock('@/app/_data/queries/google-account', () => ({
 }));
 vi.mock('@/app/_data/queries/tierlist-share', () => ({
   findTierlistShare: mocks.share,
+  findOwnerTierlistShare: mocks.existing,
+  findStoredTierlistPng: mocks.storedPng,
 }));
 vi.mock('@/app/_data/mutations/tierlist', () => ({
   createTierlistOwner: mocks.create,
@@ -55,6 +59,7 @@ import {
   copyPublicTierlistSeed,
   prepareTierlistShare,
   publishTierlist,
+  readExistingTierlistPreview,
   readPublicTierlist,
 } from './tierlist-share';
 
@@ -156,6 +161,53 @@ it('prepares the stored PNG before returning a shareable URL', async () => {
   try {
     const published = await publishTierlist({ ownerId: 'owner', revision: 4 });
     expect(mocks.png).toHaveBeenCalledWith(published.id);
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
+
+it('recovers a ready revision across clients without publishing, invalidating or regenerating', async () => {
+  vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'test-token');
+  try {
+    mocks.png.mockResolvedValue({
+      status: 'ready',
+      url: 'https://example.com/ready.png',
+    });
+    const published = await publishTierlist({ ownerId: 'owner', revision: 4 });
+    const input = mocks.publish.mock.calls[0][0];
+    mocks.existing.mockResolvedValue(input);
+    mocks.storedPng.mockResolvedValue({
+      url: 'https://example.com/ready.png',
+      fingerprint: input.fingerprint,
+    });
+    vi.mocked((await import('next/cache')).revalidateTag).mockClear();
+    mocks.publish.mockClear();
+    mocks.png.mockClear();
+    expect(
+      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
+    ).toEqual(published);
+    expect(await publishTierlist({ ownerId: 'owner', revision: 4 })).toEqual(
+      published,
+    );
+    expect(mocks.publish).not.toHaveBeenCalled();
+    expect(mocks.png).not.toHaveBeenCalled();
+    expect((await import('next/cache')).revalidateTag).not.toHaveBeenCalled();
+    expect(
+      await readExistingTierlistPreview({ ownerId: 'owner', revision: 3 }),
+    ).toBeNull();
+    mocks.existing.mockResolvedValue({ ...input, fingerprint: 'old-version' });
+    expect(
+      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
+    ).toBeNull();
+    mocks.existing.mockResolvedValue(input);
+    mocks.storedPng.mockResolvedValue(null);
+    expect(
+      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
+    ).toBeNull();
+    mocks.requireOwner.mockRejectedValueOnce(new Error('Unauthorized'));
+    await expect(
+      readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
+    ).rejects.toThrow('Unauthorized');
   } finally {
     vi.unstubAllEnvs();
   }

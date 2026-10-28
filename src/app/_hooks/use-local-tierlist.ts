@@ -18,7 +18,10 @@ import {
 } from '@/app/_lib/preview-handoff';
 import { createSaveQueue } from '@/app/_lib/save-queue';
 import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
-import { sameTierlistDocument } from '@/app/_lib/tierlist-sync';
+import {
+  getTierlistDocument,
+  sameTierlistDocument,
+} from '@/app/_lib/tierlist-sync';
 import { subscribeTierlistTabs } from '@/app/_lib/tierlist-tabs';
 import {
   activateAccountTierlist,
@@ -246,7 +249,16 @@ export const useLocalTierlist = () => {
             rankDetails: store.get(rankDetailsAtom),
           };
           const before = observed;
-          observed = { ...observed, ...document };
+          const next = { ...observed, ...document };
+          if (
+            sameTierlistDocument(
+              getTierlistDocument(before),
+              getTierlistDocument(next),
+            )
+          ) {
+            return;
+          }
+          observed = next;
           try {
             await queue.enqueue(async () => {
               current = await saveLocalTierlistEdit(

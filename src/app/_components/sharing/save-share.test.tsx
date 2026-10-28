@@ -2,7 +2,22 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { SaveShare } from './save-share';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('next/link', () => ({
+  default: ({
+    prefetch: _prefetch,
+    scroll: _scroll,
+    ...props
+  }: import('react').ComponentProps<'a'> & {
+    prefetch?: boolean;
+    scroll?: boolean;
+  }) => <a {...props} />,
+  useLinkStatus: () => ({ pending: false }),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/',
+}));
 
 const downloads = vi.hoisted(() => ({
   project: vi.fn(),
@@ -33,6 +48,9 @@ it('keeps sharing separate from private backups and reuses prepared previews', a
   ).not.toBeInTheDocument();
   expect(publish).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Open Preview' }));
+  await screen.findByRole('button', { name: /Opening preview/ });
+  fireEvent.click(screen.getByRole('button', { name: 'Close sharing' }));
+  fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
   const preview = await screen.findByRole('link', { name: 'Open Preview' });
   expect(publish).toHaveBeenCalledOnce();
   expect(preview).toHaveAttribute(
@@ -51,4 +69,23 @@ it('keeps sharing separate from private backups and reuses prepared previews', a
     screen.getByRole('link', { name: 'Open Preview' }),
   ).toBeInTheDocument();
   expect(publish).toHaveBeenCalledOnce();
+});
+
+it('restores an existing server preview on Share open without republishing', async () => {
+  const publish = vi.fn(async () => '/new');
+  const find = vi.fn(async () => 'https://example.com/existing.v3.4');
+  render(
+    <SaveShare
+      disabled={false}
+      revision={3}
+      onPublish={publish}
+      onFindPreview={find}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
+  expect(
+    await screen.findByRole('link', { name: 'Open Preview' }),
+  ).toHaveAttribute('href', 'https://example.com/existing.v3.4');
+  expect(find).toHaveBeenCalledOnce();
+  expect(publish).not.toHaveBeenCalled();
 });

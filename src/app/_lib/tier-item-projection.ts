@@ -19,6 +19,19 @@ export const projectTierItems = (
     return items;
   }
 
+  const siblingsBefore = items.filter(
+    (value) => getVisibleRank(value, ranks) === dropSlot.rank,
+  );
+  const currentIndex = siblingsBefore.findIndex(
+    (value) => value.id === item.id,
+  );
+  if (
+    item.rank === dropSlot.rank &&
+    currentIndex === Math.min(dropSlot.index, siblingsBefore.length - 1)
+  ) {
+    return items;
+  }
+
   const remaining = items.filter((value) => value.id !== item.id);
   const siblings = remaining.filter(
     (value) => getVisibleRank(value, ranks) === dropSlot.rank,

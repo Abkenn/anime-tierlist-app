@@ -123,6 +123,7 @@ export const LocalTierlist = ({
               revision={storage.snapshot?.revision ?? 0}
               disabled={status.controlsBusy}
               onPublish={actions.publishSharing}
+              onFindPreview={actions.findSharingPreview}
             />
           </div>
         </div>

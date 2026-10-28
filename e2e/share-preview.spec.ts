@@ -469,3 +469,24 @@ test('maximizes the loaded preview without a second image loading state', async 
     page.getByRole('dialog', { name: 'Tierlist preview', exact: true }),
   ).toHaveCount(0);
 });
+
+test('recovers the unchanged preview after a homepage reload before opening it', async ({
+  page,
+  sharePath,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const preview = page.getByRole('link', { name: 'Open Preview', exact: true });
+  await expect(preview).toHaveAttribute(
+    'href',
+    new RegExp(`${sharePath}$`, 'u'),
+  );
+  await preview.click();
+  await page.waitForURL((url) => url.pathname === sharePath);
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Tierlist preview', exact: true })
+      .getByRole('img', { name: 'Shared anime tierlist', exact: true }),
+  ).toBeVisible();
+});

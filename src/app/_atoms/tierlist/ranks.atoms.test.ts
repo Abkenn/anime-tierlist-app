@@ -1,5 +1,6 @@
 import { createStore } from 'jotai/vanilla';
 import { expect, it } from 'vitest';
+import type { TierRank } from '@/app/_types/tierlist.types';
 import { tierItemsAtom } from './items.atoms';
 import { moveRankAtom, removeRankAtom } from './ranks.atoms';
 import { enabledTierRanksAtom } from './settings.atoms';
@@ -43,4 +44,18 @@ it('moves deleted tier posters to the beginning of the next tier and preserves a
   store.set(removeRankAtom, 'A');
   expect(store.get(enabledTierRanksAtom)).toEqual(['A']);
   expect(store.get(tierItemsAtom)).toHaveLength(3);
+});
+
+it('does not publish an atom change for a rank dropped in the same place', () => {
+  const store = createStore();
+  const ranks: TierRank[] = ['S', 'A', 'Watching'];
+  store.set(enabledTierRanksAtom, ranks);
+  let changes = 0;
+  const unsubscribe = store.sub(enabledTierRanksAtom, () => {
+    changes += 1;
+  });
+  store.set(moveRankAtom, { rank: 'A', target: 'A' });
+  expect(store.get(enabledTierRanksAtom)).toBe(ranks);
+  expect(changes).toBe(0);
+  unsubscribe();
 });
