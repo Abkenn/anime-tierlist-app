@@ -20,11 +20,12 @@ const mocks = vi.hoisted(() => ({
   storedPng: vi.fn(),
 }));
 vi.mock('server-only', () => ({}));
+vi.mock('next/server', () => ({ connection: vi.fn() }));
 vi.mock('./tierlist-png-cache', () => ({ getTierlistPng: mocks.png }));
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
-  revalidateTag: vi.fn(),
+  updateTag: vi.fn(),
 }));
 vi.mock('./tierlist-identity', () => ({
   requireTierlistOwner: mocks.requireOwner,
@@ -176,11 +177,12 @@ it('recovers a ready revision across clients without publishing, invalidating or
     const published = await publishTierlist({ ownerId: 'owner', revision: 4 });
     const input = mocks.publish.mock.calls[0][0];
     mocks.existing.mockResolvedValue(input);
+    mocks.share.mockResolvedValue(input);
     mocks.storedPng.mockResolvedValue({
       url: 'https://example.com/ready.png',
       fingerprint: input.fingerprint,
     });
-    vi.mocked((await import('next/cache')).revalidateTag).mockClear();
+    vi.mocked((await import('next/cache')).updateTag).mockClear();
     mocks.publish.mockClear();
     mocks.png.mockClear();
     expect(
@@ -191,7 +193,15 @@ it('recovers a ready revision across clients without publishing, invalidating or
     );
     expect(mocks.publish).not.toHaveBeenCalled();
     expect(mocks.png).not.toHaveBeenCalled();
-    expect((await import('next/cache')).revalidateTag).not.toHaveBeenCalled();
+    expect((await import('next/cache')).updateTag).not.toHaveBeenCalled();
+    mocks.share.mockResolvedValueOnce(null);
+    expect(
+      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
+    ).toEqual(published);
+    expect((await import('next/cache')).updateTag).toHaveBeenCalledWith(
+      `tierlist-share:${published.id}`,
+    );
+    expect(mocks.png).not.toHaveBeenCalled();
     expect(
       await readExistingTierlistPreview({ ownerId: 'owner', revision: 3 }),
     ).toBeNull();
@@ -211,4 +221,23 @@ it('recovers a ready revision across clients without publishing, invalidating or
   } finally {
     vi.unstubAllEnvs();
   }
+});
+
+it('checks a missing cached publication again before returning not found', async () => {
+  mocks.share.mockResolvedValueOnce(null).mockResolvedValueOnce({
+    id: 'a'.repeat(16),
+    fingerprint: 'v8.4:latest',
+    document,
+  });
+  expect(await readPublicTierlist(`${'a'.repeat(16)}.v7.4`)).toEqual({
+    id: 'a'.repeat(16),
+    version: 'v8.4',
+    document,
+  });
+  expect(mocks.share).toHaveBeenCalledTimes(2);
+  expect((await import('next/cache')).cacheLife).toHaveBeenCalledWith({
+    stale: 0,
+    revalidate: 1,
+    expire: 5,
+  });
 });

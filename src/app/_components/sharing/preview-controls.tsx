@@ -10,7 +10,10 @@ import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { toast } from '@/app/_components/ui/toast';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
-import { previewDragEndedEvent } from '@/app/_lib/tierlist-share-id';
+import {
+  previewDragEndedEvent,
+  previewReturnEvent,
+} from '@/app/_lib/tierlist-share-id';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import {
   getTierlistDocument,
@@ -112,8 +115,8 @@ export const PreviewControls = ({
       !reducedMotion
     ) {
       void notice.start({
-        x: [0, -3, 3, -2, 2, 0],
-        transition: { duration: 0.3 },
+        x: [0, -10, 10, -8, 8, -4, 4, 0],
+        transition: { duration: 0.48 },
       });
     }
   });
@@ -145,14 +148,29 @@ export const PreviewControls = ({
     }
   };
 
+  const requestReturn = (destination: string) =>
+    !window.dispatchEvent(
+      new CustomEvent(previewReturnEvent, {
+        cancelable: true,
+        detail: destination,
+      }),
+    );
+
   const adoptCopy = async () => {
     if (!local) {
       return;
     }
     try {
-      router.push(
-        await adoptPreviewTemplate({ id, document, local, active, account }),
-      );
+      const destination = await adoptPreviewTemplate({
+        id,
+        document,
+        local,
+        active,
+        account,
+      });
+      if (!requestReturn(destination)) {
+        router.push(destination);
+      }
     } catch (error) {
       setError(
         error instanceof Error
@@ -179,6 +197,11 @@ export const PreviewControls = ({
           sameTierlistDocument(getTierlistDocument(active), document)) ? (
           <Link
             href="/"
+            onNavigate={(event) => {
+              if (requestReturn('/')) {
+                event.preventDefault();
+              }
+            }}
             className="inline-flex min-h-9 items-center underline underline-offset-4"
           >
             Go to edit mode
@@ -190,6 +213,11 @@ export const PreviewControls = ({
           >
             <Link
               href="/"
+              onNavigate={(event) => {
+                if (requestReturn('/')) {
+                  event.preventDefault();
+                }
+              }}
               className="inline-flex min-h-9 items-center underline underline-offset-4"
             >
               {active?.items.length || account

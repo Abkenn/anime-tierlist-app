@@ -13,7 +13,8 @@ import {
   useLayoutEffect,
   useState,
 } from 'react';
-import { previewMaximizeEvent } from '@/app/_lib/tierlist-share-id';
+import { usePreviewReturn } from '@/app/_hooks/use-preview-return';
+import { previewLeaveEvent } from '@/app/_lib/tierlist-share-id';
 
 type PreviewParams = Promise<{ shareId: string }>;
 
@@ -49,8 +50,12 @@ export const PreviewModal = ({
     navigation: router.bfcacheId,
     open: true,
   });
-  const open = visibility.navigation !== router.bfcacheId || visibility.open;
+  const { returning: leaving, finishReturn } = usePreviewReturn(() => {
+    setVisibility({ navigation: router.bfcacheId, open: false });
+  });
+
   const reducedMotion = useReducedMotion();
+  const open = visibility.navigation !== router.bfcacheId || visibility.open;
 
   // Next retains inactive routes; reopen before paint on a restored visit.
   useLayoutEffect(() => {
@@ -61,6 +66,9 @@ export const PreviewModal = ({
     <Dialog.Root
       open={open}
       onOpenChange={(open) => {
+        if (leaving) {
+          return;
+        }
         setVisibility({ navigation: router.bfcacheId, open });
         if (!open) {
           router.back();
@@ -69,16 +77,43 @@ export const PreviewModal = ({
     >
       {open && (
         <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-60 bg-background/75 backdrop-blur-xs" />
+          <Dialog.Backdrop
+            render={
+              <motion.div
+                animate={{ opacity: leaving ? 0 : 1 }}
+                initial={false}
+                transition={{ duration: reducedMotion ? 0 : 0.18 }}
+              />
+            }
+            className="fixed inset-0 z-60 bg-background/75 backdrop-blur-xs"
+          />
 
           <Dialog.Popup
             render={
               <motion.div
                 initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.18 }}
+                animate={
+                  leaving
+                    ? { opacity: 0, scale: 0.92, y: 12 }
+                    : { opacity: 1, scale: 1, y: 0 }
+                }
+                transition={{
+                  duration: reducedMotion ? 0 : 0.2,
+                  ease: 'easeOut',
+                }}
+                onAnimationComplete={(definition) => {
+                  if (
+                    leaving &&
+                    typeof definition === 'object' &&
+                    'scale' in definition &&
+                    definition.scale === 0.92
+                  ) {
+                    finishReturn();
+                  }
+                }}
               />
             }
+            data-preview-modal=""
             className="fixed left-1/2 top-1/2 z-60 flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-7xl -translate-1/2 flex-col border border-divider bg-popover p-4 text-popover-foreground shadow-md"
           >
             <div className="mb-3 flex shrink-0 items-center justify-between gap-4">
@@ -105,7 +140,7 @@ export const PreviewModal = ({
                           navigation: router.bfcacheId,
                           open: false,
                         });
-                        window.dispatchEvent(new Event(previewMaximizeEvent));
+                        window.dispatchEvent(new Event(previewLeaveEvent));
                       });
                     }}
                   />

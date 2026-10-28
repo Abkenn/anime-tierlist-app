@@ -7,7 +7,7 @@ import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
 import { Skeleton } from '@/app/_components/ui/skeleton';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
 import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
-import type { ExportPoster } from '@/app/_lib/tierlist-export-layout';
+import type { ExportRow } from '@/app/_lib/tierlist-export-layout';
 import { PreviewDisplacement } from './preview-displacement';
 
 // Only decoded public PNG URLs are remembered, never account data or poster blobs.
@@ -17,14 +17,14 @@ type PreviewImageProps = {
   id: string;
   width: number;
   height: number;
-  posters: ExportPoster[];
+  rows: ExportRow[];
 };
 
 export const PreviewImage = ({
   id,
   width,
   height,
-  posters,
+  rows,
 }: PreviewImageProps) => {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>(() =>
     decodedPreviews.has(id) ? 'ready' : 'loading',
@@ -32,6 +32,7 @@ export const PreviewImage = ({
   const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
+  const posters = rows.flatMap((row) => row.posters);
   const matches = posters.filter((poster) =>
     matchesTierItemLabel(poster.item, deferredQuery),
   );
@@ -75,7 +76,7 @@ export const PreviewImage = ({
           source={source}
           width={width}
           height={height}
-          posters={posters}
+          rows={rows}
         />
       )}
 

@@ -89,6 +89,8 @@ export const layoutExportBoard = (document: TierlistDocument) => {
   };
 };
 
+export type ExportRow = ReturnType<typeof layoutExportBoard>['rows'][number];
+
 export type ExportPoster = ReturnType<
   typeof layoutExportBoard
 >['rows'][number]['posters'][number];

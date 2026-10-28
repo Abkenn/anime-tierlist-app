@@ -5,7 +5,8 @@ import {
 import { env } from '@/env';
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
+import { cacheLife, cacheTag, updateTag } from 'next/cache';
+import { connection } from 'next/server';
 import { createTierlistOwner } from '@/app/_data/mutations/tierlist';
 import { publishTierlistSnapshot } from '@/app/_data/mutations/tierlist-share';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
@@ -53,7 +54,14 @@ const findReadyTierlistPreview = async (
     }
   }
 
-  return { id: share.id, version: tierlistShareVersion(share.fingerprint) };
+  const version = tierlistShareVersion(share.fingerprint);
+  const cached = await readCachedPublicTierlist(share.id);
+  if (!cached || cached.version !== version) {
+    // Repair stale negative/older entries without rebuilding an already valid PNG.
+    updateTag(`tierlist-share:${share.id}`);
+  }
+
+  return { id: share.id, version };
 };
 
 export const readExistingTierlistPreview = async (input: {
@@ -75,22 +83,46 @@ export const readExistingTierlistPreview = async (input: {
   );
 };
 
-export const readPublicTierlist = async (id: string) => {
-  'use cache';
-  cacheLife('max');
-  cacheTag(`tierlist-share:${id.split('.')[0]}`);
-  if (!tierlistShareIdPattern.test(id)) {
+export const readPublicTierlist = async (slug: string) => {
+  if (!tierlistShareIdPattern.test(slug)) {
     return null;
   }
-  const share = await findTierlistShare(id);
+  const id = slug.split('.')[0];
+  const cached = await readCachedPublicTierlist(id);
+  const requestedVersion = slug.slice(id.length + 1);
+  if (cached && (!requestedVersion || cached.version === requestedVersion)) {
+    return cached;
+  }
 
-  return share
+  // Verify missing/stale URLs at request time before returning a 404 or redirect.
+  await connection();
+
+  return publicTierlistSnapshot(await findTierlistShare(id));
+};
+
+const publicTierlistSnapshot = (
+  share: Awaited<ReturnType<typeof findTierlistShare>>,
+) =>
+  share
     ? {
         id: share.id,
         version: tierlistShareVersion(share.fingerprint),
         document: tierlistDocumentSchema.parse(share.document),
       }
     : null;
+
+const readCachedPublicTierlist = async (id: string) => {
+  'use cache';
+  cacheTag(`tierlist-share:${id}`);
+  const share = await findTierlistShare(id);
+  if (!share) {
+    // A missing publication must not become a long-lived cached 404.
+    cacheLife({ stale: 0, revalidate: 1, expire: 5 });
+    return null;
+  }
+  cacheLife('max');
+
+  return publicTierlistSnapshot(share);
 };
 
 export const prepareTierlistShare = async (input: {
@@ -159,7 +191,7 @@ export const publishTierlist = async (input: {
     document,
   });
 
-  revalidateTag(`tierlist-share:${share.id}`, { expire: 0 });
+  updateTag(`tierlist-share:${share.id}`);
 
   if (env.BLOB_READ_WRITE_TOKEN) {
     const image = await getTierlistPng(share.id);

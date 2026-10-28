@@ -9,4 +9,6 @@ export const tierlistShareVersion = (fingerprint: string) =>
 
 export const previewDragEndedEvent = 'tierlist-preview-drag-ended';
 
-export const previewMaximizeEvent = 'tierlist-preview-maximize';
+export const previewLeaveEvent = 'tierlist-preview-leave';
+
+export const previewReturnEvent = 'tierlist-preview-return';

@@ -24,7 +24,7 @@ import {
   copyPreviewLink,
 } from '@/app/_lib/preview-clipboard';
 import { createSharingCache } from '@/app/_lib/sharing-cache';
-import { previewMaximizeEvent } from '@/app/_lib/tierlist-share-id';
+import { previewLeaveEvent } from '@/app/_lib/tierlist-share-id';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 
 type SaveShareProps = {
@@ -108,9 +108,9 @@ export const SaveShare = ({
       setOpen(false);
       setPhase('idle');
     };
-    window.addEventListener(previewMaximizeEvent, close);
+    window.addEventListener(previewLeaveEvent, close);
 
-    return () => window.removeEventListener(previewMaximizeEvent, close);
+    return () => window.removeEventListener(previewLeaveEvent, close);
   }, []);
 
   const openPreview = () => {

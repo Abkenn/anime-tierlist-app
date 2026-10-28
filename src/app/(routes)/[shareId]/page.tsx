@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PreviewPageFrame } from '@/app/_components/sharing/preview-page-frame';
 import { SharedTierlist } from '@/app/_components/sharing/shared-tierlist';
 import { siteUrl } from '@/app/_lib/site-metadata';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
@@ -47,7 +48,7 @@ const ShareContent = async ({ params }: PageProps<'/[shareId]'>) => {
 };
 
 const SharedPage = (props: PageProps<'/[shareId]'>) => (
-  <main className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-8 lg:px-6">
+  <PreviewPageFrame>
     <h1 className="sr-only">Shared Anime Tierlist</h1>
 
     <Suspense
@@ -57,7 +58,7 @@ const SharedPage = (props: PageProps<'/[shareId]'>) => (
     >
       <ShareContent {...props} />
     </Suspense>
-  </main>
+  </PreviewPageFrame>
 );
 
 export default SharedPage;

@@ -1,5 +1,5 @@
 import { navigation } from 'next/cache';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense, ViewTransition } from 'react';
 import { touchTierlistPng } from '@/app/_data/mutations/tierlist-png';
@@ -63,6 +63,10 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
     notFound();
   }
 
+  const canonicalId = `${share.id}.${share.version}`;
+  if (id !== canonicalId) {
+    redirect(`/${canonicalId}`);
+  }
   const board = layoutExportBoard(share.document);
 
   return (
@@ -88,7 +92,7 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
             id={`${share.id}.${share.version}`}
             width={board.width}
             height={board.height}
-            posters={board.rows.flatMap((row) => row.posters)}
+            rows={board.rows}
           />
         </div>
       </ViewTransition>

@@ -24,7 +24,7 @@ const test = base.extend<{ sharePath: string }>({
     const document: TierlistDocument = {
       version: 1 as const,
       imageMode: 'natural' as const,
-      ranks: ['Watching' as const],
+      ranks: ['Watching' as const, 'S' as const, 'A' as const],
       items: [
         {
           id: 'preview-navigation-fixture',
@@ -380,16 +380,64 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
       (await poster.evaluate((node) => Number(node.getAttribute('width'))));
     await visitor.mouse.move(bounds.x + 200 * scale, bounds.y + 80 * scale);
     await visitor.mouse.down();
-    await visitor.mouse.move(bounds.x + 350 * scale, bounds.y + 90 * scale, {
+    await visitor.mouse.move(bounds.x + 380 * scale, bounds.y + 90 * scale, {
       steps: 6,
     });
     await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(2);
+    await expect
+      .poll(async () => {
+        const shifted = await visitor
+          .locator('[data-preview-displaced="preview-displacement-fixture"]')
+          .boundingBox();
+        return shifted
+          ? Math.abs(shifted.x - (bounds.x + 162 * scale))
+          : Infinity;
+      })
+      .toBeLessThan(2);
+    await visitor.screenshot({
+      path: '.storybook-cache/preview-poster-drag.png',
+    });
     await visitor.mouse.up();
     await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
     await expect(visitor.locator('body')).toHaveAttribute(
       'data-preview-returned',
       'true',
     );
+    const rowHandle = visitor.getByRole('button', {
+      name: 'Drag preview tier Watching',
+    });
+    const handle = await rowHandle.boundingBox();
+    if (!handle) {
+      throw new Error('Preview row handle missing');
+    }
+    await visitor.mouse.move(
+      handle.x + handle.width / 2,
+      handle.y + handle.height / 2,
+    );
+    await visitor.mouse.down();
+    await visitor.mouse.move(
+      handle.x + handle.width / 2,
+      handle.y + handle.height / 2 + 175 * scale,
+      { steps: 8 },
+    );
+    await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(3);
+    await visitor.screenshot({ path: '.storybook-cache/preview-row-drag.png' });
+    await visitor.mouse.up();
+    await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
+    await expect(
+      visitor.getByRole('button', { name: 'Drag preview tier Watching' }),
+    ).toBeAttached();
+    // Retarget to another rank and immediately drag again after snap-back.
+    for (let repeat = 0; repeat < 2; repeat += 1) {
+      await visitor.mouse.move(bounds.x + 200 * scale, bounds.y + 80 * scale);
+      await visitor.mouse.down();
+      await visitor.mouse.move(bounds.x + 200 * scale, bounds.y + 240 * scale, {
+        steps: 4,
+      });
+      await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(2);
+      await visitor.mouse.up();
+      await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
+    }
     expect(images).toHaveLength(1);
     expect(images[0]).toContain('/api/tierlist-preview/');
     await expect(
@@ -489,4 +537,172 @@ test('recovers the unchanged preview after a homepage reload before opening it',
       .getByRole('dialog', { name: 'Tierlist preview', exact: true })
       .getByRole('img', { name: 'Shared anime tierlist', exact: true }),
   ).toBeVisible();
+});
+
+test('repairs a cached not-found preview instead of reusing a broken route', async ({
+  page,
+  sharePath,
+}) => {
+  const db = postgres<Contract>({
+    contractJson,
+    url:
+      process.env.DATABASE_URL_POOLED ??
+      process.env.DATABASE_URL ??
+      process.env.DATABASE_POSTGRES_URL,
+    poolOptions: { connectionTimeoutMillis: 8000, idleTimeoutMillis: 1000 },
+  });
+  const id = sharePath.slice(1).split('.')[0];
+  const share = await db.orm.public.TierlistShare.where({ id }).first();
+  if (!share) {
+    throw new Error('Fixture publication missing');
+  }
+  const restoredId = randomBytes(12).toString('base64url');
+  const restoredPath = `/${restoredId}.${share.fingerprint.split(':')[0]}`;
+  // Only this disposable fixture is changed: prime a new negative entry, then publish it.
+  await db.orm.public.TierlistShare.where({ id }).delete();
+  try {
+    await page.goto(restoredPath);
+    await expect(
+      page.getByRole('heading', { name: 'Page not found' }),
+    ).toBeVisible();
+  } finally {
+    await db.orm.public.TierlistShare.create({
+      id: restoredId,
+      ownerId: share.ownerId,
+      fingerprint: share.fingerprint,
+      document: share.document,
+    });
+  }
+  await page.getByRole('link', { name: 'Return home', exact: true }).click();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const preview = page.getByRole('link', { name: 'Open Preview', exact: true });
+  await expect(preview).toHaveAttribute(
+    'href',
+    new RegExp(`${restoredPath}$`, 'u'),
+  );
+  await preview.click();
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Tierlist preview', exact: true })
+      .getByRole('img', { name: 'Shared anime tierlist', exact: true }),
+  ).toHaveCSS('opacity', '1');
+});
+
+test('redirects an older preview version to the latest publication', async ({
+  page,
+  sharePath,
+}) => {
+  const id = sharePath.slice(1).split('.')[0];
+  await page.goto(`/${id}.v0.0`);
+  await expect(page).toHaveURL(new RegExp(`${sharePath}$`, 'u'));
+  await expect(
+    page.getByRole('img', { name: 'Shared anime tierlist', exact: true }),
+  ).toHaveCSS('opacity', '1');
+  await expect(
+    page.getByRole('heading', { name: 'Page not found', exact: true }),
+  ).toHaveCount(0);
+});
+
+const recordPreviewAnimations = async (
+  page: import('@playwright/test').Page,
+) => {
+  await page.evaluate(() => {
+    const observed = new Set<string>();
+    Reflect.set(window, 'previewAnimations', observed);
+    const timer = setInterval(() => {
+      const popup = document.querySelector<HTMLElement>('[data-preview-modal]');
+      if (popup) {
+        const style = getComputedStyle(popup);
+        const scale = new DOMMatrixReadOnly(style.transform).a;
+        if (
+          scale < 0.995 &&
+          Number(style.opacity) > 0 &&
+          Number(style.opacity) < 0.98
+        ) {
+          observed.add('modal-shrinking');
+        }
+      }
+      const preview = document.querySelector<HTMLElement>(
+        '[data-preview-page]',
+      );
+      if (preview) {
+        const style = getComputedStyle(preview);
+        if (
+          new DOMMatrixReadOnly(style.transform).a < 0.999 &&
+          Number(style.opacity) > 0 &&
+          Number(style.opacity) < 0.98
+        ) {
+          observed.add('page-returning');
+        }
+      }
+      for (const animation of document.getAnimations()) {
+        if (animation instanceof CSSAnimation) {
+          observed.add(animation.animationName);
+        }
+      }
+    }, 8);
+    setTimeout(() => clearInterval(timer), 10000);
+  });
+};
+
+test('minimizes the preview modal when returning to edit mode', async ({
+  page,
+  sharePath,
+}) => {
+  await page.getByRole('link', { name: 'Open Preview', exact: true }).click();
+  await page.waitForURL((url) => url.pathname === sharePath);
+  const modal = page.getByRole('dialog', {
+    name: 'Tierlist preview',
+    exact: true,
+  });
+  await recordPreviewAnimations(page);
+  await modal
+    .getByRole('link', { name: 'Go to edit mode', exact: true })
+    .click();
+  await expect(page).toHaveURL('http://localhost:3046/');
+  await expect(modal).toHaveCount(0);
+  await expect(
+    page.getByRole('dialog', { name: 'Share tierlist', exact: true }),
+  ).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Array.from(Reflect.get(window, 'previewAnimations') as Set<string>),
+      ),
+    )
+    .toContain('modal-shrinking');
+  await expect(
+    page.getByRole('button', { name: 'Share', exact: true }),
+  ).toBeEnabled();
+});
+
+test('softens standalone preview return and respects reduced motion', async ({
+  page,
+  sharePath,
+}) => {
+  await page.goto(sharePath);
+  await recordPreviewAnimations(page);
+  await page
+    .getByRole('link', { name: 'Go to edit mode', exact: true })
+    .click();
+  await expect(page).toHaveURL('http://localhost:3046/');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Array.from(Reflect.get(window, 'previewAnimations') as Set<string>),
+      ),
+    )
+    .toContain('page-returning');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(sharePath);
+  await recordPreviewAnimations(page);
+  await page
+    .getByRole('link', { name: 'Go to edit mode', exact: true })
+    .click();
+  await expect(page).toHaveURL('http://localhost:3046/');
+  expect(
+    await page.evaluate(() =>
+      Array.from(Reflect.get(window, 'previewAnimations') as Set<string>),
+    ),
+  ).not.toContain('page-returning');
 });
