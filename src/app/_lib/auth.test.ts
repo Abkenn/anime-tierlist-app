@@ -16,7 +16,7 @@ afterEach(() => {
 
 it.each([
   ['', 'http://localhost:3000'],
-  ['1', 'https://anime-tierlist-app.vercel.app'],
+  ['1', 'https://anime-tierlist.com'],
 ])(
   'uses the right production auth origin with VERCEL=%s',
   async (vercel, url) => {

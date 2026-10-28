@@ -16,6 +16,16 @@ const nextConfig: NextConfig = {
   logging: {
     serverFunctions: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'anime-tierlist-app.vercel.app' }],
+        destination: 'https://anime-tierlist.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   headers: async () => [
     {
       source: '/sw.js',

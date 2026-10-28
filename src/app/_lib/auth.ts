@@ -7,9 +7,7 @@ import { Pool } from 'pg';
 const baseURL =
   env.BETTER_AUTH_URL ??
   env.SITE_URL ??
-  (env.VERCEL === '1'
-    ? 'https://anime-tierlist-app.vercel.app'
-    : 'http://localhost:3000');
+  (env.VERCEL === '1' ? 'https://anime-tierlist.com' : 'http://localhost:3000');
 const authGlobal = globalThis as typeof globalThis & {
   tierlistAuthPool?: Pool;
 };
