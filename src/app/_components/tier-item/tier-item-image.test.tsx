@@ -34,7 +34,15 @@ it('uses anonymous CORS on CDN posters while preserving custom URLs', () => {
     );
 
   const cdn = render('https://cdn.myanimelist.net/images/anime/poster.jpg');
-  expect(cdn.match(/crossorigin="(?:anonymous)?"/giu)).toHaveLength(1);
+  const document = new DOMParser().parseFromString(cdn, 'text/html');
+  const poster = document.querySelector('svg image');
+  const preload = document.querySelector('link[rel="preload"][as="image"]');
+
+  expect(poster?.getAttribute('crossorigin')).toBe('anonymous');
+  expect(preload).not.toBeNull();
+  expect(preload?.getAttribute('crossorigin')).toMatch(/^(anonymous)?$/u);
+  expect(preload?.getAttribute('href')).toBe(poster?.getAttribute('href'));
+  expect(preload?.getAttribute('fetchpriority')).toBe('high');
   expect(render('https://custom.example/poster.jpg')).not.toMatch(
     /crossorigin/iu,
   );
