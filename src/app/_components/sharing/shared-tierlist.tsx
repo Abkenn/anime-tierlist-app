@@ -86,13 +86,14 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
         default="none"
         share="preview-expand"
       >
-        <div className="overflow-x-auto">
+        <div data-preview-scroll="" className="overflow-x-auto pl-6">
           <PreviewImage
             key={`${share.id}.${share.version}`}
             id={`${share.id}.${share.version}`}
             width={board.width}
             height={board.height}
             rows={board.rows}
+            mode={share.document.imageMode}
           />
         </div>
       </ViewTransition>

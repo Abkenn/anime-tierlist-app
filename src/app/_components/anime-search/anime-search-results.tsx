@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { preconnect } from 'react-dom';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import {
   animeSearchConfigAtom,
@@ -68,6 +69,9 @@ export const AnimeSearchResults = ({
     { input: '', error: '' },
   );
   const deferredQuery = useDeferredValue(query);
+  if (query.length >= 2 && !url && !urlError && catalogSearchEnabled) {
+    preconnect('https://cdn.myanimelist.net', { crossOrigin: 'anonymous' });
+  }
   const curated =
     query.length >= 2 && deferredQuery.length >= 2 && !url && !urlError
       ? searchCuratedAnime(curatedImages, deferredQuery)

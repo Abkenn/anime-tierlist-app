@@ -109,14 +109,12 @@ const TypedSegment = ({ part, start, typed }: TypedSegmentProps) => {
       .join(''),
   );
   const content = (
-    <span className="inline-grid max-w-full align-baseline [text-decoration:inherit]">
-      <span className="col-start-1 row-start-1 whitespace-pre-wrap opacity-0">
-        {part.text}
-      </span>
+    <span className="relative inline-block max-w-full align-baseline [text-decoration:inherit]">
+      <span className="whitespace-pre-wrap opacity-0">{part.text}</span>
 
       <motion.span
         aria-hidden="true"
-        className="col-start-1 row-start-1 [text-decoration:inherit]"
+        className="absolute inset-0 whitespace-pre-wrap [text-decoration:inherit]"
       >
         {visible}
       </motion.span>

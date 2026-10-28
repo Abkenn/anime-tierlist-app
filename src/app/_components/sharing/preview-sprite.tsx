@@ -2,12 +2,18 @@
 
 import { motion, useAnimationControls } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useEffectEvent } from 'react';
+import { useEffect, useEffectEvent, useId } from 'react';
 import type { PreviewSpriteBox } from '@/app/_lib/preview-drag-layout';
+import type { ExportRow } from '@/app/_lib/tierlist-export-layout';
+import type { TierImageMode } from '@/app/_types/tierlist.types';
+import { PreviewBoardSurface } from './preview-board-surface';
 
 type PreviewSpriteProps = {
   box: PreviewSpriteBox;
-  source: string;
+  source?: string;
+  rows: ExportRow[];
+  mode: TierImageMode;
+  visibleIds: ReadonlySet<string>;
   width: number;
   height: number;
   returning: boolean;
@@ -19,6 +25,9 @@ type PreviewSpriteProps = {
 export const PreviewSprite = ({
   box,
   source,
+  rows,
+  mode,
+  visibleIds,
   width,
   height,
   returning,
@@ -27,6 +36,7 @@ export const PreviewSprite = ({
   onReturn,
 }: PreviewSpriteProps) => {
   const controls = useAnimationControls();
+  const clipId = useId();
   const complete = useEffectEvent(onReturn);
   const x = returning ? '0%' : `${((box.targetX - box.x) / box.width) * 100}%`;
   const y = returning ? '0%' : `${((box.targetY - box.y) / box.height) * 100}%`;
@@ -69,23 +79,37 @@ export const PreviewSprite = ({
       initial={false}
       animate={controls}
     >
-      <Image
-        src={source}
-        alt=""
-        width={width}
-        height={height}
-        unoptimized
-        loading="eager"
-        fetchPriority="high"
-        draggable={false}
-        className="absolute max-w-none"
-        style={{
-          left: `${(-box.x / box.width) * 100}%`,
-          top: `${(-box.y / box.height) * 100}%`,
-          width: `${(width / box.width) * 100}%`,
-          height: `${(height / box.height) * 100}%`,
-        }}
-      />
+      {source ? (
+        <Image
+          src={source}
+          alt=""
+          width={width}
+          height={height}
+          unoptimized
+          loading="eager"
+          fetchPriority="high"
+          draggable={false}
+          className="absolute max-w-none"
+          style={{
+            left: `${(-box.x / box.width) * 100}%`,
+            top: `${(-box.y / box.height) * 100}%`,
+            width: `${(width / box.width) * 100}%`,
+            height: `${(height / box.height) * 100}%`,
+          }}
+        />
+      ) : (
+        <PreviewBoardSurface
+          rows={rows.filter(
+            (row) => row.y < box.y + box.height && row.y + 160 > box.y,
+          )}
+          width={width}
+          height={height}
+          mode={mode}
+          frame={box}
+          visibleIds={box.x === 0 ? visibleIds : new Set([box.id])}
+          clipPrefix={`sprite-${clipId}-`}
+        />
+      )}
     </motion.div>
   );
 };

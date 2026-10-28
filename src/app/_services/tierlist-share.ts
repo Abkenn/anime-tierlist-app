@@ -2,24 +2,23 @@ import {
   tierlistShareIdPattern,
   tierlistShareVersion,
 } from '@/app/_lib/tierlist-share-id';
-import { env } from '@/env';
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { cacheLife, cacheTag, updateTag } from 'next/cache';
-import { connection } from 'next/server';
+import { after, connection } from 'next/server';
 import { createTierlistOwner } from '@/app/_data/mutations/tierlist';
 import { publishTierlistSnapshot } from '@/app/_data/mutations/tierlist-share';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
 import { findOwnerById } from '@/app/_data/queries/tierlist';
 import {
   findOwnerTierlistShare,
-  findStoredTierlistPng,
   findTierlistShare,
 } from '@/app/_data/queries/tierlist-share';
 import {
   type TierlistDocument,
   tierlistDocumentSchema,
 } from '@/app/_lib/tierlist-sync';
+import { env } from '@/env';
 import {
   hashTierlistSecret,
   limitSeedAccess,
@@ -39,19 +38,13 @@ const previewFingerprint = (revision: number, document: TierlistDocument) => {
   return `v${revision}.${previewFormat}:${digest}`;
 };
 
-const findReadyTierlistPreview = async (
+const findPublishedTierlistPreview = async (
   ownerId: string,
   fingerprint: string,
 ) => {
   const share = await findOwnerTierlistShare(ownerId);
   if (!share || share.fingerprint !== fingerprint) {
     return null;
-  }
-  if (env.BLOB_READ_WRITE_TOKEN) {
-    const image = await findStoredTierlistPng(share.id);
-    if (!image?.url || image.fingerprint !== fingerprint) {
-      return null;
-    }
   }
 
   const version = tierlistShareVersion(share.fingerprint);
@@ -74,7 +67,7 @@ export const readExistingTierlistPreview = async (input: {
     return null;
   }
 
-  return findReadyTierlistPreview(
+  return findPublishedTierlistPreview(
     owner.id,
     previewFingerprint(
       owner.revision,
@@ -180,7 +173,10 @@ export const publishTierlist = async (input: {
   }
   const document = tierlistDocumentSchema.parse(owner.document);
   const fingerprint = previewFingerprint(owner.revision, document);
-  const existing = await findReadyTierlistPreview(input.ownerId, fingerprint);
+  const existing = await findPublishedTierlistPreview(
+    input.ownerId,
+    fingerprint,
+  );
   if (existing) {
     return existing;
   }
@@ -194,13 +190,13 @@ export const publishTierlist = async (input: {
   updateTag(`tierlist-share:${share.id}`);
 
   if (env.BLOB_READ_WRITE_TOKEN) {
-    const image = await getTierlistPng(share.id);
-    if (image?.status !== 'ready') {
-      throw new TierlistAccessError(
-        'invalid',
-        'The preview image is still preparing. Try opening sharing again.',
-      );
-    }
+    after(async () => {
+      try {
+        await getTierlistPng(share.id);
+      } catch (error) {
+        console.error('Unable to prepare the shared tierlist PNG.', error);
+      }
+    });
   }
 
   return { id: share.id, version: tierlistShareVersion(share.fingerprint) };

@@ -11,6 +11,8 @@ type PosterSizeInput = {
   items: TierItemData[];
 };
 
+const dynamicRowWidthPercent = 68;
+
 export const getPosterSize = ({ mode, imageMode, items }: PosterSizeInput) => {
   if (mode !== 'dynamic') {
     return { small: '6rem', medium: '8rem', large: '11rem' }[mode];
@@ -25,5 +27,5 @@ export const getPosterSize = ({ mode, imageMode, items }: PosterSizeInput) => {
     );
   });
   const longest = Math.max(1, ...rowWidths.values());
-  return `clamp(6rem, min(calc(42cqw / ${longest}), calc(8.5rem + 1.5cqw)), var(--tier-max-size, 10rem))`;
+  return `clamp(6rem, calc(${dynamicRowWidthPercent}cqw / ${longest + 1}), var(--tier-max-size, 10rem))`;
 };

@@ -16,12 +16,15 @@ import {
   exportPosterSize,
 } from '@/app/_lib/tierlist-export-layout';
 import { previewDragEndedEvent } from '@/app/_lib/tierlist-share-id';
+import type { TierImageMode } from '@/app/_types/tierlist.types';
 import { PreviewPosterLinks } from './preview-poster-links';
 import { PreviewSprite } from './preview-sprite';
 
 type PreviewDisplacementProps = {
   id: string;
-  source: string;
+  source?: string;
+  mode: TierImageMode;
+  visible: ExportPoster[];
   width: number;
   height: number;
   rows: ExportRow[];
@@ -42,6 +45,8 @@ type Drag = {
 export const PreviewDisplacement = ({
   id,
   source,
+  mode,
+  visible,
   width,
   height,
   rows,
@@ -103,7 +108,7 @@ export const PreviewDisplacement = ({
   return (
     <div
       ref={root}
-      className="absolute inset-0 touch-pan-y select-none"
+      className="absolute inset-0 touch-auto select-none"
       onPointerDown={(event) => {
         if (!event.isPrimary || event.button !== 0 || drag) {
           return;
@@ -199,6 +204,9 @@ export const PreviewDisplacement = ({
           key={box.id}
           box={box}
           source={source}
+          rows={rows}
+          mode={mode}
+          visibleIds={new Set(visible.map((poster) => poster.item.id))}
           width={width}
           height={height}
           held={box.id === heldId}
@@ -216,7 +224,7 @@ export const PreviewDisplacement = ({
       ))}
 
       {!drag && (
-        <PreviewPosterLinks posters={posters} width={width} height={height} />
+        <PreviewPosterLinks posters={visible} width={width} height={height} />
       )}
 
       {!drag &&
@@ -233,8 +241,7 @@ export const PreviewDisplacement = ({
             <button
               type="button"
               aria-label={`Drag preview tier ${row.label}`}
-              className="pointer-events-auto absolute left-0 top-1/2 flex size-8 -translate-y-1/2 touch-none cursor-grab items-center justify-center text-black/70 opacity-0 group-hover:opacity-70 hover:bg-black/10 focus-visible:opacity-100 pointer-coarse:opacity-70"
-              style={{ color: row.textColor }}
+              className="pointer-events-auto absolute -left-6 top-1/2 flex h-8 w-6 -translate-y-1/2 touch-none cursor-grab items-center justify-center text-muted-foreground opacity-0 group-hover:opacity-70 hover:bg-accent focus-visible:opacity-100 pointer-coarse:opacity-70"
               onPointerDown={(event) => {
                 event.stopPropagation();
                 if (!event.isPrimary || event.button !== 0) {

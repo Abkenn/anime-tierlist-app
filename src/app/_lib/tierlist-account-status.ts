@@ -73,7 +73,7 @@ export const getTierlistAccountStatus = ({
   const controlsBusy =
     busy || !identityReady || storage.status === 'loading' || !storage.seed;
   const showIdentity = Boolean(
-    restoringAccount || (storage.seed && !busy && identityReady),
+    restoringAccount || (backedUp && storage.seed && !busy && identityReady),
   );
   const restoredName = displayName || hintName;
   const restoredLabel = restoredName

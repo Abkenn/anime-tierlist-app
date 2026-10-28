@@ -338,7 +338,7 @@ test('serves the board PNG for social metadata and a native download', async ({
   ).toContainText('PNG copied to clipboard');
 });
 
-test('shows a complete loading placeholder to a fresh visitor instead of partial posters', async ({
+test('renders the live board for a fresh visitor while the export prepares', async ({
   browser,
   sharePath,
 }) => {
@@ -362,7 +362,7 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     const poster = visitor.getByRole('img', { name: 'Shared anime tierlist' });
     await expect(poster).toHaveCSS('opacity', '0');
     await expect(
-      visitor.getByRole('status').filter({ hasText: 'Loading tierlist...' }),
+      visitor.getByRole('img', { name: 'Tierlist board', exact: true }),
     ).toBeVisible();
     ready.resolve();
     await expect(poster).toHaveCSS('opacity', '1');
@@ -487,8 +487,9 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
       await visitor.mouse.up();
       await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
     }
-    expect(images).toHaveLength(1);
-    expect(images[0]).toContain('/api/tierlist-preview/');
+    expect(
+      images.filter((url) => url.includes('/api/tierlist-preview/')),
+    ).toHaveLength(1);
     await expect(
       visitor.getByRole('link', { name: 'Go to edit mode' }),
     ).toHaveCount(0);
@@ -513,6 +514,101 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     ).toHaveCSS('opacity', '1');
   } finally {
     ready.resolve();
+    await context.close();
+  }
+});
+
+test('opens the mobile preview before its PNG is ready and supports sideways swipes', async ({
+  page,
+  browser,
+  sharePath,
+}) => {
+  const context = await browser.newContext({
+    storageState: await page.context().storageState({ indexedDB: true }),
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    serviceWorkers: 'block',
+  });
+  const release = Promise.withResolvers<void>();
+  await context.route('**/api/tierlist-preview/**/image*', async (route) => {
+    await release.promise;
+    await route.continue();
+  });
+  try {
+    const visitor = await context.newPage();
+    await visitor.goto('http://localhost:3046/');
+    await visitor.getByRole('button', { name: 'Share', exact: true }).click();
+    await visitor
+      .getByRole('link', { name: 'Open Preview', exact: true })
+      .click();
+    await expect(visitor).toHaveURL(new RegExp(`${sharePath}$`, 'u'));
+    const modal = visitor.getByRole('dialog', {
+      name: 'Tierlist preview',
+      exact: true,
+    });
+    await expect(modal).toBeVisible();
+    await expect(
+      modal.getByRole('img', { name: 'Tierlist board', exact: true }),
+    ).toBeVisible();
+    const image = modal.getByRole('img', { name: 'Shared anime tierlist' });
+    await expect(image).toHaveCSS('opacity', '0');
+    const imageBox = await image.boundingBox();
+    const rowGrip = modal.getByRole('button', {
+      name: 'Drag preview tier Watching',
+    });
+    await expect
+      .poll(async () => (await rowGrip.boundingBox())?.height ?? 0)
+      .toBeGreaterThan(31);
+    const grip = await rowGrip.boundingBox();
+    expect(imageBox).not.toBeNull();
+    expect(grip).not.toBeNull();
+    if (!imageBox || !grip) {
+      throw new Error('Preview geometry is unavailable');
+    }
+    expect(grip.x + grip.width).toBeLessThanOrEqual(imageBox.x);
+    await visitor.mouse.move(grip.x + 12, grip.y + 12);
+    await visitor.mouse.down();
+    await visitor.mouse.move(grip.x + 12, grip.y + 120, { steps: 5 });
+    await expect(modal.locator('[data-preview-displaced] svg')).not.toHaveCount(
+      0,
+    );
+    await visitor.mouse.up();
+    await expect(modal.locator('[data-preview-displaced]')).toHaveCount(0);
+    expect(
+      (imageBox.width / Number(await image.getAttribute('width'))) * 160,
+    ).toBeGreaterThanOrEqual(80);
+    const scroll = modal.locator('[data-preview-scroll]');
+    const bounds = await scroll.boundingBox();
+    if (!bounds) {
+      throw new Error('Preview scroll area is unavailable');
+    }
+    const client = await context.newCDPSession(visitor);
+    const y = bounds.y + 100;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: bounds.x + bounds.width * 0.8, y }],
+    });
+    for (let step = 1; step <= 8; step += 1) {
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x: bounds.x + bounds.width * (0.8 - step * 0.07), y }],
+      });
+    }
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    await expect
+      .poll(() => scroll.evaluate((element) => element.scrollLeft))
+      .toBeGreaterThan(20);
+    release.resolve();
+    await expect(image).toHaveCSS('opacity', '1');
+    await visitor.screenshot({
+      path: '.storybook-cache/preview-mobile-scroll.png',
+    });
+  } finally {
+    release.resolve();
     await context.close();
   }
 });

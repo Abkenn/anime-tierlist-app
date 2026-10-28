@@ -12,7 +12,6 @@ import {
   useEffectEvent,
   useState,
 } from 'react';
-import { preload } from 'react-dom';
 import { TerminalPending } from '@/app/_components/shell/terminal-pending';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import {
@@ -136,13 +135,6 @@ export const SaveShare = ({
       return error instanceof Error ? error.message : 'Unable to download.';
     }
   }, '');
-
-  if (publishedUrl) {
-    preload(
-      `/api/tierlist-preview/${new URL(publishedUrl).pathname.slice(1)}/image`,
-      { as: 'image', fetchPriority: 'high' },
-    );
-  }
 
   const changeOpen = (value: boolean) => {
     if (downloading && !value) {

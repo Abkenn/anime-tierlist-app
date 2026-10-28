@@ -1,13 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useDeferredValue, useEffect, useState } from 'react';
-import { TerminalText } from '@/app/_components/shell/terminal-text';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
-import { Skeleton } from '@/app/_components/ui/skeleton';
+import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
+import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
 import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 import type { ExportRow } from '@/app/_lib/tierlist-export-layout';
+import type { TierImageMode } from '@/app/_types/tierlist.types';
+import { PreviewBoardSurface } from './preview-board-surface';
 import { PreviewDisplacement } from './preview-displacement';
 
 // Only decoded public PNG URLs are remembered, never account data or poster blobs.
@@ -18,6 +21,7 @@ type PreviewImageProps = {
   width: number;
   height: number;
   rows: ExportRow[];
+  mode: TierImageMode;
 };
 
 export const PreviewImage = ({
@@ -25,38 +29,67 @@ export const PreviewImage = ({
   width,
   height,
   rows,
+  mode,
 }: PreviewImageProps) => {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>(() =>
     decodedPreviews.has(id) ? 'ready' : 'loading',
   );
-  const [attempt, setAttempt] = useState(0);
+  const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const posters = rows.flatMap((row) => row.posters);
+  const visible = usePreviewPosters(root, posters, width, height);
+  const visibleIds = new Set(visible.map((poster) => poster.item.id));
   const matches = posters.filter((poster) =>
     matchesTierItemLabel(poster.item, deferredQuery),
   );
   const matchingIds = new Set(matches.map((poster) => poster.item.id));
   const source = `/api/tierlist-preview/${id}/image`;
-  const imageSource = attempt ? `${source}?retry=${attempt}` : source;
+  const imageSource = source;
+  const firstPoster = visible.reduce<(typeof visible)[number] | undefined>(
+    (largest, poster) =>
+      !largest || poster.width * poster.height > largest.width * largest.height
+        ? poster
+        : largest,
+    undefined,
+  );
+  if (state !== 'ready' && firstPoster?.item.image) {
+    preload(firstPoster.item.image.src, {
+      as: 'image',
+      fetchPriority: 'high',
+      crossOrigin: posterCrossOrigin(firstPoster.item.image.src),
+    });
+  }
 
   useEffect(() => {
-    if (state === 'ready') {
-      return watchPreviewClipboard();
-    }
-  }, [state]);
+    return watchPreviewClipboard();
+  }, []);
 
   return (
-    <div className="relative min-w-160" aria-busy={state === 'loading'}>
+    <div
+      ref={root}
+      className="relative"
+      style={{ minWidth: Math.max(640, width / 2) }}
+    >
+      {state !== 'ready' && (
+        <PreviewBoardSurface
+          rows={rows}
+          width={width}
+          height={height}
+          mode={mode}
+          visibleIds={visibleIds}
+          clipPrefix={`live-${id}-`}
+        />
+      )}
+
       <Image
-        key={attempt}
         src={imageSource}
         alt="Shared anime tierlist"
         width={width}
         height={height}
         unoptimized
         loading="eager"
-        fetchPriority="high"
+        fetchPriority="low"
         onLoad={() => {
           decodedPreviews.add(id);
           if (decodedPreviews.size > 32) {
@@ -68,18 +101,18 @@ export const PreviewImage = ({
           setState('ready');
         }}
         onError={() => setState('error')}
-        className={`block h-auto w-full ${state === 'ready' ? 'opacity-100' : 'opacity-0'}`}
+        className={`block h-auto w-full ${state === 'ready' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}
       />
 
-      {state === 'ready' && (
-        <PreviewDisplacement
-          id={id}
-          source={imageSource}
-          width={width}
-          height={height}
-          rows={rows}
-        />
-      )}
+      <PreviewDisplacement
+        id={id}
+        source={state === 'ready' ? imageSource : undefined}
+        mode={mode}
+        visible={visible}
+        width={width}
+        height={height}
+        rows={rows}
+      />
 
       <TierlistFind
         query={query}
@@ -87,7 +120,7 @@ export const PreviewImage = ({
         count={matches.length}
       />
 
-      {state === 'ready' && deferredQuery.trim() && (
+      {deferredQuery.trim() && (
         <svg
           aria-hidden="true"
           viewBox={`0 0 ${width} ${height}`}
@@ -110,34 +143,6 @@ export const PreviewImage = ({
             />
           ))}
         </svg>
-      )}
-
-      {state === 'loading' && (
-        <div className="absolute inset-0">
-          <Skeleton className="size-full" />
-          <p
-            role="status"
-            className="absolute left-4 top-4 text-xs text-muted-foreground"
-          >
-            <TerminalText text="Loading tierlist..." />
-          </p>
-        </div>
-      )}
-
-      {state === 'error' && (
-        <div className="absolute left-4 top-4 flex items-center gap-4 text-xs">
-          <p role="status">The preview image could not load.</p>
-          <button
-            type="button"
-            className="min-h-9 cursor-pointer underline underline-offset-4"
-            onClick={() => {
-              setState('loading');
-              setAttempt((value) => value + 1);
-            }}
-          >
-            Try again
-          </button>
-        </div>
       )}
     </div>
   );

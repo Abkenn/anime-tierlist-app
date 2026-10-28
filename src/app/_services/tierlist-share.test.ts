@@ -18,9 +18,10 @@ const mocks = vi.hoisted(() => ({
   png: vi.fn(),
   existing: vi.fn(),
   storedPng: vi.fn(),
+  after: vi.fn<(callback: () => Promise<void>) => void>(),
 }));
 vi.mock('server-only', () => ({}));
-vi.mock('next/server', () => ({ connection: vi.fn() }));
+vi.mock('next/server', () => ({ connection: vi.fn(), after: mocks.after }));
 vi.mock('./tierlist-png-cache', () => ({ getTierlistPng: mocks.png }));
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
@@ -153,14 +154,15 @@ it('saves a project from a public link as an independent copy, never the source 
   expect(mocks.requireOwner).not.toHaveBeenCalled();
 });
 
-it('prepares the stored PNG before returning a shareable URL', async () => {
+it('returns the published URL without waiting for PNG generation', async () => {
   vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'test-token');
-  mocks.png.mockResolvedValue({
-    status: 'ready',
-    url: 'https://example.com/ready.png',
-  });
+  mocks.png.mockResolvedValue({ status: 'ready' });
   try {
     const published = await publishTierlist({ ownerId: 'owner', revision: 4 });
+    expect(published.id).toMatch(/^[A-Za-z0-9_-]{16}$/u);
+    expect(mocks.png).not.toHaveBeenCalled();
+    expect(mocks.after).toHaveBeenCalledOnce();
+    await mocks.after.mock.calls[0][0]();
     expect(mocks.png).toHaveBeenCalledWith(published.id);
   } finally {
     vi.unstubAllEnvs();
@@ -213,7 +215,7 @@ it('recovers a ready revision across clients without publishing, invalidating or
     mocks.storedPng.mockResolvedValue(null);
     expect(
       await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).toBeNull();
+    ).toEqual(published);
     mocks.requireOwner.mockRejectedValueOnce(new Error('Unauthorized'));
     await expect(
       readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),

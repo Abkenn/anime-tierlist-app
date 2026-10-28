@@ -5,7 +5,7 @@ import { useSetAtom } from 'jotai';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { preload } from 'react-dom';
+import { preconnect, preload } from 'react-dom';
 import { markPosterSettledAtom } from '@/app/_atoms/tierlist/poster-loading.atoms';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
@@ -41,6 +41,9 @@ export const TierItemImage = ({
   const loading = loadedSource !== image.src;
 
   if (priority) {
+    if (posterCrossOrigin(image.src)) {
+      preconnect('https://cdn.myanimelist.net', { crossOrigin: 'anonymous' });
+    }
     preload(image.src, {
       as: 'image',
       fetchPriority: 'high',

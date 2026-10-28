@@ -82,12 +82,12 @@ export const adoptPreviewTemplate = async ({
     }
     await activateAccountTierlist(account.profileKey, result.value);
     const profile = await readLocalTierlist(account.profileKey);
-    await savePreviewHandoff(selected, profile.seed, profile.revision, id);
+    void savePreviewHandoff(selected, profile.seed, profile.revision, id);
 
     return '/';
   }
   await adoptPublicTierlist(selected, local);
-  await savePreviewHandoff(selected, local.seed, local.revision + 1, id);
+  void savePreviewHandoff(selected, local.seed, local.revision + 1, id);
 
   return '/?profile=local';
 };
