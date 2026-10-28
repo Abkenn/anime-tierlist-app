@@ -5,6 +5,7 @@ import { useSetAtom } from 'jotai';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { preload } from 'react-dom';
 import { markPosterSettledAtom } from '@/app/_atoms/tierlist/poster-loading.atoms';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
@@ -38,6 +39,14 @@ export const TierItemImage = ({
   const [loadedSource, setLoadedSource] = useState<string | null>(null);
   const markSettled = useSetAtom(markPosterSettledAtom);
   const loading = loadedSource !== image.src;
+
+  if (priority) {
+    preload(image.src, {
+      as: 'image',
+      fetchPriority: 'high',
+      crossOrigin: posterCrossOrigin(image.src),
+    });
+  }
 
   const loaded = () => {
     setLoadedSource(image.src);

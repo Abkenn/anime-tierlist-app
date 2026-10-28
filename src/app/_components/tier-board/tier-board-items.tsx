@@ -66,16 +66,6 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const editingItemId = useAtomValue(editingItemIdAtom);
   const query = useDeferredValue(useAtomValue(tierFindQueryAtom));
   const actions = useTierItemActions(interaction);
-  const priorityItem = interaction.items.find((item) => {
-    const poster = geometry.get(item.id);
-
-    return (
-      item.image &&
-      poster &&
-      poster.y < window.bottom &&
-      poster.y + poster.height >= window.top
-    );
-  });
   const visiblePosters = interaction.items.filter((item) => {
     const poster = geometry.get(item.id);
 
@@ -88,6 +78,25 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       poster.y <= window.bottom
     );
   });
+  const priorityItem = visiblePosters.reduce<
+    | {
+        id: string;
+        area: number;
+      }
+    | undefined
+  >((largest, item) => {
+    const poster = geometry.get(item.id);
+    if (!poster) {
+      return largest;
+    }
+    const area =
+      (Math.min(poster.x + poster.width, window.right) -
+        Math.max(poster.x, window.left)) *
+      (Math.min(poster.y + poster.height, window.bottom) -
+        Math.max(poster.y, window.top));
+
+    return !largest || area > largest.area ? { id: item.id, area } : largest;
+  }, undefined);
   const pendingPosters = visiblePosters.filter(
     (item) =>
       item.image &&

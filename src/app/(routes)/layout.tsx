@@ -30,6 +30,14 @@ const RootLayout = ({ children, preview }: RootLayoutProps) => (
     suppressHydrationWarning
     className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
   >
+    <head>
+      <link
+        rel="preconnect"
+        href="https://cdn.myanimelist.net"
+        crossOrigin="anonymous"
+      />
+    </head>
+
     <body className="flex h-dvh flex-col overflow-x-hidden overflow-y-auto lg:overflow-hidden">
       <ThemeProvider>
         <AppFrame className="flex h-full min-h-0 flex-col bg-background text-foreground">
