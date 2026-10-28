@@ -245,7 +245,7 @@ export const adoptPublicTierlist = async (
       }
       const snapshot = localTierlistSchema.parse({
         ...device,
-        ...document,
+        ...getTierlistDocument(document),
         revision: device.revision + 1,
         updatedAt: Date.now(),
       });

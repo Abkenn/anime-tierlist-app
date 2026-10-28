@@ -1,6 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { SaveShare } from './save-share';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const downloads = vi.hoisted(() => ({
   project: vi.fn(),
@@ -11,34 +13,26 @@ vi.mock('@/app/_services/tierlist-download', () => ({
   downloadTierlistPng: downloads.png,
 }));
 
-it('opens with Ctrl+S, prepares the seed, prepares the preview automatically, and downloads the selected format', async () => {
+it('keeps sharing separate from private backups and reuses prepared previews', async () => {
   const document = {
     version: 1 as const,
     items: [],
     ranks: ['Watching' as const],
     imageMode: 'natural' as const,
   };
-  const share = {
-    seed: 'b'.repeat(64),
-    ownerId: 'owner',
-    revision: 1,
-    document,
-  };
-  const prepare = vi.fn(async () => share);
   const publish = vi.fn(async () => 'https://example.com/abcd1234abcd1234');
   render(
-    <SaveShare
-      document={document}
-      disabled={false}
-      onPrepare={prepare}
-      onPublish={publish}
-    />,
+    <SaveShare document={document} disabled={false} onPublish={publish} />,
   );
-  fireEvent.keyDown(window, { code: 'KeyS', ctrlKey: true });
+  fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
   expect(
-    await screen.findByRole('textbox', { name: 'Tierlist seed' }),
-  ).toHaveValue(share.seed);
-  expect(prepare).toHaveBeenCalledOnce();
+    screen.queryByRole('textbox', { name: 'Tierlist seed' }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole('button', { name: 'Save project' }),
+  ).not.toBeInTheDocument();
+  expect(publish).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Open Preview' }));
   const preview = await screen.findByRole('link', { name: 'Open Preview' });
   expect(publish).toHaveBeenCalledOnce();
   expect(preview).toHaveAttribute(
@@ -46,13 +40,15 @@ it('opens with Ctrl+S, prepares the seed, prepares the preview automatically, an
     'https://example.com/abcd1234abcd1234',
   );
   expect(preview).not.toHaveAttribute('target');
-  fireEvent.click(screen.getByRole('button', { name: 'Save project' }));
-  await waitFor(() =>
-    expect(downloads.project).toHaveBeenCalledWith(share.seed),
-  );
   expect(screen.getByRole('link', { name: 'Download as PNG' })).toHaveAttribute(
     'href',
     '/api/tierlist-preview/abcd1234abcd1234/image?download=1',
   );
   expect(downloads.png).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Close sharing' }));
+  fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
+  expect(
+    screen.getByRole('link', { name: 'Open Preview' }),
+  ).toBeInTheDocument();
+  expect(publish).toHaveBeenCalledOnce();
 });

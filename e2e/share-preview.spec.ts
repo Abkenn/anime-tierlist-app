@@ -36,6 +36,17 @@ const test = base.extend<{ sharePath: string }>({
             alt: 'Navigation fixture',
           },
         },
+        {
+          id: 'preview-displacement-fixture',
+          label: 'Second fixture',
+          rank: 'Watching' as const,
+          image: {
+            src: '/tier-samples/portrait.svg',
+            width: 200,
+            height: 400,
+            alt: 'Second fixture',
+          },
+        },
       ],
     };
     try {
@@ -55,7 +66,7 @@ const test = base.extend<{ sharePath: string }>({
       await page.route('**/*', block);
       await page.goto('/offline?offline=dev');
       await expect(
-        page.getByRole('button', { name: 'Save & Share' }),
+        page.getByRole('button', { name: 'Share', exact: true }),
       ).toBeEnabled();
       await page.evaluate(
         async ({ id, seed, document }) => {
@@ -88,10 +99,16 @@ const test = base.extend<{ sharePath: string }>({
       );
       await page.unroute('**/*', block);
       await page.goto('/');
-      await page.getByRole('button', { name: 'Save & Share' }).click();
-      await expect(
-        page.getByRole('textbox', { name: 'Tierlist seed' }),
-      ).toBeVisible();
+      await page.getByRole('button', { name: 'Share', exact: true }).click();
+      await page
+        .getByRole('button', { name: 'Open Preview', exact: true })
+        .click();
+      const initialModal = page.getByRole('dialog', {
+        name: 'Tierlist preview',
+        exact: true,
+      });
+      await expect(initialModal).toBeVisible();
+      await initialModal.getByRole('button', { name: 'Close preview' }).click();
       const preview = page.getByRole('link', { name: 'Open Preview' });
       await expect(preview).toBeVisible();
       const href = await preview.getAttribute('href');
@@ -143,7 +160,7 @@ test('prefetches the preview board while account controls wait for navigation', 
   ).toBeVisible();
 });
 
-test('preserves Save & Share on close and opens a standalone preview on refresh or middle-click', async ({
+test('preserves Share tierlist on close and opens a standalone preview on refresh or middle-click', async ({
   page,
   sharePath,
 }) => {
@@ -159,7 +176,7 @@ test('preserves Save & Share on close and opens a standalone preview on refresh 
   await modal.getByRole('button', { name: 'Close preview' }).click();
   await page.waitForURL((url) => url.pathname === '/');
   await expect(
-    page.getByRole('dialog', { name: 'Save & Share', exact: true }),
+    page.getByRole('dialog', { name: 'Share tierlist', exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Open Preview' }),
@@ -169,8 +186,54 @@ test('preserves Save & Share on close and opens a standalone preview on refresh 
   await page.mouse.click(4, 4);
   await page.waitForURL((url) => url.pathname === '/');
   await expect(
-    page.getByRole('dialog', { name: 'Save & Share', exact: true }),
+    page.getByRole('dialog', { name: 'Share tierlist', exact: true }),
   ).toBeVisible();
+  await page.keyboard.press('Control+s');
+  await expect(
+    page.getByLabel('Save and import tierlist', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('dialog', { name: 'Share tierlist', exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByLabel('Save and import tierlist', { exact: true }),
+  ).toHaveCSS('opacity', '1');
+  const backupSeed = await page
+    .getByRole('textbox', { name: 'Your user seed' })
+    .inputValue();
+  await page.screenshot({ path: '.storybook-cache/save-import-menu.png' });
+  await page.getByRole('tab', { name: 'Import', exact: true }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Seed to import' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Open project file' }),
+  ).toBeVisible();
+  await page.locator('input[type="file"][name="project"]').setInputFiles({
+    name: 'fixture.anime',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        format: 'anime-tierlist',
+        version: 1,
+        seed: backupSeed,
+      }),
+    ),
+  });
+  await expect(
+    page.getByLabel('Save and import tierlist', { exact: true }),
+  ).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByRole('button', { name: 'Save & import', exact: true })
+    .click();
+  await expect(
+    page.getByLabel('Save and import tierlist', { exact: true }),
+  ).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: '.storybook-cache/save-import-mobile.png' });
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
   const popupPromise = page.context().waitForEvent('page');
   await page
     .getByRole('link', { name: 'Open Preview' })
@@ -191,9 +254,9 @@ test('preserves Save & Share on close and opens a standalone preview on refresh 
     page.getByRole('img', { name: 'Shared anime tierlist', exact: true }),
   ).toBeVisible();
   await expect(modal).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Save & Share' })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole('button', { name: 'Share', exact: true }),
+  ).toHaveCount(0);
 });
 
 test('serves the board PNG for social metadata and a native download', async ({
@@ -234,7 +297,7 @@ test('serves the board PNG for social metadata and a native download', async ({
   await expect(modal.locator('[data-preview-match="true"]')).toHaveCount(1);
   await find.fill('absent');
   await expect(modal.getByText('0 found', { exact: true })).toBeVisible();
-  await expect(modal.locator('[data-preview-match="false"]')).toHaveCount(1);
+  await expect(modal.locator('[data-preview-match="false"]')).toHaveCount(2);
   await page.keyboard.press('Escape');
   await expect(find).toHaveCount(0);
 
@@ -272,10 +335,106 @@ test('shows a complete loading placeholder to a fresh visitor instead of partial
     ).toBeVisible();
     ready.resolve();
     await expect(poster).toHaveCSS('opacity', '1');
+    await visitor.evaluate(() => {
+      window.addEventListener('tierlist-preview-drag-ended', () => {
+        document.body.dataset.previewReturned = 'true';
+      });
+    });
+    const bounds = await poster.boundingBox();
+    if (!bounds) {
+      throw new Error('Preview image has no bounds');
+    }
+    const scale =
+      bounds.width /
+      (await poster.evaluate((node) => Number(node.getAttribute('width'))));
+    await visitor.mouse.move(bounds.x + 200 * scale, bounds.y + 80 * scale);
+    await visitor.mouse.down();
+    await visitor.mouse.move(bounds.x + 350 * scale, bounds.y + 90 * scale, {
+      steps: 6,
+    });
+    await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(2);
+    await visitor.mouse.up();
+    await expect(visitor.locator('[data-preview-displaced]')).toHaveCount(0);
+    await expect(visitor.locator('body')).toHaveAttribute(
+      'data-preview-returned',
+      'true',
+    );
     expect(images).toHaveLength(1);
     expect(images[0]).toContain('/api/tierlist-preview/');
+    await expect(
+      visitor.getByRole('link', { name: 'Go to edit mode' }),
+    ).toHaveCount(0);
+    await expect(
+      visitor.getByRole('link', { name: 'Create your own tierlist' }),
+    ).toBeVisible();
+    await visitor.route('**/tier-samples/*.svg', (route) => route.abort());
+    await visitor.getByRole('button', { name: 'Use as a template' }).click();
+    await expect(visitor).toHaveURL(/\/\?profile=local$/);
+    await expect(visitor.locator('svg image[href^="blob:"]')).toHaveCount(2);
+    await expect(
+      visitor.getByRole('button', { name: 'Share', exact: true }),
+    ).toBeEnabled();
   } finally {
     ready.resolve();
     await context.close();
   }
+});
+
+test('maximizes the loaded preview without a second image loading state', async ({
+  page,
+  sharePath,
+}) => {
+  await page.getByRole('link', { name: 'Open Preview' }).click();
+  const modal = page.getByRole('dialog', {
+    name: 'Tierlist preview',
+    exact: true,
+  });
+  await expect(
+    modal.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  const maximize = async () => {
+    await modal.getByRole('link', { name: 'Maximize preview' }).click();
+    await page.waitForURL((url) => url.pathname === `/preview${sharePath}`);
+    await expect(
+      page.locator('header').getByRole('link').first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('dialog', { name: 'Tierlist preview', exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page
+        .getByRole('main')
+        .getByRole('img', { name: 'Shared anime tierlist' }),
+    ).toHaveCSS('opacity', '1');
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Loading tierlist...' }),
+    ).toHaveCount(0);
+  };
+  await modal.screenshot({
+    path: '.storybook-cache/preview-before-maximize.png',
+  });
+  await maximize();
+  await expect(
+    page.getByRole('button', { name: 'Save project', exact: true }),
+  ).toBeVisible();
+  await page.screenshot({ path: '.storybook-cache/preview-maximized.png' });
+  await page.goBack();
+  await page.waitForURL((url) => url.pathname === '/');
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  await page.getByRole('link', { name: 'Open Preview' }).click();
+  await expect(
+    modal.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await instant(page, maximize);
+  await expect(
+    page.getByRole('button', { name: 'Save project', exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole('img', { name: 'Shared anime tierlist' }),
+  ).toHaveCSS('opacity', '1');
+  await expect(
+    page.getByRole('dialog', { name: 'Tierlist preview', exact: true }),
+  ).toHaveCount(0);
 });

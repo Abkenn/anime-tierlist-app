@@ -4,14 +4,19 @@ import { useState } from 'react';
 import { expect, it, vi } from 'vitest';
 import { UserSeed } from './user-seed';
 
+const projectDownload = vi.hoisted(() => vi.fn());
+vi.mock('@/app/_services/tierlist-download', () => ({
+  downloadTierlistProject: projectDownload,
+}));
+
 const Fixture = ({
   onImport,
-  onShare,
+  onBackup,
   onReplaceDevice = async () => true,
   googleConnected = true,
 }: {
   onImport: () => Promise<boolean>;
-  onShare: () => Promise<string>;
+  onBackup: () => Promise<string>;
   onReplaceDevice?: () => Promise<boolean>;
   googleConnected?: boolean;
 }) => {
@@ -29,7 +34,7 @@ const Fixture = ({
       handle={handle}
       onOpenChange={setOpen}
       onImport={onImport}
-      onShare={onShare}
+      onBackup={onBackup}
       onUseDevice={async () => {}}
       onReplaceDevice={onReplaceDevice}
       onGoogleSignIn={async () => {}}
@@ -44,7 +49,7 @@ it('offers both local choices and confirms before adopting an imported copy', as
     <Fixture
       googleConnected={false}
       onImport={async () => true}
-      onShare={async () => ''}
+      onBackup={async () => ''}
       onReplaceDevice={onReplaceDevice}
     />,
   );
@@ -67,18 +72,19 @@ it('offers both local choices and confirms before adopting an imported copy', as
 
 it('offers a separate share seed and requires confirmation before replacing an account list', async () => {
   const onImport = vi.fn(async () => true);
-  const onShare = vi.fn(async () => 'b'.repeat(64));
+  const onBackup = vi.fn(async () => 'b'.repeat(64));
 
-  render(<Fixture onImport={onImport} onShare={onShare} />);
+  render(<Fixture onImport={onImport} onBackup={onBackup} />);
   expect(
     screen.queryByRole('textbox', { name: 'Your user seed' }),
   ).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Create share seed' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Show copy seed' }));
   await waitFor(() =>
-    expect(screen.getByRole('textbox', { name: 'Share seed' })).toHaveValue(
+    expect(screen.getByRole('textbox', { name: 'Backup seed' })).toHaveValue(
       'b'.repeat(64),
     ),
   );
+  fireEvent.click(screen.getByRole('tab', { name: /^Import$/ }));
   const seedInput = screen.getByRole('textbox', { name: 'Seed to import' });
   fireEvent.change(seedInput, { target: { value: 'invalid-seed' } });
   expect(
@@ -114,4 +120,20 @@ it('offers a separate share seed and requires confirmation before replacing an a
   await waitFor(() =>
     expect(onImport).toHaveBeenCalledExactlyOnceWith('c'.repeat(64)),
   );
+});
+
+it('opens saving with Ctrl+S and saves a project copy without publishing a public preview', async () => {
+  const onBackup = vi.fn(async () => 'd'.repeat(64));
+  render(<Fixture onImport={async () => true} onBackup={onBackup} />);
+  fireEvent.click(screen.getByRole('tab', { name: /^Import$/ }));
+  fireEvent.keyDown(window, { code: 'KeyS', ctrlKey: true });
+  expect(screen.getByRole('tab', { name: 'Save for later' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Save project file' }));
+  await waitFor(() =>
+    expect(projectDownload).toHaveBeenCalledWith('d'.repeat(64)),
+  );
+  expect(onBackup).toHaveBeenCalledOnce();
 });

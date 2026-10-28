@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { tierlistShareIdPattern } from '@/app/_lib/tierlist-share-id';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { TierlistAccessError } from './tierlist-identity';
 import {
@@ -35,10 +36,5 @@ export const publishShare = async (input: unknown) =>
   handleShare(() => publishTierlist(inputSchema.parse(input)));
 export const copyShareSeed = async (id: unknown) =>
   handleShare(() =>
-    copyPublicTierlistSeed(
-      z
-        .string()
-        .regex(/^[A-Za-z0-9_-]{16}(?:\.[a-f0-9]{16})?$/u)
-        .parse(id),
-    ),
+    copyPublicTierlistSeed(z.string().regex(tierlistShareIdPattern).parse(id)),
   );

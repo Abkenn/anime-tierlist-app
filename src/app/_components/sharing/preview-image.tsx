@@ -8,6 +8,10 @@ import { Skeleton } from '@/app/_components/ui/skeleton';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
 import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 import type { ExportPoster } from '@/app/_lib/tierlist-export-layout';
+import { PreviewDisplacement } from './preview-displacement';
+
+// Only decoded public PNG URLs are remembered, never account data or poster blobs.
+const decodedPreviews = new Set<string>();
 
 type PreviewImageProps = {
   id: string;
@@ -22,7 +26,9 @@ export const PreviewImage = ({
   height,
   posters,
 }: PreviewImageProps) => {
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>(() =>
+    decodedPreviews.has(id) ? 'ready' : 'loading',
+  );
   const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
@@ -49,10 +55,29 @@ export const PreviewImage = ({
         unoptimized
         loading="eager"
         fetchPriority="high"
-        onLoad={() => setState('ready')}
+        onLoad={() => {
+          decodedPreviews.add(id);
+          if (decodedPreviews.size > 32) {
+            const oldest = decodedPreviews.values().next().value;
+            if (oldest) {
+              decodedPreviews.delete(oldest);
+            }
+          }
+          setState('ready');
+        }}
         onError={() => setState('error')}
         className={`block h-auto w-full ${state === 'ready' ? 'opacity-100' : 'opacity-0'}`}
       />
+
+      {state === 'ready' && (
+        <PreviewDisplacement
+          id={id}
+          source={source}
+          width={width}
+          height={height}
+          posters={posters}
+        />
+      )}
 
       <TierlistFind
         query={query}

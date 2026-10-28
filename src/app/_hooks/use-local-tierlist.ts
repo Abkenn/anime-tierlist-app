@@ -1,9 +1,10 @@
 'use client';
 
 import { useStore } from 'jotai';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { clearEditingItemAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
+import { posterPreviewsAtom } from '@/app/_atoms/tierlist/poster-preview.atoms';
 import {
   enabledTierRanksAtom,
   imageModeAtom,
@@ -11,6 +12,10 @@ import {
   rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import {
+  previewHandoffEvent,
+  readPreviewHandoff,
+} from '@/app/_lib/preview-handoff';
 import { createSaveQueue } from '@/app/_lib/save-queue';
 import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
 import { sameTierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -52,6 +57,29 @@ export const useLocalTierlist = () => {
     status: 'loading',
     seed: '',
   });
+
+  const receivePreview = useEffectEvent(async () => {
+    try {
+      const current = await controller.current?.refresh();
+      if (current) {
+        store.set(
+          posterPreviewsAtom,
+          readPreviewHandoff(current.seed, current.revision),
+        );
+      }
+    } catch {
+      /* The original posters still load if the profile changed during navigation. */
+    }
+  });
+
+  useEffect(() => {
+    const receive = () => {
+      void receivePreview();
+    };
+    window.addEventListener(previewHandoffEvent, receive);
+
+    return () => window.removeEventListener(previewHandoffEvent, receive);
+  }, []);
 
   const changeProfile = async (seed: string, change: () => Promise<void>) => {
     await controller.current?.flush();
@@ -148,6 +176,10 @@ export const useLocalTierlist = () => {
 
         const hydrate = (clearEditing = true) => {
           if (clearEditing) {
+            store.set(
+              posterPreviewsAtom,
+              readPreviewHandoff(current.seed, current.revision),
+            );
             store.set(clearEditingItemAtom);
           }
           store.set(tierItemsAtom, current.items);

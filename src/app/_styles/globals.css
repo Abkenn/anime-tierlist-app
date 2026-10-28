@@ -193,6 +193,7 @@
   }
 }
 
+::view-transition-group(.preview-expand),
 ::view-transition-group(.page-change),
 ::view-transition-group(.preview-change) {
   animation-duration: 220ms;
@@ -230,6 +231,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(.preview-expand),
+  ::view-transition-old(.preview-expand),
+  ::view-transition-new(.preview-expand),
   ::view-transition-group(.page-change),
   ::view-transition-group(.preview-change),
   ::view-transition-old(.page-change),

@@ -87,7 +87,11 @@ it('requires ownership and rejects stale publishing without creating a public sn
 });
 
 it('creates public snapshots with independent IDs and strips every secret from public reads', async () => {
-  const { id } = await publishTierlist({ ownerId: 'owner', revision: 4 });
+  const { id, version } = await publishTierlist({
+    ownerId: 'owner',
+    revision: 4,
+  });
+  expect(version).toBe('v4.4');
   expect(id).toMatch(/^[A-Za-z0-9_-]{16}$/u);
   mocks.share.mockResolvedValue({
     id,
@@ -101,6 +105,8 @@ it('creates public snapshots with independent IDs and strips every secret from p
     version: 'b'.repeat(16),
     document,
   });
+  expect(await readPublicTierlist(`${id}.v4.4`)).not.toBeNull();
+  expect(await readPublicTierlist(`${id}.${'b'.repeat(16)}`)).not.toBeNull();
   expect(await readPublicTierlist('bad')).toBeNull();
 });
 

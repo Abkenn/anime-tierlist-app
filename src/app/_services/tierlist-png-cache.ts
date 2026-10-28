@@ -1,4 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
+import { tierlistShareIdPattern } from '@/app/_lib/tierlist-share-id';
 import { env } from '@/env';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
@@ -13,7 +14,7 @@ import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { renderTierlistPng } from './tierlist-png';
 
 export const getTierlistPng = async (slug: string) => {
-  if (!/^[A-Za-z0-9_-]{16}(?:\.[a-f0-9]{16})?$/u.test(slug)) {
+  if (!tierlistShareIdPattern.test(slug)) {
     return null;
   }
   const id = slug.split('.')[0];

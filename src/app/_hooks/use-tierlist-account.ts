@@ -23,7 +23,6 @@ import {
 import { OFFLINE_RECOVERED_EVENT } from '@/app/_services/offline-mode';
 import {
   connectTierlist,
-  createShareSeed,
   disconnectTierlist,
   replaceAccountFromSeed,
 } from '@/app/_services/tierlist.actions';
@@ -49,6 +48,10 @@ export const useTierlistAccount = (
   const [accountVerified, setAccountVerified] = useState(false);
   const [accountAttempt, setAccountAttempt] = useState(0);
   const revalidating = useRef(false);
+  const sharingSeed = useRef<{
+    key: string;
+    task: Promise<{ seed: string; ownerId: string; revision: number }>;
+  } | null>(null);
   const rejectedProfile = useRef('');
   const accountHint = useAccountDisplayHint();
   const [resolvedUserId, setResolvedUserId] = useState<string | null>();
@@ -166,21 +169,10 @@ export const useTierlistAccount = (
       await storage.importProfile(parsed.data, result.value);
     });
 
-  const shareSeed = async () => {
-    await storage.flush();
-    if (!status.backedUp) {
-      throw new Error('Wait for your changes to save before sharing.');
-    }
-
-    const result = await createShareSeed();
-    if (!result.ok) {
-      throw new Error(result.message);
-    }
-
-    return result.value;
-  };
+  const backupSeed = async () => (await prepareSharing()).seed;
 
   const shareInput = async () => {
+    await storage.flush();
     await sync.saveNow();
     const snapshot = await storage.refresh();
     if (
@@ -198,26 +190,51 @@ export const useTierlistAccount = (
   };
 
   const prepareSharing = async () => {
-    const input = await shareInput();
-    const result = await prepareShare(input);
-    if (!result.ok) {
-      throw new Error(result.message);
+    await storage.flush();
+    const snapshot = await storage.refresh();
+    if (!snapshot) {
+      throw new Error('Wait for your tierlist to finish loading.');
     }
-
-    return {
-      ...result.value,
-      ownerId: input.ownerId,
-      revision: input.revision,
+    if (!googleConnected) {
+      return {
+        seed: snapshot.seed,
+        ownerId: snapshot.sync?.ownerId ?? '',
+        revision: snapshot.sync?.serverRevision ?? 0,
+      };
+    }
+    const key = `${snapshot.seed}:${snapshot.revision}`;
+    if (sharingSeed.current?.key === key) {
+      return sharingSeed.current.task;
+    }
+    const run = async () => {
+      try {
+        const input = await shareInput();
+        const result = await prepareShare(input);
+        if (!result.ok) {
+          throw new Error(result.message);
+        }
+        return {
+          ...result.value,
+          ownerId: input.ownerId,
+          revision: input.revision,
+        };
+      } catch (error) {
+        if (sharingSeed.current?.key === key) {
+          sharingSeed.current = null;
+        }
+        throw error;
+      }
     };
+    const task = run();
+    sharingSeed.current = { key, task };
+    return task;
   };
 
-  const publishSharing = async (input: {
-    ownerId: string;
-    revision: number;
-  }) => {
+  const publishSharing = async () => {
+    const latest = await shareInput();
     const result = await publishShare({
-      ownerId: input.ownerId,
-      revision: input.revision,
+      ownerId: latest.ownerId,
+      revision: latest.revision,
     });
     if (!result.ok) {
       throw new Error(result.message);
@@ -542,8 +559,7 @@ export const useTierlistAccount = (
       restoreDevice: projectImport.project ? returnFromProject : restoreDevice,
       replaceDevice: projectImport.project ? replaceFromProject : replaceDevice,
       signIn,
-      shareSeed,
-      prepareSharing,
+      backupSeed,
       publishSharing,
       reloadApp,
       keepDeviceChanges: () => perform(sync.keepDeviceChanges),

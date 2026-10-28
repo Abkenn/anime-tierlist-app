@@ -2,12 +2,7 @@
 
 import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
-import {
-  type PropsWithChildren,
-  type ReactNode,
-  useRef,
-  useState,
-} from 'react';
+import { type PropsWithChildren, type ReactNode, useState } from 'react';
 import { SaveShare } from '@/app/_components/sharing/save-share';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
@@ -35,7 +30,6 @@ export const LocalTierlist = ({
     status,
     actions,
   } = useTierlistAccount(initialAccount);
-  const statusAnchor = useRef<HTMLButtonElement>(null);
   const [accountHandle] = useState(() => Popover.createHandle());
   const projectTarget = project?.returnAccount ? 'account' : 'device';
 
@@ -51,61 +45,50 @@ export const LocalTierlist = ({
           status.needsReconnect ? status.reconnectLabel : '',
         ]}
       >
-        <div className="mb-2 flex min-h-9 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
-          <p role="status" className="min-w-0 max-w-full">
-            <TerminalText
-              segments={[
-                { id: 'status', text: status.message },
-                ...(status.showIdentity
-                  ? [
-                      {
-                        id: 'separator',
-                        text: status.identitySeparator,
-                        render: (content: ReactNode) => (
-                          <span
-                            className={cn(
-                              !status.backedUp &&
-                                !status.restoringAccount &&
-                                'sm:hidden',
-                            )}
-                          >
-                            {content}
-                          </span>
-                        ),
-                      },
-                      {
-                        id: 'account',
-                        text: status.identityLabel,
-                        render: (content: ReactNode) => (
-                          <Popover.Trigger
-                            ref={statusAnchor}
-                            handle={accountHandle}
-                            className={cn(
-                              'max-w-full cursor-pointer wrap-break-word text-left align-baseline font-medium text-foreground underline decoration-current/70 underline-offset-4 transition-[color,text-decoration-color,opacity] hover:decoration-current active:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 max-sm:py-1 data-popup-open:decoration-current',
-                              !status.backedUp &&
-                                !status.restoringAccount &&
-                                'sm:hidden',
-                            )}
-                          >
-                            {content}
-                          </Popover.Trigger>
-                        ),
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </p>
-
-          <div className="flex items-center gap-4">
-            <SaveShare
-              key={storage.seed}
-              document={storage.snapshot}
-              disabled={status.controlsBusy}
-              onPrepare={actions.prepareSharing}
-              onPublish={actions.publishSharing}
-            />
-
+        <div className="mb-2 flex min-h-9 items-start justify-between gap-x-4 text-xs text-muted-foreground max-lg:pr-10">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-4">
+            <p role="status" className="min-w-0 max-w-full">
+              <TerminalText
+                segments={[
+                  { id: 'status', text: status.message },
+                  ...(status.showIdentity
+                    ? [
+                        {
+                          id: 'separator',
+                          text: status.identitySeparator,
+                          render: (content: ReactNode) => (
+                            <span
+                              className={cn(
+                                !status.backedUp &&
+                                  !status.restoringAccount &&
+                                  'sm:hidden',
+                              )}
+                            >
+                              {content}
+                            </span>
+                          ),
+                        },
+                        {
+                          id: 'account',
+                          text: status.identityLabel,
+                          render: (content: ReactNode) => (
+                            <span
+                              className={cn(
+                                'max-w-full wrap-break-word text-left align-baseline font-medium text-foreground',
+                                !status.backedUp &&
+                                  !status.restoringAccount &&
+                                  'sm:hidden',
+                              )}
+                            >
+                              {content}
+                            </span>
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </p>
             <UserSeed
               seed={
                 googleConnected || storage.snapshot?.accountOwnerId
@@ -114,7 +97,6 @@ export const LocalTierlist = ({
               }
               open={accountOpen}
               handle={accountHandle}
-              statusAnchor={statusAnchor}
               onOpenChange={setAccountOpen}
               imported={storage.imported}
               projectReturn={project ? projectTarget : undefined}
@@ -130,7 +112,17 @@ export const LocalTierlist = ({
               canSignIn={status.backedUp || sync.status === 'unauthorized'}
               onGoogleSignIn={actions.signIn}
               onGoogleSignOut={actions.restoreDevice}
-              onShare={actions.shareSeed}
+              onBackup={actions.backupSeed}
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <SaveShare
+              key={storage.seed}
+              document={storage.snapshot}
+              revision={storage.snapshot?.revision ?? 0}
+              disabled={status.controlsBusy}
+              onPublish={actions.publishSharing}
             />
           </div>
         </div>

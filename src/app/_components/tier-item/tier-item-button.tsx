@@ -3,7 +3,8 @@
 import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { type HTMLMotionProps, motion } from 'motion/react';
-import type { Ref, RefObject } from 'react';
+import { type Ref, type RefObject, useState } from 'react';
+import { posterPreviewsAtom } from '@/app/_atoms/tierlist/poster-preview.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import type {
   TierItemTitle as ItemTitle,
@@ -48,6 +49,10 @@ export const TierItemButton = ({
   ...buttonProps
 }: TierItemButtonProps) => {
   const imageMode = useAtomValue(imageModeAtom);
+  const previews = useAtomValue(posterPreviewsAtom);
+  const [readySource, setReadySource] = useState('');
+  const preview =
+    image && readySource !== image.src ? previews.get(image.src) : undefined;
 
   return (
     <motion.button
@@ -85,12 +90,28 @@ export const TierItemButton = ({
           )}
 
           <span className="relative block size-full overflow-hidden">
+            {preview && (
+              <svg
+                aria-hidden="true"
+                viewBox={preview.viewBox}
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute inset-0 size-full"
+              >
+                <image
+                  href={preview.src}
+                  width={preview.width}
+                  height={preview.height}
+                />
+              </svg>
+            )}
+
             <TierItemImage
               image={image}
               mode={imageMode}
               crop={crop}
               trim={trim}
               priority={priority}
+              onReady={preview ? () => setReadySource(image.src) : undefined}
             />
           </span>
         </>
@@ -98,7 +119,7 @@ export const TierItemButton = ({
         label
       )}
 
-      {itemTitle?.text && (
+      {itemTitle?.text && !preview && (
         <TierItemTitle
           title={itemTitle}
           image={image}

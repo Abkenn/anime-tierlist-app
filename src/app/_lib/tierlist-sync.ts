@@ -39,7 +39,7 @@ export type SyncResult<T> =
   | { ok: false; code: TierlistFailureCode; message: string };
 
 export const getTierlistDocument = (
-  snapshot: LocalTierlist,
+  snapshot: TierlistDocument,
 ): TierlistDocument => ({
   version: snapshot.version,
   items: snapshot.items,

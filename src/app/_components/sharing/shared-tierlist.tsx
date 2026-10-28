@@ -1,12 +1,17 @@
 import { navigation } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { Suspense } from 'react';
+import { Suspense, ViewTransition } from 'react';
 import { touchTierlistPng } from '@/app/_data/mutations/tierlist-png';
+import { findOwnerById } from '@/app/_data/queries/tierlist';
 import { findTierlistShare } from '@/app/_data/queries/tierlist-share';
 import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
+import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { getGoogleIdentity } from '@/app/_services/google-session';
-import { readAnonymousTierlistOwner } from '@/app/_services/tierlist-identity';
+import {
+  hashTierlistSecret,
+  readAnonymousTierlistOwner,
+} from '@/app/_services/tierlist-identity';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
 import { PreviewControls } from './preview-controls';
 import { PreviewImage } from './preview-image';
@@ -24,6 +29,7 @@ const OwnerControls = async ({ id }: { id: string }) => {
   if (!publicShare) {
     return null;
   }
+  const accountOwner = google ? await findOwnerById(google.ownerId) : null;
   const isOwner = Boolean(
     share && (google?.ownerId ?? anonymous?.id) === share.ownerId,
   );
@@ -33,6 +39,20 @@ const OwnerControls = async ({ id }: { id: string }) => {
       id={id}
       document={publicShare.document}
       isOwner={isOwner}
+      account={
+        accountOwner
+          ? {
+              profileKey: hashTierlistSecret(
+                `google-profile:${accountOwner.id}`,
+              ),
+              ownerId: accountOwner.id,
+              revision: accountOwner.revision,
+              hasItems:
+                tierlistDocumentSchema.parse(accountOwner.document).items
+                  .length > 0,
+            }
+          : undefined
+      }
     />
   );
 };
@@ -49,23 +69,29 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
     <>
       <Suspense
         fallback={
-          <p className="mb-3 text-xs text-muted-foreground">
+          <div className="mb-3 flex min-h-17.5 items-center py-2 text-xs text-muted-foreground">
             You’re in preview mode.
-          </p>
+          </div>
         }
       >
         <OwnerControls id={id} />
       </Suspense>
 
-      <div className="overflow-x-auto">
-        <PreviewImage
-          key={`${share.id}.${share.version}`}
-          id={`${share.id}.${share.version}`}
-          width={board.width}
-          height={board.height}
-          posters={board.rows.flatMap((row) => row.posters)}
-        />
-      </div>
+      <ViewTransition
+        name={`tierlist-preview-${share.id}`}
+        default="none"
+        share="preview-expand"
+      >
+        <div className="overflow-x-auto">
+          <PreviewImage
+            key={`${share.id}.${share.version}`}
+            id={`${share.id}.${share.version}`}
+            width={board.width}
+            height={board.height}
+            posters={board.rows.flatMap((row) => row.posters)}
+          />
+        </div>
+      </ViewTransition>
     </>
   );
 };

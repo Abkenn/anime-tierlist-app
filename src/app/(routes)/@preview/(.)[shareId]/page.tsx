@@ -10,7 +10,7 @@ const PreviewContent = async ({ params }: PageProps<'/[shareId]'>) => {
 };
 
 const InterceptedPreview = (props: PageProps<'/[shareId]'>) => (
-  <PreviewModal>
+  <PreviewModal params={props.params}>
     <Suspense
       fallback={
         <p className="text-xs text-muted-foreground">

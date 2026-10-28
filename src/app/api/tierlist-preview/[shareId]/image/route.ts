@@ -1,3 +1,4 @@
+import { tierlistShareVersion } from '@/app/_lib/tierlist-share-id';
 import { getTierlistPng } from '@/app/_services/tierlist-png-cache';
 
 export const maxDuration = 300;
@@ -32,7 +33,7 @@ export const GET = async (
       });
     }
     const url = new URL(image.url);
-    url.searchParams.set('v', image.fingerprint.slice(0, 16));
+    url.searchParams.set('v', tierlistShareVersion(image.fingerprint));
     if (new URL(request.url).searchParams.has('download')) {
       url.searchParams.set('download', '1');
     }

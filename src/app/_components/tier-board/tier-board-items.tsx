@@ -16,6 +16,7 @@ import {
   rankOffsetsAtom,
 } from '@/app/_atoms/tierlist/layout.atoms';
 import { settledPosterSourcesAtom } from '@/app/_atoms/tierlist/poster-loading.atoms';
+import { posterPreviewsAtom } from '@/app/_atoms/tierlist/poster-preview.atoms';
 import { TierItem } from '@/app/_components/tier-item/tier-item';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { Skeleton } from '@/app/_components/ui/skeleton';
@@ -56,6 +57,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const offsets = useAtomValue(rankOffsetsAtom);
   const draggedRank = useAtomValue(draggedRankAtom);
   const settledSources = useAtomValue(settledPosterSourcesAtom);
+  const previews = useAtomValue(posterPreviewsAtom);
   const geometry = new Map(
     interaction.posterLayout.map((poster) => [poster.id, poster]),
   );
@@ -87,7 +89,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
     );
   });
   const pendingPosters = visiblePosters.filter(
-    (item) => item.image && !settledSources.has(item.image.src),
+    (item) =>
+      item.image &&
+      !settledSources.has(item.image.src) &&
+      !previews.has(item.image.src),
   ).length;
   const batchLoading =
     pendingPosters > 0 && pendingPosters >= visiblePosters.length / 2;

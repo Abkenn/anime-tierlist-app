@@ -1,3 +1,7 @@
+import {
+  tierlistShareIdPattern,
+  tierlistShareVersion,
+} from '@/app/_lib/tierlist-share-id';
 import { env } from '@/env';
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
@@ -16,11 +20,13 @@ import {
 } from './tierlist-identity';
 import { getTierlistPng } from './tierlist-png-cache';
 
+const previewFormat = 4;
+
 export const readPublicTierlist = async (id: string) => {
   'use cache';
   cacheLife('max');
   cacheTag(`tierlist-share:${id.split('.')[0]}`);
-  if (!/^[A-Za-z0-9_-]{16}(?:\.[a-f0-9]{16})?$/u.test(id)) {
+  if (!tierlistShareIdPattern.test(id)) {
     return null;
   }
   const share = await findTierlistShare(id);
@@ -28,7 +34,7 @@ export const readPublicTierlist = async (id: string) => {
   return share
     ? {
         id: share.id,
-        version: share.fingerprint.slice(0, 16),
+        version: tierlistShareVersion(share.fingerprint),
         document: tierlistDocumentSchema.parse(share.document),
       }
     : null;
@@ -84,14 +90,15 @@ export const publishTierlist = async (input: {
   if (!owner || owner.revision !== input.revision) {
     throw new TierlistAccessError(
       'invalid',
-      'Your tierlist changed. Reopen Save & Share to share the latest version.',
+      'Your tierlist changed. Reopen Share to share the latest version.',
     );
   }
   const document = tierlistDocumentSchema.parse(owner.document);
   const { updatedAt: _updatedAt, ...content } = document;
-  const fingerprint = createHash('sha256')
-    .update(JSON.stringify({ previewFormat: 4, document: content }))
+  const digest = createHash('sha256')
+    .update(JSON.stringify({ previewFormat, document: content }))
     .digest('hex');
+  const fingerprint = `v${owner.revision}.${previewFormat}:${digest}`;
   const share = await publishTierlistSnapshot({
     id: randomBytes(12).toString('base64url'),
     ownerId: owner.id,
@@ -111,7 +118,7 @@ export const publishTierlist = async (input: {
     }
   }
 
-  return { id: share.id, version: fingerprint.slice(0, 16) };
+  return { id: share.id, version: tierlistShareVersion(share.fingerprint) };
 };
 
 export const copyPublicTierlistSeed = async (id: string) => {

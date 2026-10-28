@@ -23,6 +23,7 @@ type TierItemImageProps = {
   crop: TierCrop;
   trim?: TierImageTrim;
   priority?: boolean;
+  onReady?: () => void;
 };
 
 export const TierItemImage = ({
@@ -31,6 +32,7 @@ export const TierItemImage = ({
   crop,
   trim = fullImageTrim,
   priority = false,
+  onReady,
 }: TierItemImageProps) => {
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const [loadedSource, setLoadedSource] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export const TierItemImage = ({
 
   const loaded = () => {
     setLoadedSource(image.src);
+    onReady?.();
     markSettled(image.src);
   };
   const failed = () => {

@@ -104,7 +104,7 @@ export const useTierlistSync = (
     await withTierlistSyncLock(async () => {
       const latest = await storage.refresh();
       if (!latest || scope.current !== active || latest.seed !== active.seed) {
-        throw new Error('Your tierlist changed. Reopen Save & Share.');
+        throw new Error('Your tierlist changed. Reopen Share.');
       }
       const result = await synchronizeTierlist({
         local: latest,
@@ -113,7 +113,7 @@ export const useTierlistSync = (
         isCurrent: () => scope.current === active,
       });
       if (!result || scope.current !== active) {
-        throw new Error('Your tierlist changed. Reopen Save & Share.');
+        throw new Error('Your tierlist changed. Reopen Share.');
       }
       active.remote = result.remote;
       if (result.status === 'conflict') {
