@@ -2,6 +2,7 @@ import 'server-only';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { create, type Font } from 'fontkit';
+import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   exportPosterSize,
   exportTextLines,
@@ -112,7 +113,7 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
               )
               .join('') ?? '';
 
-          return `<g clip-path="url(#poster-${rowIndex}-${index})"><g fill="#ededeb">${fallback}</g>${title ? `<g fill="${title.color}" stroke="#111111" stroke-width="1.5" paint-order="stroke" stroke-linejoin="round">${titlePaths}</g>` : ''}</g>`;
+          return `<g clip-path="url(#poster-${rowIndex}-${index})"><g fill="#ededeb">${fallback}</g>${title ? `<g fill="${title.color}" stroke="${rankTextColor(title.color)}" stroke-width="1.5" paint-order="stroke" stroke-linejoin="round">${titlePaths}</g>` : ''}</g>`;
         })
         .join('');
 

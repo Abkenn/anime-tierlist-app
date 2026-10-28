@@ -3,9 +3,12 @@
 import { cn } from 'cn';
 import { motion } from 'motion/react';
 import { useTierTitleFrame } from '@/app/_hooks/use-tier-title-frame';
+import { useTitleColors } from '@/app/_hooks/use-title-colors';
+import { rankTextColor } from '@/app/_lib/rank-text-color';
 import { getTierTitleLayout } from '@/app/_lib/tier-title-layout';
 import type {
   TierItemTitle as ItemTitle,
+  TierCrop,
   TierImage,
   TierImageMode,
   TierImageTrim,
@@ -16,6 +19,7 @@ type TierItemTitleProps = {
   image?: TierImage;
   mode: TierImageMode;
   trim?: TierImageTrim;
+  crop?: TierCrop;
 };
 
 export const TierItemTitle = ({
@@ -23,6 +27,7 @@ export const TierItemTitle = ({
   image,
   mode,
   trim,
+  crop,
 }: TierItemTitleProps) => {
   const { ref, frame, width, height } = useTierTitleFrame({
     image,
@@ -30,6 +35,12 @@ export const TierItemTitle = ({
     trim,
   });
   const layout = getTierTitleLayout(title, width, height);
+  const colors = useTitleColors(
+    [{ id: 'title', label: title.text, rank: 'S+', image, trim, crop, title }],
+    mode,
+  );
+  const color = colors.get('title') ?? title.color;
+  const outline = rankTextColor(color);
 
   return (
     <span
@@ -46,7 +57,11 @@ export const TierItemTitle = ({
       >
         <motion.span
           initial={false}
-          animate={{ color: title.color, fontSize: layout.fontSize }}
+          animate={{
+            color,
+            fontSize: layout.fontSize,
+            textShadow: `0 1px 2px ${outline}, 0 0 2px ${outline}`,
+          }}
           transition={{ duration: 0 }}
           className={cn(
             'absolute inset-x-0 px-1 text-center font-sans font-semibold [text-shadow:0_0.0625rem_0.125rem_var(--ink),0_0_0.125rem_var(--ink)]',
@@ -58,14 +73,7 @@ export const TierItemTitle = ({
             },
           )}
         >
-          <span
-            className={cn(
-              'line-clamp-4',
-              title.wrap
-                ? 'whitespace-pre-wrap wrap-anywhere'
-                : 'whitespace-pre',
-            )}
-          >
+          <span className={cn('line-clamp-4 whitespace-pre')}>
             {layout.lines.join('\n')}
           </span>
         </motion.span>

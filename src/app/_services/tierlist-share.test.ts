@@ -98,7 +98,7 @@ it('creates public snapshots with independent IDs and strips every secret from p
     ownerId: 'owner',
     revision: 4,
   });
-  expect(version).toBe('v4.4');
+  expect(version).toBe('v4.5');
   expect(id).toMatch(/^[A-Za-z0-9_-]{16}$/u);
   mocks.share.mockResolvedValue({
     id,

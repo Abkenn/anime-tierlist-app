@@ -27,7 +27,7 @@ import {
 } from './tierlist-identity';
 import { getTierlistPng } from './tierlist-png-cache';
 
-const previewFormat = 4;
+const previewFormat = 5;
 
 const previewFingerprint = (revision: number, document: TierlistDocument) => {
   const { updatedAt: _updatedAt, ...content } = document;

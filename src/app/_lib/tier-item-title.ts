@@ -2,15 +2,19 @@ import type { TierItemTitle } from '@/app/_types/tierlist.types';
 
 export const defaultTierItemTitle: TierItemTitle = {
   text: '',
-  wrap: false,
+  wrap: true,
   position: 'bottom',
   color: '#ffffff',
+  autoColor: true,
 };
 export const titlePositions: TierItemTitle['position'][] = [
   'top',
   'middle',
   'bottom',
 ];
+
+export const usesAutomaticTitleColor = (title: TierItemTitle) =>
+  title.autoColor ?? /^#(?:fff|ffffff)$/iu.test(title.color);
 
 export const normalizeTitleColor = (
   input: string,

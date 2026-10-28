@@ -5,6 +5,7 @@ import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
 import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
+import { useTitleColors } from '@/app/_hooks/use-title-colors';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
 import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
@@ -39,6 +40,22 @@ export const PreviewImage = ({
   const deferredQuery = useDeferredValue(query);
   const posters = rows.flatMap((row) => row.posters);
   const visible = usePreviewPosters(root, posters, width, height);
+  const colors = useTitleColors(
+    visible.map((poster) => poster.item),
+    mode,
+  );
+  const displayRows = rows.map((row) => ({
+    ...row,
+    posters: row.posters.map((poster) => {
+      const color = colors.get(poster.item.id);
+      return color && poster.item.title
+        ? {
+            ...poster,
+            item: { ...poster.item, title: { ...poster.item.title, color } },
+          }
+        : poster;
+    }),
+  }));
   const visibleIds = new Set(visible.map((poster) => poster.item.id));
   const matches = posters.filter((poster) =>
     matchesTierItemLabel(poster.item, deferredQuery),
@@ -73,7 +90,7 @@ export const PreviewImage = ({
     >
       {state !== 'ready' && (
         <PreviewBoardSurface
-          rows={rows}
+          rows={displayRows}
           width={width}
           height={height}
           mode={mode}
@@ -111,7 +128,7 @@ export const PreviewImage = ({
         visible={visible}
         width={width}
         height={height}
-        rows={rows}
+        rows={displayRows}
       />
 
       <TierlistFind

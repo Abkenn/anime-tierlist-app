@@ -1,4 +1,5 @@
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
+import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   type ExportRow,
   exportImageFrame,
@@ -133,7 +134,7 @@ export const PreviewBoardSurface = ({
                         fontFamily="sans-serif"
                         fontWeight={600}
                         fontSize={title.fontSize}
-                        stroke="#111111"
+                        stroke={rankTextColor(title.color)}
                         strokeWidth={1.5}
                         paintOrder="stroke"
                       >

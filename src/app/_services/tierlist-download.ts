@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   exportCanvasSize,
   exportImageFrame,
@@ -12,6 +13,7 @@ import {
   userSeedSchema,
 } from '@/app/_lib/tierlist-sync';
 import { posterCacheName } from './poster-cache';
+import { resolvePosterTitleColor } from './poster-title-color';
 
 const projectSchema = z.object({
   format: z.literal('anime-tierlist'),
@@ -174,8 +176,9 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
       const title = exportTitle(box, data.imageMode);
       if (title) {
         context.font = `600 ${title.fontSize}px sans-serif`;
-        context.fillStyle = title.color;
-        context.strokeStyle = '#111111';
+        const color = await resolvePosterTitleColor(box.item, data.imageMode);
+        context.fillStyle = color;
+        context.strokeStyle = rankTextColor(color);
         context.lineWidth = 1.5;
         title.lines.forEach((line, index) => {
           const y = title.y + title.fontSize + index * title.fontSize * 1.25;

@@ -35,6 +35,7 @@ const item = z.object({
       wrap: z.boolean(),
       position: z.enum(['top', 'middle', 'bottom']),
       color: z.templateLiteral(['#', z.string()]),
+      autoColor: z.boolean().optional(),
     })
     .optional(),
 });

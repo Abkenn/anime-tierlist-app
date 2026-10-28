@@ -6,6 +6,7 @@ import {
   limitTitleLines,
   normalizeTitleColor,
   titlePositions,
+  usesAutomaticTitleColor,
 } from '@/app/_lib/tier-item-title';
 import type { TierItemTitle } from '@/app/_types/tierlist.types';
 
@@ -144,7 +145,7 @@ export const TierItemTitleEditor = ({
                     );
 
                     if (color) {
-                      onChange({ ...title, color });
+                      onChange({ ...title, color, autoColor: false });
                     }
                   }}
                 />
@@ -164,12 +165,23 @@ export const TierItemTitleEditor = ({
                     setHex(value);
 
                     if (color) {
-                      onChange({ ...title, color });
+                      onChange({ ...title, color, autoColor: false });
                     }
                   }}
                 />
               </label>
             </div>
+
+            <label className="mt-2 flex min-h-9 items-center gap-2">
+              <input
+                type="checkbox"
+                checked={usesAutomaticTitleColor(title)}
+                onChange={(event) =>
+                  onChange({ ...title, autoColor: event.currentTarget.checked })
+                }
+              />
+              Automatic contrast
+            </label>
 
             {!validColor && (
               <p role="status" className="mt-1 text-muted-foreground">

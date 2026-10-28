@@ -31,3 +31,23 @@ it('fits wrapped text into no more than four lines', () => {
     'Alonganimetitlethatneedsautomaticwrappingtofit',
   );
 });
+
+it('wraps Mushoku Tensei at the space and shrinks long words instead of splitting them', () => {
+  const title = {
+    text: 'Mushoku Tensei',
+    color: '#ffffff' as const,
+    position: 'top' as const,
+    wrap: true,
+  };
+  expect(getTierTitleLayout(title, 65, 100).lines).toEqual([
+    'Mushoku',
+    'Tensei',
+  ]);
+  const longWord = getTierTitleLayout(
+    { ...title, text: 'Supercalifragilisticexpialidocious' },
+    40,
+    100,
+  );
+  expect(longWord.lines).toEqual(['Supercalifragilisticexpialidocious']);
+  expect(longWord.fontSize).toBeLessThan(4);
+});

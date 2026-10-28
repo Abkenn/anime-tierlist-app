@@ -58,6 +58,7 @@ export type TierItemTitle = {
   wrap: boolean;
   position: 'top' | 'middle' | 'bottom';
   color: HexColor;
+  autoColor?: boolean;
 };
 
 export type TierItemData = {

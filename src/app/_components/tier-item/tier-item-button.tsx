@@ -125,6 +125,7 @@ export const TierItemButton = ({
           image={image}
           mode={imageMode}
           trim={trim}
+          crop={crop}
         />
       )}
     </motion.button>

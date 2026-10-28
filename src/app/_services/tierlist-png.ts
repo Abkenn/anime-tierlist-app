@@ -2,11 +2,16 @@ import 'server-only';
 import { prerender } from 'react-dom/static';
 import sharp from 'sharp';
 import { TierlistPreviewBoard } from '@/app/_components/sharing/tierlist-preview-board';
+import { usesAutomaticTitleColor } from '@/app/_lib/tier-item-title';
 import {
   exportCanvasSize,
   layoutExportBoard,
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
+import {
+  contrastingTitleColor,
+  titleSampleSize,
+} from '@/app/_lib/title-contrast';
 import { embedExportPoster } from './export-poster';
 import { renderExportTextPaths } from './export-text-paths';
 
@@ -17,12 +22,31 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
     ),
   ];
   const embedded = new Map<string, string>();
+  const samples = new Map<string, Buffer>();
+  const automaticSources = new Set(
+    document.items.flatMap((item) =>
+      item.title && usesAutomaticTitleColor(item.title) && item.image
+        ? [item.image.src]
+        : [],
+    ),
+  );
   let next = 0;
   const worker = async () => {
     while (next < sources.length) {
       const source = sources[next++];
       try {
-        embedded.set(source, await embedExportPoster(source));
+        const poster = await embedExportPoster(source);
+        embedded.set(source, poster);
+        if (automaticSources.has(source)) {
+          samples.set(
+            source,
+            await sharp(Buffer.from(poster.split(',')[1], 'base64'))
+              .resize(titleSampleSize, titleSampleSize, { fit: 'fill' })
+              .ensureAlpha()
+              .raw()
+              .toBuffer(),
+          );
+        }
       } catch {
         // Unavailable posters retain their labels, matching the client export fallback.
         embedded.set(source, '');
@@ -34,12 +58,22 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
   );
   const printable: TierlistDocument = {
     ...document,
-    items: document.items.map((item) => ({
-      ...item,
-      image: item.image
-        ? { ...item.image, src: embedded.get(item.image.src) ?? '' }
-        : undefined,
-    })),
+    items: document.items.map((item) => {
+      const source = item.image ? (embedded.get(item.image.src) ?? '') : '';
+      let title = item.title;
+      const pixels = item.image && samples.get(item.image.src);
+      if (title && usesAutomaticTitleColor(title) && pixels) {
+        title = {
+          ...title,
+          color: contrastingTitleColor(pixels, item, document.imageMode),
+        };
+      }
+      return {
+        ...item,
+        title,
+        image: item.image ? { ...item.image, src: source } : undefined,
+      };
+    }),
   };
   const element = TierlistPreviewBoard({ document: printable });
   const { prelude } = await prerender(element);

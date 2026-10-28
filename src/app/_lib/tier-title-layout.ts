@@ -36,21 +36,31 @@ export const getTierTitleLayout = (
     fontSize = Math.min(fontSize, availableWidth / Math.max(1, ...widths));
     return { fontSize, lines: source };
   }
+  const measure = (text: string) =>
+    Array.from(text).reduce(
+      (sum, character) => sum + characterWidth(character),
+      0,
+    );
+  const widestWord = Math.max(
+    1,
+    ...source.flatMap((line) => line.split(/\s+/u).map(measure)),
+  );
+  fontSize = Math.min(fontSize, availableWidth / widestWord);
   const wrap = () =>
     source.flatMap((line) => {
       const lines: string[] = [];
       let current = '';
-      let used = 0;
-      Array.from(line).forEach((character) => {
-        const next = characterWidth(character) * fontSize;
-        if (current && used + next > availableWidth) {
-          lines.push(current.trimEnd());
-          current = '';
-          used = 0;
-        }
-        current += character;
-        used += next;
-      });
+      line
+        .trim()
+        .split(/\s+/u)
+        .forEach((word) => {
+          const candidate = current ? `${current} ${word}` : word;
+          if (current && measure(candidate) * fontSize > availableWidth) {
+            lines.push(current);
+            current = '';
+          }
+          current = current ? `${current} ${word}` : word;
+        });
       lines.push(current);
       return lines;
     });
