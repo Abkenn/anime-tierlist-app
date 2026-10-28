@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { type PointerEvent, useRef, useState } from 'react';
 import type { ExportPoster } from '@/app/_lib/tierlist-export-layout';
 import { previewDragEndedEvent } from '@/app/_lib/tierlist-share-id';
+import { PreviewPosterLinks } from './preview-poster-links';
 
 type PreviewDisplacementProps = {
   id: string;
@@ -30,7 +31,7 @@ export const PreviewDisplacement = ({
   const [drag, setDrag] = useState<Drag>();
   const start = useRef<{ x: number; y: number; from: number } | null>(null);
   const reducedMotion = useReducedMotion();
-  const point = (event: PointerEvent<SVGSVGElement>) => {
+  const point = (event: PointerEvent<HTMLDivElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     return {
       x: ((event.clientX - bounds.left) * width) / bounds.width,
@@ -78,10 +79,8 @@ export const PreviewDisplacement = ({
     : [];
 
   return (
-    <svg
-      aria-hidden="true"
-      viewBox={`0 0 ${width} ${height}`}
-      className="absolute inset-0 size-full touch-pan-y select-none"
+    <div
+      className="absolute inset-0 touch-pan-y select-none"
       onPointerDown={(event) => {
         if (!event.isPrimary || event.button !== 0 || drag) {
           return;
@@ -134,55 +133,65 @@ export const PreviewDisplacement = ({
       }}
       onLostPointerCapture={finish}
     >
-      <rect width={width} height={height} fill="transparent" />
+      <svg
+        aria-hidden="true"
+        viewBox={`0 0 ${width} ${height}`}
+        className="pointer-events-none absolute inset-0 size-full"
+      >
+        <rect width={width} height={height} fill="transparent" />
 
-      {moved.map(({ poster }) => (
-        <rect
-          key={poster.item.id}
-          x={poster.x}
-          y={poster.y}
-          width={poster.width}
-          height={poster.height}
-          fill="#1c1c1c"
-        />
-      ))}
-
-      {moved
-        .sort(
-          (a, b) =>
-            Number(a.index === drag?.from) - Number(b.index === drag?.from),
-        )
-        .map(({ poster, index, x, y }) => (
-          <motion.svg
+        {moved.map(({ poster }) => (
+          <rect
             key={poster.item.id}
-            data-preview-displaced={poster.item.id}
-            viewBox={`${poster.x} ${poster.y} ${poster.width} ${poster.height}`}
+            x={poster.x}
+            y={poster.y}
             width={poster.width}
             height={poster.height}
-            initial={{ x: poster.x, y: poster.y }}
-            animate={{
-              x: drag?.returning ? poster.x : x,
-              y: drag?.returning ? poster.y : y,
-            }}
-            transition={
-              reducedMotion || (index === drag?.from && !drag.returning)
-                ? { duration: 0 }
-                : { type: 'spring', stiffness: 550, damping: 38 }
-            }
-            onAnimationComplete={() => {
-              if (index === drag?.from && drag.returning) {
-                setDrag(undefined);
-                window.dispatchEvent(
-                  new CustomEvent(previewDragEndedEvent, {
-                    detail: id.split('.')[0],
-                  }),
-                );
-              }
-            }}
-          >
-            <image href={source} width={width} height={height} />
-          </motion.svg>
+            fill="#1c1c1c"
+          />
         ))}
-    </svg>
+
+        {moved
+          .sort(
+            (a, b) =>
+              Number(a.index === drag?.from) - Number(b.index === drag?.from),
+          )
+          .map(({ poster, index, x, y }) => (
+            <motion.svg
+              key={poster.item.id}
+              data-preview-displaced={poster.item.id}
+              viewBox={`${poster.x} ${poster.y} ${poster.width} ${poster.height}`}
+              width={poster.width}
+              height={poster.height}
+              initial={{ x: poster.x, y: poster.y }}
+              animate={{
+                x: drag?.returning ? poster.x : x,
+                y: drag?.returning ? poster.y : y,
+              }}
+              transition={
+                reducedMotion || (index === drag?.from && !drag.returning)
+                  ? { duration: 0 }
+                  : { type: 'spring', stiffness: 550, damping: 38 }
+              }
+              onAnimationComplete={() => {
+                if (index === drag?.from && drag.returning) {
+                  setDrag(undefined);
+                  window.dispatchEvent(
+                    new CustomEvent(previewDragEndedEvent, {
+                      detail: id.split('.')[0],
+                    }),
+                  );
+                }
+              }}
+            >
+              <image href={source} width={width} height={height} />
+            </motion.svg>
+          ))}
+      </svg>
+
+      {!drag && (
+        <PreviewPosterLinks posters={posters} width={width} height={height} />
+      )}
+    </div>
   );
 };

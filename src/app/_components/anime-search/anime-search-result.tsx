@@ -33,6 +33,7 @@ export const AnimeSearchResultCard = ({
   const dimensions = image ?? result.image;
   const drag = useSearchItemDrag({
     id: result.id,
+    malId: result.malId,
     label: result.title,
     rank: destination.rank,
     image: reveal ? image : undefined,

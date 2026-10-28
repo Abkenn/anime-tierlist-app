@@ -13,7 +13,12 @@ export const animeSearchEndpoint = defineRpcEndpoint('/api/rpc', {
     }),
     output: z.object({
       items: z.array(
-        z.object({ id: z.string(), title: z.string(), imageUrl: z.url() }),
+        z.object({
+          id: z.string(),
+          title: z.string(),
+          imageUrl: z.url(),
+          malId: z.number().int().positive().optional(),
+        }),
       ),
       nextPage: z.number().int().positive().nullable(),
     }),

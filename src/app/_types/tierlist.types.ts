@@ -61,6 +61,7 @@ export type TierItemTitle = {
 };
 
 export type TierItemData = {
+  malId?: number;
   id: string;
   label: string;
   rank: TierRank;

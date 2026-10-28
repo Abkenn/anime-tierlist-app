@@ -1,6 +1,7 @@
 import type { TierImage } from './tierlist.types';
 
 export type AnimeSearchResult = {
+  malId?: number;
   id: string;
   title: string;
   imageUrl: string;

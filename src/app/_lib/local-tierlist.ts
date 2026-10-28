@@ -7,6 +7,7 @@ const rank = z.union([
 ]);
 const fraction = z.number().min(0).max(1);
 const item = z.object({
+  malId: z.number().int().positive().optional(),
   id: z.string().min(1),
   label: z.string(),
   rank,

@@ -52,6 +52,7 @@ export const searchAnimePage = async (
         ? [
             {
               id: `mal-${anime.mal_id}`,
+              malId: anime.mal_id,
               title: anime.title?.trim() || 'Unknown',
               imageUrl,
             },

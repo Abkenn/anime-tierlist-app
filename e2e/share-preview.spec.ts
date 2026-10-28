@@ -3,6 +3,7 @@ import { instant } from '@next/playwright';
 import { test as base, expect } from '@playwright/test';
 import postgres from '@prisma/orm-postgres/runtime';
 import { config } from 'dotenv';
+import type { TierlistDocument } from '../src/app/_lib/tierlist-sync';
 import type { Contract } from '../src/prisma/contract';
 import contractJson from '../src/prisma/contract.json' with { type: 'json' };
 
@@ -20,13 +21,14 @@ const test = base.extend<{ sharePath: string }>({
     });
     const id = randomUUID();
     const seed = randomBytes(32).toString('hex');
-    const document = {
+    const document: TierlistDocument = {
       version: 1 as const,
       imageMode: 'natural' as const,
       ranks: ['Watching' as const],
       items: [
         {
           id: 'preview-navigation-fixture',
+          malId: 52991,
           label: 'Navigation fixture',
           rank: 'Watching' as const,
           image: {
@@ -38,7 +40,7 @@ const test = base.extend<{ sharePath: string }>({
         },
         {
           id: 'preview-displacement-fixture',
-          label: 'Second fixture',
+          label: 'Unknown',
           rank: 'Watching' as const,
           image: {
             src: '/tier-samples/portrait.svg',
@@ -289,6 +291,35 @@ test('serves the board PNG for social metadata and a native download', async ({
   ).toHaveCSS('opacity', '1');
   await expect(modal.locator('img')).toHaveCount(1);
   await expect(modal.locator('svg[role="img"]')).toHaveCount(0);
+  await page.context().route('https://myanimelist.net/**', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<title>MAL fixture</title>',
+    }),
+  );
+  const mal = modal.getByRole('link', {
+    name: 'Open Navigation fixture on MyAnimeList',
+  });
+  await mal.hover();
+  await expect(mal).toHaveCSS('opacity', '1');
+  await modal.screenshot({ path: '.storybook-cache/mal-preview-link.png' });
+  const malTab = page.context().waitForEvent('page');
+  await mal.click();
+  const opened = await malTab;
+  await opened.waitForURL('https://myanimelist.net/anime/52991');
+  await opened.close();
+  await expect(modal.locator('[data-preview-displaced]')).toHaveCount(0);
+  const unknownMal = modal.getByRole('link', {
+    name: 'Unknown MAL link. Please add label',
+  });
+  await unknownMal.hover();
+  await expect(unknownMal).toHaveAttribute('aria-disabled', 'true');
+  await expect(unknownMal).not.toHaveAttribute('href');
+  await expect(unknownMal).toHaveAttribute(
+    'title',
+    'Unknown MAL link. Please add label',
+  );
+
   await page.keyboard.press('Control+f');
   const find = modal.getByRole('textbox', { name: 'Find anime in tierlist' });
   await expect(find).toBeFocused();
