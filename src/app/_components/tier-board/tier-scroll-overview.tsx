@@ -35,7 +35,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     previewHeight,
     Math.max(24, overview.viewportHeight * scale),
   );
-  const dragScale = (previewHeight - thumbHeight) / scrollRange;
+  const dragScale = (overview.viewportHeight - thumbHeight) / scrollRange;
   const frame = {
     left: 24,
     top: progress * (previewHeight - thumbHeight),

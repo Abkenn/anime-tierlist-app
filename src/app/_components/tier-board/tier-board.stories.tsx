@@ -1053,5 +1053,51 @@ export const ScrollOverview: Story = {
     expect(preview.scrollTop).toBe(0);
     expect(fireEvent.wheel(preview, { deltaY: 100, ctrlKey: true })).toBe(true);
     expect(viewport.scrollTop).toBe(200);
+    const thumb = within(preview).getByRole('scrollbar', {
+      name: 'Tierlist scroll position',
+    });
+    await waitFor(() => expect(thumb).toHaveAttribute('aria-valuenow', '200'));
+    const bounds = thumb.getBoundingClientRect();
+    const x = bounds.left + bounds.width / 2;
+    const y = bounds.top + bounds.height / 2;
+    const grabbedOffset = bounds.height / 2;
+    fireEvent.pointerDown(thumb, {
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      button: 0,
+      buttons: 1,
+      clientX: x,
+      clientY: y,
+    });
+    try {
+      for (const offset of [40, 20]) {
+        fireEvent.pointerMove(window, {
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true,
+          buttons: 1,
+          clientX: x,
+          clientY: y + offset,
+        });
+        await waitFor(() =>
+          expect(
+            Math.abs(
+              thumb.getBoundingClientRect().top + grabbedOffset - (y + offset),
+            ),
+          ).toBeLessThan(2),
+        );
+      }
+    } finally {
+      fireEvent.pointerUp(window, {
+        pointerId: 1,
+        pointerType: 'mouse',
+        isPrimary: true,
+        button: 0,
+        buttons: 0,
+        clientX: x,
+        clientY: y + 20,
+      });
+    }
   },
 };
