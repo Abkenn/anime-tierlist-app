@@ -7,16 +7,18 @@ type ViewportWindow = {
   right: number;
   top: number;
   bottom: number;
+  visible: { left: number; right: number; top: number; bottom: number };
   columns: number;
   rem: number;
 };
 
 export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
-  const [window, setWindow] = useState<ViewportWindow>({
+  const [viewportWindow, setWindow] = useState<ViewportWindow>({
     left: 0,
     right: 1600,
     top: 0,
     bottom: 1000,
+    visible: { left: 0, right: 0, top: 0, bottom: 0 },
     columns: 3,
     rem: 16,
   });
@@ -32,6 +34,12 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         right: Infinity,
         top: 0,
         bottom: Infinity,
+        visible: {
+          left: 0,
+          right: window.innerWidth,
+          top: 0,
+          bottom: window.innerHeight,
+        },
         columns: 3,
         rem: 16,
       });
@@ -52,16 +60,23 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         right: view.right - bounds.left + 300,
         top: Math.max(0, view.top - bounds.top - 300),
         bottom: view.bottom - bounds.top + 300,
+        visible: {
+          left: Math.max(0, view.left) - bounds.left,
+          right: Math.min(window.innerWidth, view.right) - bounds.left,
+          top: Math.max(0, view.top) - bounds.top,
+          bottom: Math.min(window.innerHeight, view.bottom) - bounds.top,
+        },
         columns,
         rem: Number.parseFloat(
           getComputedStyle(document.documentElement).fontSize,
         ),
       };
       setWindow((previous) =>
-        Object.keys(next).every(
-          (key) =>
-            previous[key as keyof ViewportWindow] ===
-            next[key as keyof ViewportWindow],
+        (['left', 'right', 'top', 'bottom', 'columns', 'rem'] as const).every(
+          (key) => previous[key] === next[key],
+        ) &&
+        (['left', 'right', 'top', 'bottom'] as const).every(
+          (key) => previous.visible[key] === next.visible[key],
         )
           ? previous
           : next,
@@ -76,15 +91,20 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     const resize = new ResizeObserver(schedule);
     resize.observe(viewport);
     resize.observe(element);
-    viewport.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('scroll', schedule, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener('resize', schedule);
     measure();
 
     return () => {
       cancelAnimationFrame(frame);
       resize.disconnect();
-      viewport.removeEventListener('scroll', schedule);
+      window.removeEventListener('scroll', schedule, true);
+      window.removeEventListener('resize', schedule);
     };
   }, [content]);
 
-  return window;
+  return viewportWindow;
 };

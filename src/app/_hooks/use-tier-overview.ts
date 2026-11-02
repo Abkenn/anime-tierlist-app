@@ -1,5 +1,6 @@
 'use client';
 
+import { cancelFrame, frame as motionFrame } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
@@ -135,7 +136,12 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       fadeTimer = setTimeout(() => setScrolling(false), 850);
     };
 
-    const onPointerMove = (event: PointerEvent) => {
+    let pointer: { x: number; y: number } | null = null;
+
+    const measureEdge = () => {
+      if (!pointer || !media.matches) {
+        return;
+      }
       const surface = viewport.closest('[data-slot="scroll-area"]') ?? viewport;
       const bounds = surface.getBoundingClientRect();
       const edgeWidth = Math.min(
@@ -145,16 +151,28 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       );
 
       setNearEdge(
-        media.matches &&
-          event.pointerType === 'mouse' &&
-          event.clientX >= bounds.right - edgeWidth &&
-          event.clientX <= bounds.right &&
-          event.clientY >= bounds.top &&
-          event.clientY <= bounds.bottom,
+        pointer.x >= bounds.right - edgeWidth &&
+          pointer.x <= bounds.right &&
+          pointer.y >= bounds.top &&
+          pointer.y <= bounds.bottom,
       );
     };
 
-    const leave = () => setNearEdge(false);
+    const leave = () => {
+      pointer = null;
+      cancelFrame(measureEdge);
+      setNearEdge(false);
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!media.matches || event.pointerType !== 'mouse') {
+        leave();
+        return;
+      }
+
+      pointer = { x: event.clientX, y: event.clientY };
+      motionFrame.read(measureEdge);
+    };
 
     const outsideBoard = (target: EventTarget | null) =>
       pageBoard &&
@@ -246,6 +264,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
 
     return () => {
       clearTimeout(fadeTimer);
+      cancelFrame(measureEdge);
       cancelAnimationFrame(frame);
       cancelAnimationFrame(scrollFrame);
       resize.disconnect();

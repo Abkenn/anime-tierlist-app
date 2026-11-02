@@ -90,12 +90,18 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       return largest;
     }
     const area =
-      (Math.min(poster.x + poster.width, window.right) -
-        Math.max(poster.x, window.left)) *
-      (Math.min(poster.y + poster.height, window.bottom) -
-        Math.max(poster.y, window.top));
+      Math.max(
+        0,
+        Math.min(poster.x + poster.width, window.visible.right) -
+          Math.max(poster.x, window.visible.left),
+      ) *
+      Math.max(
+        0,
+        Math.min(poster.y + poster.height, window.visible.bottom) -
+          Math.max(poster.y, window.visible.top),
+      );
 
-    return !largest || area > largest.area ? { id: item.id, area } : largest;
+    return area > (largest?.area ?? 0) ? { id: item.id, area } : largest;
   }, undefined);
   const pendingPosters = visiblePosters.filter(
     (item) =>

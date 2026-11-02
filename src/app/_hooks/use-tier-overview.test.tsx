@@ -2,7 +2,17 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { useTierOverview } from './use-tier-overview';
 
-afterEach(() => vi.unstubAllGlobals());
+const reads = vi.hoisted(() => new Set<() => void>());
+
+vi.mock('motion/react', () => ({
+  frame: { read: (callback: () => void) => reads.add(callback) },
+  cancelFrame: (callback: () => void) => reads.delete(callback),
+}));
+
+afterEach(() => {
+  reads.clear();
+  vi.unstubAllGlobals();
+});
 
 it('reveals on the inside right edge and scrollbar, not outside the board or on touch', () => {
   vi.stubGlobal('matchMedia', () => ({
@@ -42,7 +52,13 @@ it('reveals on the inside right edge and scrollbar, not outside the board or on 
   const hover = (x: number, y: number, pointerType = 'mouse') => {
     const event = new MouseEvent('pointermove', { clientX: x, clientY: y });
     Object.defineProperty(event, 'pointerType', { value: pointerType });
-    act(() => window.dispatchEvent(event));
+    act(() => {
+      window.dispatchEvent(event);
+      reads.forEach((read) => {
+        read();
+      });
+      reads.clear();
+    });
   };
 
   hover(850, 300);
@@ -55,6 +71,29 @@ it('reveals on the inside right edge and scrollbar, not outside the board or on 
   expect(result.current.visible).toBe(false);
   hover(500, 300);
   expect(result.current.visible).toBe(false);
+  const geometryRead = vi.spyOn(surface, 'getBoundingClientRect');
   hover(850, 300, 'touch');
   expect(result.current.visible).toBe(false);
+  expect(geometryRead).not.toHaveBeenCalled();
+
+  act(() => {
+    Array.from({ length: 20 }).forEach(() => {
+      const event = new MouseEvent('pointermove', {
+        clientX: 850,
+        clientY: 300,
+      });
+      Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+      window.dispatchEvent(event);
+    });
+  });
+  expect(geometryRead).not.toHaveBeenCalled();
+  expect(reads.size).toBe(1);
+  act(() => {
+    reads.forEach((read) => {
+      read();
+    });
+    reads.clear();
+  });
+  expect(geometryRead).toHaveBeenCalledOnce();
+  expect(result.current.visible).toBe(true);
 });

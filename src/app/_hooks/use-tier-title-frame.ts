@@ -38,8 +38,12 @@ export const useTierTitleFrame = ({ image, mode, trim }: TitleFrameInput) => {
       return;
     }
 
-    const update = () => {
-      const { width, height } = element.getBoundingClientRect();
+    const update: ResizeObserverCallback = ([entry]) => {
+      if (!entry) {
+        return;
+      }
+
+      const { width, height } = entry.contentRect;
       setBounds((current) =>
         current.width === width && current.height === height
           ? current
@@ -47,7 +51,6 @@ export const useTierTitleFrame = ({ image, mode, trim }: TitleFrameInput) => {
       );
     };
 
-    update();
     const observer = new ResizeObserver(update);
     observer.observe(element);
 

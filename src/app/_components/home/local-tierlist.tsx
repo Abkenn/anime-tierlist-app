@@ -7,6 +7,7 @@ import { SaveShare } from '@/app/_components/sharing/save-share';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { useTierlistAccount } from '@/app/_hooks/use-tierlist-account';
+import { TierlistRestorationContext } from '@/app/_lib/tierlist-restoration-context';
 import type { AccountSnapshot } from '@/app/_types/account-snapshot';
 import { PosterOfflineCache } from './poster-offline-cache';
 import { TierlistConflict } from './tierlist-conflict';
@@ -45,8 +46,8 @@ export const LocalTierlist = ({
           status.needsReconnect ? status.reconnectLabel : '',
         ]}
       >
-        <div className="mb-2 grid min-h-9 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10 sm:flex sm:justify-between">
-          <div className="contents sm:flex sm:min-w-0 sm:flex-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-4">
+        <div className="mb-2 grid min-h-9 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 text-xs text-muted-foreground max-lg:pr-10">
+          <div className="contents">
             <p role="status" className="col-span-2 min-h-4 min-w-0 max-w-full">
               <TerminalText
                 segments={[
@@ -158,7 +159,9 @@ export const LocalTierlist = ({
         inert={storage.status === 'loading' || busy || accountUnavailable}
         aria-busy={storage.status === 'loading' || busy || accountUnavailable}
       >
-        {children}
+        <TierlistRestorationContext value={storage.status === 'loading'}>
+          {children}
+        </TierlistRestorationContext>
       </div>
     </div>
   );

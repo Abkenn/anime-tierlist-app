@@ -52,6 +52,7 @@ type Item = TierItemData;
 const itemGapRem = tierItemGap;
 
 type TierItemsInput = {
+  restoring?: boolean;
   ranks: TierRank[];
   initialItemCount?: number;
   wrapItems?: boolean;
@@ -60,6 +61,7 @@ type TierItemsInput = {
 };
 
 export const useTierItems = ({
+  restoring = false,
   ranks,
   initialItemCount = 2,
   wrapItems = false,
@@ -404,7 +406,7 @@ export const useTierItems = ({
   useLayoutEffect(() => {
     const board = boardRef.current;
 
-    if (!board || !rankKey) {
+    if (!board || !rankKey || restoring) {
       setRows([]);
 
       return;
@@ -419,7 +421,7 @@ export const useTierItems = ({
     });
 
     return () => observer.disconnect();
-  }, [rankKey, measure]);
+  }, [rankKey, measure, restoring]);
 
   return {
     boardRef,
