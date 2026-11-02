@@ -9,6 +9,7 @@ import type { PosterSize, TierImageMode } from '@/app/_types/tierlist.types';
 type TierBoardToolbarProps = {
   rankCount: number;
   itemCount: number;
+  restoring?: boolean;
   keyboardMode: boolean;
   imageMode: TierImageMode;
   onImageModeChange: (mode: TierImageMode) => void;
@@ -17,6 +18,7 @@ type TierBoardToolbarProps = {
 export const TierBoardToolbar = ({
   rankCount,
   itemCount,
+  restoring = false,
   keyboardMode,
   imageMode,
   onImageModeChange,
@@ -29,7 +31,9 @@ export const TierBoardToolbar = ({
       <div className="mb-1 flex items-center justify-between gap-4 text-xs">
         <div className="text-muted-foreground">
           <p>
-            {rankCount} tiers · {itemCount} items
+            {restoring
+              ? 'Restoring tierlist...'
+              : `${rankCount} tiers · ${itemCount} items`}
           </p>
 
           <p role="status" className="mt-1 text-xs">

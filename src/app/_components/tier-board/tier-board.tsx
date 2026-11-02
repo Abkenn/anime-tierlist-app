@@ -75,6 +75,7 @@ export const TierBoard = ({
       <TierBoardToolbar
         rankCount={ranks.length}
         itemCount={interaction.items.length}
+        restoring={restoring}
         keyboardMode={keyboardMode}
         imageMode={imageMode}
         onImageModeChange={changeImageMode}
@@ -82,10 +83,7 @@ export const TierBoard = ({
 
       <TierViewport ref={interaction.viewportRef} scrollable={scrollable}>
         {restoring && (
-          <p
-            role="status"
-            className="absolute left-3 top-3 text-xs text-muted-foreground"
-          >
+          <p role="status" className="sr-only">
             <TerminalText text="Restoring tierlist..." />
           </p>
         )}
@@ -94,19 +92,17 @@ export const TierBoard = ({
           ref={interaction.boardRef}
           animate={scrollable ? { width: interaction.canvasWidth } : undefined}
           transition={{ duration: 0 }}
-          className={cn(
-            'relative',
-            scrollable && 'min-w-full',
-            restoring && 'invisible',
-          )}
+          className={cn('relative', scrollable && 'min-w-full')}
           aria-busy={restoring}
+          inert={restoring}
         >
-          <TierBoardItems interaction={interaction} />
+          {!restoring && <TierBoardItems interaction={interaction} />}
 
           <TierBoardRows
             ranks={ranks}
             layout={layout}
             interaction={interaction}
+            restoring={restoring}
           />
         </motion.div>
       </TierViewport>

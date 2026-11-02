@@ -15,6 +15,7 @@ type TierRowProps = {
   rank: TierRank;
   active?: boolean;
   itemCount?: number;
+  skeletonCount?: number;
   fixedItemSize?: boolean;
   lines?: number;
   searchPosition?: Pick<CSSProperties, 'left' | 'top'>;
@@ -24,6 +25,7 @@ export const TierRow = ({
   rank,
   active = false,
   itemCount = 0,
+  skeletonCount,
   fixedItemSize = false,
   lines = 1,
   searchPosition,
@@ -63,6 +65,25 @@ export const TierRow = ({
               : 'grid-rows-(--tier-item-size,4.125rem)'),
         )}
       >
+        {skeletonCount !== undefined && (
+          <div
+            aria-hidden="true"
+            className="flex gap-0.5 overflow-hidden p-0.5 motion-safe:animate-pulse"
+            style={{ height: 'var(--tier-item-size, 7rem)' }}
+          >
+            {Array.from(
+              { length: skeletonCount },
+              (_, index) => `placeholder-${index}`,
+            ).map((id, index) => (
+              <div
+                key={id}
+                data-tier-item-skeleton=""
+                className="h-full shrink-0 bg-white/10"
+                style={{ aspectRatio: ['2 / 3', '3 / 4', '5 / 7'][index % 3] }}
+              />
+            ))}
+          </div>
+        )}
         {fixedItemSize &&
           Array.from({ length: lines }, (_, index) => `slot-${index}`).map(
             (slot) => <span key={slot} aria-hidden="true" />,

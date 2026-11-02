@@ -19,6 +19,7 @@ import { TierRow } from './tier-row';
 type TierBoardRowsProps = {
   ranks: TierRank[];
   layout: 'single-line' | 'two-line';
+  restoring?: boolean;
   interaction: Pick<
     ReturnType<typeof useTierItems>,
     'items' | 'targetRank' | 'visibleRank' | 'lines' | 'searchPosition'
@@ -29,6 +30,7 @@ export const TierBoardRows = ({
   ranks,
   layout,
   interaction,
+  restoring = false,
 }: TierBoardRowsProps) => {
   const mode = useAtomValue(posterSizeAtom);
   const imageMode = useAtomValue(imageModeAtom);
@@ -36,6 +38,8 @@ export const TierBoardRows = ({
   const draggedRank = useAtomValue(draggedRankAtom);
   const setDraggedRank = useSetAtom(draggedRankAtom);
   const rankKey = ranks.join();
+  const middleRank = (ranks.length - 1) / 2;
+  const skeletonDeviation = Math.max(1, ranks.length / 5);
   const previousOrder = useRef(rankKey);
   const size = getPosterSize({
     mode,
@@ -68,12 +72,26 @@ export const TierBoardRows = ({
         className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-max-size:10rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
-        {ranks.map((rank) => (
+        {ranks.map((rank, index) => (
           <TierRow
             key={rank}
             rank={rank}
             active={interaction.targetRank === rank}
-            fixedItemSize={layout === 'two-line'}
+            fixedItemSize={layout === 'two-line' && !restoring}
+            skeletonCount={
+              restoring
+                ? Math.max(
+                    1,
+                    Math.round(
+                      8 *
+                        Math.exp(
+                          -0.5 *
+                            ((index - middleRank) / skeletonDeviation) ** 2,
+                        ),
+                    ),
+                  )
+                : undefined
+            }
             lines={interaction.lines(rank)}
             searchPosition={interaction.searchPosition(rank)}
             itemCount={
