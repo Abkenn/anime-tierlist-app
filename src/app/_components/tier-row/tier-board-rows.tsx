@@ -70,7 +70,7 @@ export const TierBoardRows = ({
     setAutoFit({ mode, imageMode, restoring, width: autoWidth });
   }
   const size = getPosterSize({
-    mode,
+    mode: restoring ? 'small' : mode,
     imageMode,
     items: interaction.items,
     autoWidth,
