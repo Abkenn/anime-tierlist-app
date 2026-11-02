@@ -55,17 +55,18 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
       const columns = getComputedStyle(element)
         .gridTemplateColumns.split(' ')
         .filter(Boolean).length;
+      const visible = {
+        left: Math.max(0, view.left) - bounds.left,
+        right: Math.min(window.innerWidth, view.right) - bounds.left,
+        top: Math.max(0, view.top) - bounds.top,
+        bottom: Math.min(window.innerHeight, view.bottom) - bounds.top,
+      };
       const next = {
-        left: view.left - bounds.left - 300,
-        right: view.right - bounds.left + 300,
-        top: Math.max(0, view.top - bounds.top - 300),
-        bottom: view.bottom - bounds.top + 300,
-        visible: {
-          left: Math.max(0, view.left) - bounds.left,
-          right: Math.min(window.innerWidth, view.right) - bounds.left,
-          top: Math.max(0, view.top) - bounds.top,
-          bottom: Math.min(window.innerHeight, view.bottom) - bounds.top,
-        },
+        left: visible.left - 300,
+        right: visible.right + 300,
+        top: Math.max(0, visible.top - 300),
+        bottom: visible.bottom + 300,
+        visible,
         columns,
         rem: Number.parseFloat(
           getComputedStyle(document.documentElement).fontSize,

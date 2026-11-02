@@ -111,6 +111,7 @@ export const TierItemButton = ({
               crop={crop}
               trim={trim}
               priority={priority}
+              showPlaceholder={!preview}
               onReady={preview ? () => setReadySource(image.src) : undefined}
             />
           </span>

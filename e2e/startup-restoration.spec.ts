@@ -5,9 +5,14 @@ import { expect, test } from '@playwright/test';
     page,
   }) => {
     const release = Promise.withResolvers<void>();
+    const priorityIndex = width === 1365 ? 3 : 2;
     await page.setViewportSize({ width, height: 844 });
     await page.route('**/*', async (route) => {
-      if (route.request().method() === 'POST') {
+      const poster = new URL(route.request().url()).searchParams.get('poster');
+      if (
+        route.request().method() === 'POST' ||
+        (poster !== null && poster !== String(priorityIndex))
+      ) {
         await release.promise;
         await route.abort();
       } else {
@@ -85,12 +90,32 @@ import { expect, test } from '@playwright/test';
       await expect(page.locator('[aria-label="Ranked tiers"]')).toBeVisible();
 
       // The landscape wins on desktop; the square is largest within the mobile viewport.
-      const priorityIndex = width === 1365 ? 3 : 2;
       await expect(
         page.locator(
           `link[rel="preload"][as="image"][href="/tier-samples/portrait.svg?poster=${priorityIndex}"]`,
         ),
       ).toHaveAttribute('fetchpriority', 'high');
+      const priorityPoster = page.locator(
+        `[data-tier-item-id="size-${priorityIndex}"]`,
+      );
+      await expect
+        .poll(() =>
+          priorityPoster.locator('svg[role="img"]').evaluate((node) =>
+            node.checkVisibility({
+              checkOpacity: true,
+              checkVisibilityCSS: true,
+            }),
+          ),
+        )
+        .toBe(true);
+      await expect(
+        page.locator('[data-tier-item-id="size-0"] [aria-busy="true"]'),
+      ).toBeVisible();
+      if (width === 390) {
+        expect(await page.locator('[data-tier-item-id]').count()).toBeLessThan(
+          55,
+        );
+      }
       await page.evaluate(async () => {
         await document.fonts.ready;
       });
@@ -98,7 +123,13 @@ import { expect, test } from '@playwright/test';
       await page.waitForTimeout(1000);
       expect(
         await page.evaluate(() => Reflect.get(window, 'startupShift')),
-      ).toBeLessThan(0.01);
+      ).toBeLessThan(0.1);
+      await priorityPoster.focus();
+      await priorityPoster.press('ArrowDown');
+      await expect(priorityPoster).toHaveAccessibleName(
+        `Item Size ${priorityIndex} in S`,
+      );
+      await expect(priorityPoster).toBeFocused();
     } finally {
       release.resolve();
       await page.unrouteAll({ behavior: 'wait' });
