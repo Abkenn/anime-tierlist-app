@@ -50,6 +50,8 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
         <Popover.Positioner
           side="bottom"
           align="start"
+          positionMethod="fixed"
+          collisionAvoidance={{ side: 'flip', align: 'shift' }}
           sideOffset={8}
           collisionPadding={12}
           className="z-50"
@@ -57,11 +59,11 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
           <Popover.Popup
             aria-label={`Add anime to ${label}`}
             initialFocus={input}
-            className="flex min-h-0 w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-xs bg-popover text-popover-foreground shadow-lg has-data-search-result:h-[min(24rem,var(--available-height))] has-data-search-result:border has-data-search-result:border-divider has-data-search-result:p-2.5"
+            className="flex min-h-0 w-80 max-w-[calc(100vw-1.5rem)] flex-col gap-3 rounded-xs border border-divider bg-popover p-3 text-popover-foreground shadow-lg has-data-search-result:h-[min(26rem,var(--available-height))]"
           >
-            <div className="sr-only">
-              <Popover.Title>Add to {label}</Popover.Title>
-            </div>
+            <Popover.Title className="px-1 text-xs font-medium text-muted-foreground">
+              Add to {label}
+            </Popover.Title>
 
             <QueryClientProvider client={client}>
               <AnimeSearchResults inline inputRef={input} />

@@ -226,7 +226,7 @@ export const AnimeSearchResults = ({
 
   return (
     <div
-      className={`flex min-h-0 min-w-0 flex-1 flex-col${inline && hasResults ? ' gap-1.5' : ''}`}
+      className={`flex min-h-0 min-w-0 flex-1 flex-col${inline ? ' gap-3' : ''}`}
     >
       <search className="shrink-0">
         <form action={searchAction} aria-busy={submitting}>
@@ -267,7 +267,7 @@ export const AnimeSearchResults = ({
       >
         <div
           ref={displacement.gridRef}
-          className="relative grid shrink-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-0.5 lg:grid-cols-3"
+          className={`relative grid shrink-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] lg:grid-cols-3 ${inline ? 'gap-2' : 'gap-0.5'}`}
           style={{
             height:
               waiting || urlError ? 0 : Math.max(0, rows * rowHeight - gap),
@@ -315,7 +315,9 @@ export const AnimeSearchResults = ({
         <p
           role="status"
           className={
-            message ? 'min-h-8 py-2 text-xs text-muted-foreground' : 'sr-only'
+            message
+              ? `min-h-8 py-2 text-xs text-muted-foreground${inline ? ' px-1' : ''}`
+              : 'sr-only'
           }
         >
           <TerminalText text={message} />
