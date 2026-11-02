@@ -1,3 +1,5 @@
+import { posterDisplaySource } from '@/app/_lib/poster-display-source';
+
 export const posterCacheName = 'tierlist-posters-v1';
 export type PosterCacheProgress = {
   total: number;
@@ -10,6 +12,9 @@ export const cacheTierlistPosters = async (
   signal: AbortSignal,
   publish: (progress: PosterCacheProgress) => void,
 ) => {
+  urls = [
+    ...new Set(urls.flatMap((source) => [posterDisplaySource(source), source])),
+  ];
   const run = async () => {
     const cache = await caches.open(posterCacheName);
     const progress = { total: urls.length, saved: 0, failed: 0 };

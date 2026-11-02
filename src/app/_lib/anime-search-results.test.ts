@@ -1,16 +1,19 @@
 import { expect, it } from 'vitest';
-import { blendAnimeSearchResults } from './anime-search-results';
+import {
+  blendAnimeSearchResults,
+  CURATED_RESULT_INTERVAL,
+} from './anime-search-results';
 
 const result = (id: string) => ({ id, title: id, imageUrl: `/${id}.jpg` });
 
 it('puts curated images after fetched choices, including small and empty result sets', () => {
-  [0, 1, 2, 3, 5, 20].forEach((count) => {
+  [0, 1, 2, 3, 4, 5, 20].forEach((count) => {
     const fetched = Array.from({ length: count }, (_, index) =>
       result(`fetched-${index}`),
     );
     const blended = blendAnimeSearchResults([fetched], [result('curated')]);
     expect(blended.findIndex((item) => item.id === 'curated')).toBe(
-      Math.min(4, count),
+      Math.min(CURATED_RESULT_INTERVAL, count),
     );
     expect(blended.filter((item) => item.id !== 'curated')).toEqual(fetched);
   });

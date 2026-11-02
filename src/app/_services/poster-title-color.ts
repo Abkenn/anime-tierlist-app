@@ -1,6 +1,7 @@
 'use client';
 
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
+import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { usesAutomaticTitleColor } from '@/app/_lib/tier-item-title';
 import {
   contrastingTitleColor,
@@ -44,7 +45,7 @@ const readPixels = (source: string) => {
       }
     };
     image.onerror = () => resolve(null);
-    image.src = source;
+    image.src = posterDisplaySource(source);
   });
   samples.set(source, task);
   if (samples.size > 128) {

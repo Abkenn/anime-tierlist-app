@@ -1,22 +1,18 @@
 'use client';
 
-import Image from 'next/image';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
-import { Skeleton } from '@/app/_components/ui/skeleton';
 import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
 import { useTitleColors } from '@/app/_hooks/use-title-colors';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
+import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
 import { matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 import type { ExportRow } from '@/app/_lib/tierlist-export-layout';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
 import { PreviewBoardSurface } from './preview-board-surface';
 import { PreviewDisplacement } from './preview-displacement';
-
-// Only decoded public PNG URLs are remembered, never account data or poster blobs.
-const decodedPreviews = new Set<string>();
 
 type PreviewImageProps = {
   id: string;
@@ -33,9 +29,6 @@ export const PreviewImage = ({
   rows,
   mode,
 }: PreviewImageProps) => {
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>(() =>
-    decodedPreviews.has(id) ? 'ready' : 'loading',
-  );
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [settledSources, setSettledSources] = useState<ReadonlySet<string>>(
@@ -69,8 +62,6 @@ export const PreviewImage = ({
     matchesTierItemLabel(poster.item, deferredQuery),
   );
   const matchingIds = new Set(matches.map((poster) => poster.item.id));
-  const source = `/api/tierlist-preview/${id}/image`;
-  const imageSource = source;
   const firstPoster = visible.reduce<(typeof visible)[number] | undefined>(
     (largest, poster) =>
       !largest || poster.width * poster.height > largest.width * largest.height
@@ -78,8 +69,8 @@ export const PreviewImage = ({
         : largest,
     undefined,
   );
-  if (state !== 'ready' && firstPoster?.item.image) {
-    preload(firstPoster.item.image.src, {
+  if (firstPoster?.item.image) {
+    preload(posterDisplaySource(firstPoster.item.image.src), {
       as: 'image',
       fetchPriority: 'high',
       crossOrigin: posterCrossOrigin(firstPoster.item.image.src),
@@ -96,66 +87,27 @@ export const PreviewImage = ({
       className="relative"
       style={{ minWidth: Math.max(640, width / 2) }}
     >
-      {state !== 'ready' && (
-        <PreviewBoardSurface
-          rows={displayRows}
-          width={width}
-          height={height}
-          mode={mode}
-          visibleIds={visibleIds}
-          clipPrefix={`live-${id}-`}
-          pendingIds={pendingIds}
-          onPosterSettled={(source) => {
-            setSettledSources((previous) => {
-              if (previous.has(source)) {
-                return previous;
-              }
-
-              return new Set([...previous, source]);
-            });
-          }}
-        />
-      )}
-
-      {state !== 'ready' &&
-        pendingPosters.map((poster) => (
-          <Skeleton
-            key={poster.item.id}
-            className="pointer-events-none absolute rounded-none"
-            style={{
-              left: `${(poster.x / width) * 100}%`,
-              top: `${(poster.y / height) * 100}%`,
-              width: `${(poster.width / width) * 100}%`,
-              height: `${(poster.height / height) * 100}%`,
-            }}
-          />
-        ))}
-
-      <Image
-        src={imageSource}
-        alt="Shared anime tierlist"
+      <PreviewBoardSurface
+        rows={displayRows}
         width={width}
         height={height}
-        unoptimized
-        loading="eager"
-        fetchPriority="low"
-        onLoad={() => {
-          decodedPreviews.add(id);
-          if (decodedPreviews.size > 32) {
-            const oldest = decodedPreviews.values().next().value;
-            if (oldest) {
-              decodedPreviews.delete(oldest);
+        mode={mode}
+        visibleIds={visibleIds}
+        clipPrefix={`live-${id}-`}
+        pendingIds={pendingIds}
+        onPosterSettled={(source) => {
+          setSettledSources((previous) => {
+            if (previous.has(source)) {
+              return previous;
             }
-          }
-          setState('ready');
+
+            return new Set([...previous, source]);
+          });
         }}
-        onError={() => setState('error')}
-        className={`block h-auto w-full ${state === 'ready' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}
       />
 
       <PreviewDisplacement
         id={id}
-        source={state === 'ready' ? imageSource : undefined}
         mode={mode}
         visible={visible}
         width={width}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { preconnect, preload } from 'react-dom';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
+import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
 import type {
   TierCrop,
@@ -38,6 +39,7 @@ export const TierItemImage = ({
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const [loadedSource, setLoadedSource] = useState<string | null>(null);
   const loading = loadedSource !== image.src;
+  const source = posterDisplaySource(image.src);
   const placeholderClass = cn(
     'relative block size-full',
     loading && showPlaceholder && 'bg-muted',
@@ -47,7 +49,7 @@ export const TierItemImage = ({
     if (posterCrossOrigin(image.src)) {
       preconnect('https://cdn.myanimelist.net', { crossOrigin: 'anonymous' });
     }
-    preload(image.src, {
+    preload(source, {
       as: 'image',
       fetchPriority: 'high',
       crossOrigin: posterCrossOrigin(image.src),
@@ -81,7 +83,7 @@ export const TierItemImage = ({
           <title>{image.alt}</title>
 
           <image
-            href={image.src}
+            href={source}
             crossOrigin={posterCrossOrigin(image.src)}
             width={image.width}
             height={image.height}
@@ -97,7 +99,7 @@ export const TierItemImage = ({
   return (
     <span className={placeholderClass} aria-busy={loading}>
       <MotionImage
-        src={image.src}
+        src={source}
         crossOrigin={posterCrossOrigin(image.src)}
         alt={image.alt}
         fill

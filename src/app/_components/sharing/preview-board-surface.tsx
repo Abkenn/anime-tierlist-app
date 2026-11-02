@@ -1,4 +1,5 @@
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
+import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   type ExportRow,
@@ -92,11 +93,17 @@ export const PreviewBoardSurface = ({
               const clip = `${clipPrefix}poster-${rowIndex}-${index}`;
 
               return (
-                <g
-                  key={box.item.id}
-                  opacity={pendingIds?.has(box.item.id) ? 0 : 1}
-                >
+                <g key={box.item.id}>
                   <title>{box.item.label}</title>
+                  {visibleIds && (
+                    <rect
+                      x={box.x}
+                      y={box.y}
+                      width={box.width}
+                      height={box.height}
+                      fill="#242424"
+                    />
+                  )}
                   <defs>
                     <clipPath id={clip}>
                       <rect
@@ -118,7 +125,11 @@ export const PreviewBoardSurface = ({
                       >
                         <title>{box.item.label || box.item.image.alt}</title>
                         <image
-                          href={box.item.image.src}
+                          href={
+                            visibleIds
+                              ? posterDisplaySource(box.item.image.src)
+                              : box.item.image.src
+                          }
                           crossOrigin={posterCrossOrigin(box.item.image.src)}
                           onLoad={
                             onPosterSettled && source
@@ -146,6 +157,7 @@ export const PreviewBoardSurface = ({
                     )}
                     {title && (
                       <text
+                        opacity={pendingIds?.has(box.item.id) ? 0 : 1}
                         x={title.x}
                         fill={title.color}
                         textAnchor="middle"

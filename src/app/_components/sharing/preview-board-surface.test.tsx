@@ -4,7 +4,7 @@ import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { PreviewBoardSurface } from './preview-board-surface';
 
-it('keeps a loaded poster visible while another poster in the same tier loads', () => {
+it('lets posters paint without waiting for React loading-state updates', () => {
   const document: TierlistDocument = {
     version: 1,
     imageMode: 'natural',
@@ -34,13 +34,13 @@ it('keeps a loaded poster visible while another poster in the same tier loads', 
       .querySelector('image[href="/poster-S.jpg"]')
       ?.closest('g[opacity]')
       ?.getAttribute('opacity'),
-  ).toBe('0');
+  ).toBeUndefined();
   expect(
     parsed
       .querySelector('image[href="/poster-A.jpg"]')
       ?.closest('g[opacity]')
       ?.getAttribute('opacity'),
-  ).toBe('1');
+  ).toBeUndefined();
 });
 
 it('renders only visible poster sources from a large preview without any export PNG', () => {
@@ -53,7 +53,7 @@ it('renders only visible poster sources from a large preview without any export 
       label: `Anime ${index}`,
       rank: 'S',
       image: {
-        src: `/poster-${index}.jpg`,
+        src: `/curated/poster-${index}.jpg`,
         width: 400,
         height: 600,
         alt: `Anime ${index}`,
@@ -69,7 +69,15 @@ it('renders only visible poster sources from a large preview without any export 
   );
   const parsed = new DOMParser().parseFromString(markup, 'text/html');
   expect(parsed.querySelectorAll('image')).toHaveLength(2);
-  expect(markup).toContain('/poster-0.jpg');
-  expect(markup).not.toContain('/poster-2.jpg');
+  expect(parsed.querySelector('image')?.getAttribute('href')).toContain(
+    '/_next/image?',
+  );
+  expect(markup).toContain('poster-0.jpg');
+  expect(markup).not.toContain('poster-2.jpg');
   expect(markup).not.toContain('/api/tierlist-preview/');
+  const exported = renderToStaticMarkup(
+    <PreviewBoardSurface {...layoutExportBoard(document)} mode="natural" />,
+  );
+  expect(exported).toContain('href="/curated/poster-0.jpg"');
+  expect(exported).not.toContain('/_next/image?');
 });

@@ -5,6 +5,10 @@ const env = parseEnv(process.env);
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  images: {
+    qualities: [60, 75],
+    remotePatterns: [new URL('https://cdn.myanimelist.net/images/anime/**')],
+  },
   outputFileTracingIncludes: {
     '/*': ['./src/app/_assets/fonts/**/*'],
     '/api/tierlist-preview/**': [
