@@ -107,6 +107,12 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
           />
 
           <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 border border-foreground/40 shadow-[0_0_0_100vmax] shadow-ink/75"
+            style={{ top: frame.top, height: frame.height }}
+          />
+
+          <motion.div
             role="scrollbar"
             tabIndex={0}
             aria-label="Tierlist scroll position"
@@ -152,7 +158,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
                 overview.scrollByOffset(offsets[event.key]);
               }
             }}
-            className="absolute touch-none cursor-grab border border-foreground/40 shadow-[0_0_0_100vmax] shadow-ink/75 outline-none select-none active:cursor-grabbing focus-visible:ring-1 focus-visible:ring-foreground"
+            className="absolute touch-none cursor-grab outline-none select-none active:cursor-grabbing focus-visible:ring-1 focus-visible:ring-foreground"
             style={frame}
           />
         </motion.nav>
