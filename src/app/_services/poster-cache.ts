@@ -14,7 +14,6 @@ export const cacheTierlistPosters = async (
     const cache = await caches.open(posterCacheName);
     const progress = { total: urls.length, saved: 0, failed: 0 };
     let index = 0;
-    let lastPublished = 0;
     const worker = async () => {
       while (!signal.aborted && index < urls.length) {
         const source = urls[index++];
@@ -55,18 +54,13 @@ export const cacheTierlistPosters = async (
           }
           progress.failed += 1;
         }
-        const now = performance.now();
-        if (
-          !signal.aborted &&
-          (progress.saved + progress.failed === progress.total ||
-            now - lastPublished >= 100)
-        ) {
-          lastPublished = now;
-          publish({ ...progress });
-        }
       }
     };
-    await Promise.all(Array.from({ length: Math.min(4, urls.length) }, worker));
+    // Keep bulk offline downloads from competing with visible posters.
+    await worker();
+    if (!signal.aborted) {
+      publish({ ...progress });
+    }
   };
 
   if (navigator.locks) {

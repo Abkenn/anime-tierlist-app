@@ -11,10 +11,17 @@ it('saves the entire poster list once and reuses saved responses on subsequent o
       },
     }),
   });
-  const fetch = vi.fn(
-    async () =>
-      new Response('poster', { headers: { 'Content-Type': 'image/png' } }),
-  );
+  let active = 0;
+  let peak = 0;
+  const fetch = vi.fn(async () => {
+    active += 1;
+    peak = Math.max(peak, active);
+    await Promise.resolve();
+    active -= 1;
+    return new Response('poster', {
+      headers: { 'Content-Type': 'image/png' },
+    });
+  });
   vi.stubGlobal('fetch', fetch);
   const urls = Array.from(
     { length: 12 },
@@ -27,6 +34,8 @@ it('saves the entire poster list once and reuses saved responses on subsequent o
     await cacheTierlistPosters(urls, new AbortController().signal, progress);
     expect(fetch).toHaveBeenCalledTimes(12);
     expect(entries.size).toBe(12);
+    expect(peak).toBe(1);
+    expect(progress).toHaveBeenCalledTimes(2);
     expect(progress).toHaveBeenLastCalledWith({
       total: 12,
       saved: 12,

@@ -4,10 +4,7 @@ import { useAtomValue } from 'jotai';
 import { atom } from 'jotai/vanilla';
 import { useEffect, useState } from 'react';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
-import {
-  cacheTierlistPosters,
-  type PosterCacheProgress,
-} from '@/app/_services/poster-cache';
+import { cacheTierlistPosters } from '@/app/_services/poster-cache';
 
 const posterUrlsAtom = atom((get) =>
   JSON.stringify(
@@ -23,9 +20,7 @@ const posterUrlsAtom = atom((get) =>
 
 export const PosterOfflineCache = () => {
   const urls = useAtomValue(posterUrlsAtom);
-  const [progress, setProgress] = useState<
-    PosterCacheProgress & { attempt: number }
-  >();
+  const [failure, setFailure] = useState<{ urls: string; attempt: number }>();
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -38,36 +33,48 @@ export const PosterOfflineCache = () => {
   useEffect(() => {
     const controller = new AbortController();
     const images: string[] = JSON.parse(urls);
-    setProgress({ total: images.length, saved: 0, failed: 0, attempt });
+    let idle: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const save = async () => {
       try {
         if (!('caches' in window)) {
           throw new Error('Poster cache unavailable');
         }
-        await cacheTierlistPosters(images, controller.signal, (value) =>
-          setProgress({ ...value, attempt }),
-        );
+        await cacheTierlistPosters(images, controller.signal, (value) => {
+          if (value.failed) {
+            setFailure({ urls, attempt });
+          }
+        });
       } catch {
         if (!controller.signal.aborted) {
-          setProgress({
-            total: images.length,
-            saved: 0,
-            failed: images.length,
-            attempt,
-          });
+          setFailure({ urls, attempt });
         }
       }
     };
-    void save();
+    const schedule = () => {
+      if ('requestIdleCallback' in window) {
+        idle = window.requestIdleCallback(() => void save());
+      } else {
+        timer = globalThis.setTimeout(() => void save(), 0);
+      }
+    };
+    if (document.readyState === 'complete') {
+      schedule();
+    } else {
+      window.addEventListener('load', schedule, { once: true });
+    }
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      window.removeEventListener('load', schedule);
+      if (idle !== undefined) {
+        window.cancelIdleCallback(idle);
+      }
+      globalThis.clearTimeout(timer);
+    };
   }, [urls, attempt]);
 
-  if (
-    progress?.attempt !== attempt ||
-    !progress.total ||
-    progress.saved === progress.total
-  ) {
+  if (failure?.attempt !== attempt || failure.urls !== urls || urls === '[]') {
     return null;
   }
 
@@ -76,18 +83,14 @@ export const PosterOfflineCache = () => {
       role="status"
       className="absolute bottom-2 left-0 z-40 max-w-full border border-divider bg-background/95 px-3 py-2 text-xs text-muted-foreground shadow-sm"
     >
-      {progress.saved + progress.failed < progress.total
-        ? `Saving posters offline… ${progress.saved}/${progress.total}`
-        : `${progress.failed} posters unavailable offline.`}
-      {progress.failed > 0 && (
-        <button
-          type="button"
-          className="ml-2 cursor-pointer underline underline-offset-4"
-          onClick={() => setAttempt((value) => value + 1)}
-        >
-          Retry
-        </button>
-      )}
+      Some posters aren’t available offline.
+      <button
+        type="button"
+        className="ml-2 cursor-pointer underline underline-offset-4"
+        onClick={() => setAttempt((value) => value + 1)}
+      >
+        Retry
+      </button>
     </p>
   );
 };

@@ -112,7 +112,7 @@ export const TierItemButton = ({
               trim={trim}
               priority={priority}
               showPlaceholder={!preview}
-              onReady={preview ? () => setReadySource(image.src) : undefined}
+              onReady={() => setReadySource(image.src)}
             />
           </span>
         </>
@@ -120,7 +120,7 @@ export const TierItemButton = ({
         label
       )}
 
-      {itemTitle?.text && !preview && (
+      {itemTitle?.text && !preview && (!image || readySource === image.src) && (
         <TierItemTitle
           title={itemTitle}
           image={image}
