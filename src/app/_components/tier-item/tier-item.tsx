@@ -261,6 +261,12 @@ export const TierItem = ({
         position={position}
         dragging={drag.dragging}
         itemId={id}
+        label={label}
+        onLabelChange={
+          actions
+            ? (next) => actions.updateItem(id, { label: next })
+            : undefined
+        }
         finalFocus={itemRef}
         hasImage={Boolean(image)}
         squareImage={Boolean(image && image.width === image.height)}

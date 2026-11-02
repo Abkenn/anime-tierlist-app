@@ -6,7 +6,6 @@ import { useHydrateAtoms } from 'jotai/utils';
 import { motion } from 'motion/react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
-import { TierItemLabelEditor } from '@/app/_components/tier-item/tier-item-label-editor';
 import { TierBoardRows } from '@/app/_components/tier-row/tier-board-rows';
 import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-toolbar';
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
@@ -67,8 +66,6 @@ export const TierBoard = ({
       className="flex min-h-0 min-w-0 flex-1 flex-col"
     >
       <TierBoardFind />
-
-      <TierItemLabelEditor />
 
       <TierBoardToolbar
         rankCount={ranks.length}

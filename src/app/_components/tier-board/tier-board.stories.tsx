@@ -986,12 +986,13 @@ export const RenameAndFind: Story = {
     });
     fireEvent.contextMenu(item);
     await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Rename Label' }),
+      await page.findByRole('menuitem', { name: 'Edit label: Unknown' }),
     );
     const label = await page.findByRole('textbox', { name: 'Item label' });
     await userEvent.clear(label);
     await userEvent.type(label, 'Your Lie in April');
-    await userEvent.click(page.getByRole('button', { name: 'Save' }));
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(item);
     await waitFor(() =>
       expect(item).toHaveAccessibleName('Item Your Lie in April in S+'),
     );

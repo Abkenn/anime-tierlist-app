@@ -429,7 +429,7 @@ export const useTierItems = ({
     updateItem: (
       id: string,
       changes: Partial<
-        Pick<Item, 'crop' | 'trim' | 'rowHeightExpansion' | 'title'>
+        Pick<Item, 'crop' | 'trim' | 'rowHeightExpansion' | 'title' | 'label'>
       >,
     ) =>
       setItems((current) =>

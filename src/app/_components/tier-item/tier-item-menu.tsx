@@ -2,9 +2,9 @@
 
 import { Menu } from '@base-ui/react/menu';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { Ellipsis } from 'lucide-react';
+import { Ellipsis, Pencil } from 'lucide-react';
 import { motion } from 'motion/react';
-import { type ReactElement, type RefObject, useState } from 'react';
+import { type ReactElement, type RefObject, useRef, useState } from 'react';
 import { renamingItemIdAtom } from '@/app/_atoms/tierlist/find.atoms';
 import { menuItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
@@ -16,6 +16,8 @@ import type { TierItemPosition } from '@/app/_lib/tier-board-geometry';
 
 type TierItemMenuProps = {
   itemId?: string;
+  label?: string;
+  onLabelChange?: (label: string) => void;
   trigger: ReactElement;
   finalFocus?: RefObject<HTMLElement | null>;
   hasImage: boolean;
@@ -36,6 +38,8 @@ type TierItemMenuProps = {
 
 export const TierItemMenu = ({
   itemId,
+  label = 'Unknown',
+  onLabelChange,
   trigger,
   finalFocus,
   hasImage,
@@ -55,12 +59,34 @@ export const TierItemMenu = ({
 }: TierItemMenuProps) => {
   const mode = useAtomValue(imageModeAtom);
   const setMenuItem = useSetAtom(menuItemIdAtom);
-  const rename = useSetAtom(renamingItemIdAtom);
+  const setRenamingItem = useSetAtom(renamingItemIdAtom);
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const labelInput = useRef<HTMLInputElement>(null);
+  const labelAction = useRef<HTMLDivElement>(null);
+  const activeRename = useRef(false);
   const [menuOrigin, setMenuOrigin] = useState<{ x: number; y: number }>();
 
+  const finishRename = (save: boolean) => {
+    if (!activeRename.current) {
+      return;
+    }
+
+    activeRename.current = false;
+    setRenamingItem((current) => (current === itemId ? null : current));
+    const value = labelInput.current?.value.trim();
+    if (save && value && value !== label) {
+      onLabelChange?.(value);
+    }
+
+    setRenaming(false);
+  };
+
   const changeOpen = (next: boolean) => {
+    if (!next) {
+      finishRename(true);
+    }
+
     setOpen(next);
     setMenuItem((current) => {
       if (next) {
@@ -114,12 +140,8 @@ export const TierItemMenu = ({
 
       <ContextMenuContent
         spawnFrom={menuOrigin}
-        finalFocus={textEditorOpen || renaming ? false : finalFocus}
-        className={
-          mode === 'natural'
-            ? 'max-w-[calc(100vw-2rem)] overflow-visible'
-            : undefined
-        }
+        finalFocus={textEditorOpen ? false : finalFocus}
+        className="w-72 max-w-[calc(100vw-2rem)]"
         positionerProps={
           finalFocus
             ? {
@@ -137,6 +159,57 @@ export const TierItemMenu = ({
         role={mode === 'natural' ? 'dialog' : 'menu'}
         aria-label={mode === 'natural' ? 'Image size' : undefined}
       >
+        <div className="mb-1 border-b border-divider pb-1">
+          {renaming ? (
+            <input
+              ref={(element) => {
+                labelInput.current = element;
+                element?.focus();
+                element?.select();
+              }}
+              aria-label="Item label"
+              defaultValue={label}
+              maxLength={300}
+              enterKeyHint="done"
+              className="min-h-11 w-full border border-foreground bg-background px-2 text-base outline-none"
+              onClick={(event) => event.stopPropagation()}
+              onBlur={() => finishRename(true)}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Enter' || event.key === 'Escape') {
+                  if (event.nativeEvent.isComposing) {
+                    return;
+                  }
+
+                  event.preventDefault();
+                  finishRename(event.key === 'Enter');
+                  requestAnimationFrame(() => labelAction.current?.focus());
+                }
+              }}
+            />
+          ) : (
+            <ContextMenuItem
+              ref={labelAction}
+              closeOnClick={false}
+              disabled={editing || !onLabelChange}
+              aria-label={`Edit label: ${label}`}
+              className="group/label min-h-11 items-start justify-between gap-3 whitespace-normal py-3"
+              onClick={() => {
+                activeRename.current = true;
+                setRenamingItem(itemId ?? null);
+                setRenaming(true);
+              }}
+            >
+              <span className="min-w-0 wrap-anywhere">{label}</span>
+
+              <Pencil
+                aria-hidden="true"
+                className="mt-0.5 size-4 shrink-0 text-muted-foreground opacity-0 group-hover/label:opacity-100 group-focus/label:opacity-100 pointer-coarse:opacity-100"
+              />
+            </ContextMenuItem>
+          )}
+        </div>
+
         {(mode === 'cover' || mode === 'natural') && (
           <div role="menu" aria-label="Image crop actions">
             <ContextMenuItem
@@ -169,18 +242,6 @@ export const TierItemMenu = ({
         )}
 
         <div role="menu" aria-label="Text actions">
-          <ContextMenuItem
-            disabled={!itemId || editing}
-            onClick={() => {
-              if (itemId) {
-                setRenaming(true);
-                rename(itemId);
-              }
-            }}
-          >
-            Rename Label
-          </ContextMenuItem>
-
           <ContextMenuItem disabled={editing || !onText} onClick={onText}>
             {hasTitle ? 'Edit text' : 'Add text'}
           </ContextMenuItem>
