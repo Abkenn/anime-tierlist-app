@@ -11,6 +11,7 @@ import {
   posterSizeAtom,
   rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
+import { isError } from '@/app/_lib/is-error';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import {
   previewHandoffEvent,
@@ -226,10 +227,9 @@ export const useLocalTierlist = () => {
               setState({
                 status: 'error',
                 seed: current.seed,
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : 'Unable to save this tierlist on this device.',
+                error: isError(error)
+                  ? error.message
+                  : 'Unable to save this tierlist on this device.',
               });
             }
           },

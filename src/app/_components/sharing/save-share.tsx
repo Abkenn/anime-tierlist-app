@@ -14,6 +14,7 @@ import {
 } from 'react';
 import { TerminalPending } from '@/app/_components/shell/terminal-pending';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
+import { isError } from '@/app/_lib/is-error';
 import {
   keyboardBehaviors,
   matchesKeyboardBehavior,
@@ -63,10 +64,7 @@ export const SaveShare = ({
         return {
           url: '',
           revision,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Unable to prepare sharing.',
+          error: isError(error) ? error.message : 'Unable to prepare sharing.',
         };
       }
     },
@@ -132,7 +130,7 @@ export const SaveShare = ({
         ? `${missing} posters could not be exported. Their labels are included instead.`
         : '';
     } catch (error) {
-      return error instanceof Error ? error.message : 'Unable to download.';
+      return isError(error) ? error.message : 'Unable to download.';
     }
   }, '');
 

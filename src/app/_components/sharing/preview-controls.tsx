@@ -8,6 +8,7 @@ import { SeedReplaceConfirmation } from '@/app/_components/home/seed-replace-con
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { toast } from '@/app/_components/ui/toast';
+import { isError } from '@/app/_lib/is-error';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
 import {
@@ -139,8 +140,7 @@ export const PreviewControls = ({
       toast.add({ title: 'PNG copied to clipboard', timeout: 5000 });
     } catch (error) {
       toast.add({
-        title:
-          error instanceof Error ? error.message : 'Unable to copy the PNG.',
+        title: isError(error) ? error.message : 'Unable to copy the PNG.',
         timeout: 5000,
       });
     } finally {
@@ -173,9 +173,7 @@ export const PreviewControls = ({
       }
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to open this template.',
+        isError(error) ? error.message : 'Unable to open this template.',
       );
     }
   };

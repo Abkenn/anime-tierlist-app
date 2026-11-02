@@ -13,10 +13,9 @@ const handler = createRpcHandler(
     {
       mapHandlerError: (error) =>
         new ORPCError('BAD_GATEWAY', {
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Anime search is unavailable.',
+          message: Error.isError(error)
+            ? error.message
+            : 'Anime search is unavailable.',
         }),
     },
   ),

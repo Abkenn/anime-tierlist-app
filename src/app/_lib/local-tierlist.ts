@@ -78,7 +78,13 @@ export const localTierlistSchema = z.object({
 
 export type LocalTierlist = z.infer<typeof localTierlistSchema>;
 
-export const createUserSeed = () =>
-  Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
-    byte.toString(16).padStart(2, '0'),
-  ).join('');
+export const createUserSeed = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  if (typeof bytes.toHex === 'function') {
+    return bytes.toHex();
+  }
+
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  );
+};

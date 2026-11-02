@@ -1,7 +1,9 @@
+import { isError } from './is-error';
+
 export const tierlistUpdateMessage = 'Online saving needs to reconnect.';
 
 export const isOutdatedTierlistClient = (error: unknown) =>
-  error instanceof Error &&
+  isError(error) &&
   /server action.+(?:was not found|not found)|failed to find server action|failed-to-find-server-action/iu.test(
     error.message,
   );
@@ -12,7 +14,7 @@ export const tierlistErrorMessage = (error: unknown, fallback: string) => {
   }
 
   if (
-    !(error instanceof Error) ||
+    !isError(error) ||
     error instanceof TypeError ||
     /fetch|network|load failed|server components render|unexpected response/iu.test(
       error.message,

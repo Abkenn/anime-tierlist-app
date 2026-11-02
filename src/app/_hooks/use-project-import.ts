@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from '@/app/_components/ui/toast';
+import { isError } from '@/app/_lib/is-error';
 import {
   clearProjectSession,
   type ProjectSession,
@@ -101,10 +102,9 @@ export const useProjectImport = ({
       });
     } catch (error) {
       toast.add({
-        title:
-          error instanceof Error
-            ? error.message
-            : 'Unable to open this project. Your tierlist is unchanged.',
+        title: isError(error)
+          ? error.message
+          : 'Unable to open this project. Your tierlist is unchanged.',
       });
     } finally {
       if (sessionStorage.getItem(pendingProjectKey) === pending) {
