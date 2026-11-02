@@ -2,7 +2,7 @@
 
 import { useAtomValue, useSetAtom } from 'jotai';
 import { cancelFrame, frame } from 'motion/react';
-import { useLayoutEffect, useRef, ViewTransition } from 'react';
+import { useLayoutEffect, useRef, useState, ViewTransition } from 'react';
 import {
   draggedRankAtom,
   rankOffsetsAtom,
@@ -12,7 +12,11 @@ import {
   posterSizeAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
-import { getPosterSize } from '@/app/_lib/poster-size';
+import {
+  getAutoPosterWidth,
+  getPosterSize,
+  stabilizePosterWidth,
+} from '@/app/_lib/poster-size';
 import type { TierRank } from '@/app/_types/tierlist.types';
 import { TierRow } from './tier-row';
 
@@ -41,10 +45,35 @@ export const TierBoardRows = ({
   const middleRank = (ranks.length - 1) / 2;
   const skeletonDeviation = Math.max(1, ranks.length / 5);
   const previousOrder = useRef(rankKey);
+  const currentWidth = getAutoPosterWidth({
+    imageMode,
+    items: interaction.items,
+  });
+  const [autoFit, setAutoFit] = useState({
+    mode,
+    imageMode,
+    restoring,
+    width: currentWidth,
+  });
+  const autoWidth =
+    autoFit.mode !== mode ||
+    autoFit.imageMode !== imageMode ||
+    autoFit.restoring !== restoring
+      ? currentWidth
+      : stabilizePosterWidth(autoFit.width, currentWidth);
+  if (
+    autoFit.mode !== mode ||
+    autoFit.imageMode !== imageMode ||
+    autoFit.restoring !== restoring ||
+    autoFit.width !== autoWidth
+  ) {
+    setAutoFit({ mode, imageMode, restoring, width: autoWidth });
+  }
   const size = getPosterSize({
     mode,
     imageMode,
     items: interaction.items,
+    autoWidth,
   });
 
   useLayoutEffect(() => {
