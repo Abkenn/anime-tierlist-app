@@ -16,6 +16,7 @@ type PreviewBoardSurfaceProps = {
   height: number;
   mode: TierImageMode;
   visibleIds?: ReadonlySet<string>;
+  priorityIds?: ReadonlySet<string>;
   frame?: { x: number; y: number; width: number; height: number };
   clipPrefix?: string;
   pendingIds?: ReadonlySet<string>;
@@ -28,6 +29,7 @@ export const PreviewBoardSurface = ({
   height,
   mode,
   visibleIds,
+  priorityIds,
   frame,
   clipPrefix = '',
   pendingIds,
@@ -131,6 +133,9 @@ export const PreviewBoardSurface = ({
                               : box.item.image.src
                           }
                           crossOrigin={posterCrossOrigin(box.item.image.src)}
+                          {...(priorityIds?.has(box.item.id)
+                            ? { fetchPriority: 'high' }
+                            : {})}
                           onLoad={
                             onPosterSettled && source
                               ? () => onPosterSettled(source)

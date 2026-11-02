@@ -62,19 +62,17 @@ export const PreviewImage = ({
     matchesTierItemLabel(poster.item, deferredQuery),
   );
   const matchingIds = new Set(matches.map((poster) => poster.item.id));
-  const firstPoster = visible.reduce<(typeof visible)[number] | undefined>(
-    (largest, poster) =>
-      !largest || poster.width * poster.height > largest.width * largest.height
-        ? poster
-        : largest,
-    undefined,
-  );
-  if (firstPoster?.item.image) {
-    preload(posterDisplaySource(firstPoster.item.image.src), {
-      as: 'image',
-      fetchPriority: 'high',
-      crossOrigin: posterCrossOrigin(firstPoster.item.image.src),
-    });
+  const priorityPosters =
+    rows.find((row) => row.posters.length)?.posters.slice(0, 3) ?? [];
+  const priorityIds = new Set(priorityPosters.map((poster) => poster.item.id));
+  for (const poster of priorityPosters) {
+    if (poster.item.image) {
+      preload(posterDisplaySource(poster.item.image.src), {
+        as: 'image',
+        fetchPriority: 'high',
+        crossOrigin: posterCrossOrigin(poster.item.image.src),
+      });
+    }
   }
 
   useEffect(() => {
@@ -93,6 +91,7 @@ export const PreviewImage = ({
         height={height}
         mode={mode}
         visibleIds={visibleIds}
+        priorityIds={priorityIds}
         clipPrefix={`live-${id}-`}
         pendingIds={pendingIds}
         onPosterSettled={(source) => {

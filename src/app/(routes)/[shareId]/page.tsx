@@ -25,6 +25,7 @@ export const generateMetadata = async ({
   return {
     title: 'Shared Anime Tierlist',
     description: 'View this anime tierlist.',
+    alternates: { canonical: url },
     robots: { index: false, follow: false },
     openGraph: {
       type: 'website',

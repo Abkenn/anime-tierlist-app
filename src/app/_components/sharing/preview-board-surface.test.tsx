@@ -26,9 +26,20 @@ it('lets posters paint without waiting for React loading-state updates', () => {
       {...layoutExportBoard(document)}
       mode="natural"
       pendingIds={new Set(['S'])}
+      priorityIds={new Set(['S'])}
     />,
   );
   const parsed = new DOMParser().parseFromString(markup, 'text/html');
+  expect(
+    parsed
+      .querySelector('image[href="/poster-S.jpg"]')
+      ?.getAttribute('fetchpriority'),
+  ).toBe('high');
+  expect(
+    parsed
+      .querySelector('image[href="/poster-A.jpg"]')
+      ?.hasAttribute('fetchpriority'),
+  ).toBe(false);
   expect(
     parsed
       .querySelector('image[href="/poster-S.jpg"]')

@@ -19,7 +19,10 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     (overview.visible || hovered || focused || dragging);
   const previewHeight = Math.min(360, overview.viewportHeight * 0.75);
   const scale = previewHeight / overview.canvasHeight;
-  const previewWidth = Math.min(120, overview.canvasWidth * scale);
+  const previewWidth = Math.max(
+    48,
+    Math.min(120, overview.canvasWidth * scale),
+  );
   const scrollRange = Math.max(
     1,
     overview.canvasHeight - overview.viewportHeight,
@@ -28,13 +31,16 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     1,
     Math.max(0, ((overview.top / 100) * overview.canvasHeight) / scrollRange),
   );
-  const dragScale =
-    scale + (overview.viewportHeight - previewHeight) / scrollRange;
+  const thumbHeight = Math.min(
+    previewHeight,
+    Math.max(24, overview.viewportHeight * scale),
+  );
+  const dragScale = (previewHeight - thumbHeight) / scrollRange;
   const frame = {
-    left: 0,
-    top: (overview.top / 100) * previewHeight,
-    width: previewWidth,
-    height: overview.viewportHeight * scale,
+    left: 24,
+    top: progress * (previewHeight - thumbHeight),
+    width: previewWidth - 24,
+    height: thumbHeight,
   };
 
   return (
@@ -84,7 +90,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
               title={`${row.rank} · ${row.count} items`}
               onClick={() => overview.jumpToRank(row.rank)}
               style={{ top: `${row.top}%`, height: `${row.height}%` }}
-              className="absolute inset-x-0 cursor-pointer focus-visible:outline-1 focus-visible:-outline-offset-1"
+              className="absolute left-0 w-6 cursor-pointer focus-visible:outline-1 focus-visible:-outline-offset-1"
             />
           ))}
 
