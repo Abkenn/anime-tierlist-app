@@ -5,6 +5,7 @@ const env = parseEnv(process.env);
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  htmlLimitedBots: /.*/,
   images: {
     qualities: [60, 75],
     remotePatterns: [new URL('https://cdn.myanimelist.net/images/anime/**')],

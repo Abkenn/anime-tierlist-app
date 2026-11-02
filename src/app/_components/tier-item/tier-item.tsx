@@ -1,6 +1,7 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
+import dynamic from 'next/dynamic';
 import {
   type PointerEvent,
   type ReactElement,
@@ -27,10 +28,19 @@ import type {
   TierKeyboardMove,
 } from '@/app/_types/tierlist.types';
 import { TierCropControls } from './tier-crop-controls';
-import { TierImageTrimEditor } from './tier-image-trim-editor';
 import { TierItemButton } from './tier-item-button';
 import { TierItemMenu } from './tier-item-menu';
-import { TierItemTitleEditor } from './tier-item-title-editor';
+
+const TierImageTrimEditor = dynamic(() =>
+  import('./tier-image-trim-editor').then(
+    (module) => module.TierImageTrimEditor,
+  ),
+);
+const TierItemTitleEditor = dynamic(() =>
+  import('./tier-item-title-editor').then(
+    (module) => module.TierItemTitleEditor,
+  ),
+);
 
 type TierItemProps = {
   dimmed?: boolean;

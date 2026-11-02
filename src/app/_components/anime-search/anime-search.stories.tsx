@@ -84,6 +84,9 @@ export const InlineRankImport: Story = {
     }
 
     await userEvent.click(portraitCard);
+    canvas
+      .getByRole('listitem', { name: /Watching tier/ })
+      .scrollIntoView({ block: 'nearest' });
     await canvas.findByRole('button', {
       name: 'Item Portrait TEST in Watching',
     });
@@ -124,6 +127,9 @@ export const DirectImageImport: Story = {
     }
 
     await userEvent.click(card);
+    canvas
+      .getByRole('listitem', { name: /Watching tier/ })
+      .scrollIntoView({ block: 'nearest' });
     await canvas.findByRole('button', {
       name: 'Item Unknown in Watching',
     });

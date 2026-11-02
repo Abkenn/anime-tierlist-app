@@ -199,7 +199,7 @@ export const UserSeed = ({
       <Popover.Trigger
         ref={desktopAnchor}
         disabled={busy}
-        className="inline-flex min-h-9 items-center gap-1 cursor-pointer text-xs font-medium text-foreground underline decoration-current/70 underline-offset-4 transition-[color,text-decoration-color,opacity] hover:decoration-current active:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50"
+        className="inline-flex min-h-9 justify-self-start items-center gap-1 cursor-pointer text-xs font-medium text-foreground underline decoration-current/70 underline-offset-4 transition-[color,text-decoration-color,opacity] hover:decoration-current active:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50"
       >
         Save &amp; import
         <ChevronDown aria-hidden="true" className="size-3" />
@@ -213,7 +213,7 @@ export const UserSeed = ({
               : (statusAnchor?.current ?? null)
           }
           side="bottom"
-          align="end"
+          align="start"
           positionMethod="fixed"
           sideOffset={8}
           collisionPadding={16}

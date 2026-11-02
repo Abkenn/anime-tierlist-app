@@ -50,6 +50,14 @@ export const DesktopAndMobile: StoryObj<typeof meta> = {
       canvasElement.ownerDocument.body,
     ).findByLabelText('Save and import tierlist');
     await waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
+    await waitFor(() =>
+      expect(
+        Math.abs(
+          popup.getBoundingClientRect().left -
+            account.getBoundingClientRect().left,
+        ),
+      ).toBeLessThanOrEqual(2),
+    );
     await userEvent.keyboard('{Escape}');
   },
 };

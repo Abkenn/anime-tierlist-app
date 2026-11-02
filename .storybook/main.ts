@@ -18,6 +18,7 @@ const config: StorybookConfig = {
       plugins: [tailwindcss()],
       optimizeDeps: {
         include: [
+          'next/dynamic',
           'motion/react',
           'jotai',
           'jotai/vanilla',

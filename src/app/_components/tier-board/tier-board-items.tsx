@@ -73,16 +73,10 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       poster.y <= window.bottom
     );
   });
-  const priorityItem = visiblePosters.reduce<
-    | {
-        id: string;
-        area: number;
-      }
-    | undefined
-  >((largest, item) => {
+  const priorityItems = visiblePosters.map((item) => {
     const poster = geometry.get(item.id);
     if (!poster) {
-      return largest;
+      return { id: item.id, area: 0 };
     }
     const area =
       Math.max(
@@ -96,8 +90,14 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
           Math.max(poster.y, window.visible.top),
       );
 
-    return area > (largest?.area ?? 0) ? { id: item.id, area } : largest;
-  }, undefined);
+    return { id: item.id, area };
+  });
+  const priorityIds = new Set(
+    priorityItems
+      .sort((a, b) => b.area - a.area)
+      .slice(0, 3)
+      .map((item) => item.id),
+  );
 
   return (
     <TierItemActionsContext value={actions}>
@@ -187,7 +187,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                   rank={rank}
                   editing={editingItemId === item.id}
                   image={item.image}
-                  priority={item.id === priorityItem?.id}
+                  priority={priorityIds.has(item.id)}
                   title={item.title}
                   crop={item.crop}
                   trim={item.trim}

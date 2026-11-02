@@ -110,6 +110,14 @@ export const InlineLabel: Story = {
     await expect(input).toHaveValue(args.label);
     await userEvent.clear(input);
     await userEvent.type(input, 'Cancelled');
+    await userEvent.hover(page.getByRole('menuitem', { name: 'Edit crop' }));
+    await expect(
+      getComputedStyle(page.getByRole('menuitem', { name: 'Edit crop' }))
+        .backgroundColor,
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    await expect(input).toHaveFocus();
+    await expect(input).toHaveValue('Cancelled');
+    await expect(args.onLabelChange).not.toHaveBeenCalled();
     await userEvent.keyboard('{Escape}');
     await expect(
       await page.findByRole('menuitem', { name: `Edit label: ${args.label}` }),

@@ -102,7 +102,11 @@ export const TierItemMenu = ({
   };
 
   return (
-    <ContextMenu open={open} onOpenChange={changeOpen}>
+    <ContextMenu
+      open={open}
+      onOpenChange={changeOpen}
+      highlightItemOnHover={!renaming}
+    >
       <div
         className="group/item contents"
         onPointerDownCapture={(event) =>
