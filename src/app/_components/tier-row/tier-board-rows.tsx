@@ -13,7 +13,6 @@ import {
 } from '@/app/_atoms/tierlist/settings.atoms';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { getPosterSize } from '@/app/_lib/poster-size';
-import { tierColors } from '@/app/_lib/tier-colors';
 import type { TierRank } from '@/app/_types/tierlist.types';
 import { TierRow } from './tier-row';
 
@@ -73,7 +72,6 @@ export const TierBoardRows = ({
           <TierRow
             key={rank}
             rank={rank}
-            color={tierColors[rank] ?? 'stone'}
             active={interaction.targetRank === rank}
             fixedItemSize={layout === 'two-line'}
             lines={interaction.lines(rank)}

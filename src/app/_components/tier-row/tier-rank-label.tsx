@@ -14,21 +14,11 @@ import {
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { ColorPicker } from '@/app/_components/ui/color-picker';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
-import { tierColorClasses } from '@/app/_lib/tier-colors';
-import type {
-  HexColor,
-  TierColor,
-  TierRank,
-} from '@/app/_types/tierlist.types';
+import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
+import type { HexColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRankMove } from './tier-rank-move';
 
-export const TierRankLabel = ({
-  rank,
-  color,
-}: {
-  rank: TierRank;
-  color: TierColor;
-}) => {
+export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const [details, setDetails] = useAtom(rankDetailsAtom);
   const ranks = useAtomValue(enabledTierRanksAtom);
   const add = useSetAtom(addRankAtom);
@@ -39,6 +29,7 @@ export const TierRankLabel = ({
   const [presetColor, setPresetColor] = useState<HexColor>('#aaaaaa');
   const labelRef = useRef<HTMLDivElement>(null);
   const label = details[rank]?.label ?? rank;
+  const color = tierColors[rank] ?? 'stone';
   const addRankButtonClass =
     'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
 

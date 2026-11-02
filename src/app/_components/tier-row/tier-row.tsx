@@ -7,13 +7,12 @@ import {
   rankOffsetsAtom,
 } from '@/app/_atoms/tierlist/layout.atoms';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
-import type { TierColor, TierRank } from '@/app/_types/tierlist.types';
+import type { TierRank } from '@/app/_types/tierlist.types';
 import { TierRankLabel } from './tier-rank-label';
 import { TierRowSearch } from './tier-row-search';
 
 type TierRowProps = {
   rank: TierRank;
-  color: TierColor;
   active?: boolean;
   itemCount?: number;
   fixedItemSize?: boolean;
@@ -23,7 +22,6 @@ type TierRowProps = {
 
 export const TierRow = ({
   rank,
-  color,
   active = false,
   itemCount = 0,
   fixedItemSize = false,
@@ -51,7 +49,7 @@ export const TierRow = ({
         itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
       }
     >
-      <TierRankLabel rank={rank} color={color} />
+      <TierRankLabel rank={rank} />
 
       <div
         tabIndex={-1}
