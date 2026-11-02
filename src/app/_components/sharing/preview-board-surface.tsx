@@ -17,6 +17,8 @@ type PreviewBoardSurfaceProps = {
   visibleIds?: ReadonlySet<string>;
   frame?: { x: number; y: number; width: number; height: number };
   clipPrefix?: string;
+  pendingIds?: ReadonlySet<string>;
+  onPosterSettled?: (source: string) => void;
 };
 
 export const PreviewBoardSurface = ({
@@ -27,6 +29,8 @@ export const PreviewBoardSurface = ({
   visibleIds,
   frame,
   clipPrefix = '',
+  pendingIds,
+  onPosterSettled,
 }: PreviewBoardSurfaceProps) => {
   const board = { rows, width, height };
 
@@ -82,12 +86,16 @@ export const PreviewBoardSurface = ({
           {row.posters
             .filter((box) => !visibleIds || visibleIds.has(box.item.id))
             .map((box, index) => {
+              const source = box.item.image?.src;
               const frame = exportImageFrame(box, mode);
               const title = exportTitle(box, mode);
               const clip = `${clipPrefix}poster-${rowIndex}-${index}`;
 
               return (
-                <g key={box.item.id}>
+                <g
+                  key={box.item.id}
+                  opacity={pendingIds?.has(box.item.id) ? 0 : 1}
+                >
                   <title>{box.item.label}</title>
                   <defs>
                     <clipPath id={clip}>
@@ -112,6 +120,16 @@ export const PreviewBoardSurface = ({
                         <image
                           href={box.item.image.src}
                           crossOrigin={posterCrossOrigin(box.item.image.src)}
+                          onLoad={
+                            onPosterSettled && source
+                              ? () => onPosterSettled(source)
+                              : undefined
+                          }
+                          onError={
+                            onPosterSettled && source
+                              ? () => onPosterSettled(source)
+                              : undefined
+                          }
                           width={box.item.image.width}
                           height={box.item.image.height}
                         />

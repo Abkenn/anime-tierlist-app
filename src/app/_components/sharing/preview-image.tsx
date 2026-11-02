@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
+import { Skeleton } from '@/app/_components/ui/skeleton';
 import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
 import { useTitleColors } from '@/app/_hooks/use-title-colors';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
@@ -37,6 +38,9 @@ export const PreviewImage = ({
   );
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
+  const [settledSources, setSettledSources] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
   const deferredQuery = useDeferredValue(query);
   const posters = rows.flatMap((row) => row.posters);
   const visible = usePreviewPosters(root, posters, width, height);
@@ -57,6 +61,10 @@ export const PreviewImage = ({
     }),
   }));
   const visibleIds = new Set(visible.map((poster) => poster.item.id));
+  const pendingPosters = visible.filter(
+    (poster) => poster.item.image && !settledSources.has(poster.item.image.src),
+  );
+  const pendingIds = new Set(pendingPosters.map((poster) => poster.item.id));
   const matches = posters.filter((poster) =>
     matchesTierItemLabel(poster.item, deferredQuery),
   );
@@ -96,8 +104,32 @@ export const PreviewImage = ({
           mode={mode}
           visibleIds={visibleIds}
           clipPrefix={`live-${id}-`}
+          pendingIds={pendingIds}
+          onPosterSettled={(source) => {
+            setSettledSources((previous) => {
+              if (previous.has(source)) {
+                return previous;
+              }
+
+              return new Set([...previous, source]);
+            });
+          }}
         />
       )}
+
+      {state !== 'ready' &&
+        pendingPosters.map((poster) => (
+          <Skeleton
+            key={poster.item.id}
+            className="pointer-events-none absolute rounded-none"
+            style={{
+              left: `${(poster.x / width) * 100}%`,
+              top: `${(poster.y / height) * 100}%`,
+              width: `${(poster.width / width) * 100}%`,
+              height: `${(poster.height / height) * 100}%`,
+            }}
+          />
+        ))}
 
       <Image
         src={imageSource}
