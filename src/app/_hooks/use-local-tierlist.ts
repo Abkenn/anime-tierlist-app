@@ -18,7 +18,10 @@ import {
   readPreviewHandoff,
 } from '@/app/_lib/preview-handoff';
 import { createSaveQueue } from '@/app/_lib/save-queue';
-import type { RemoteTierlist } from '@/app/_lib/tierlist-sync';
+import type {
+  RemoteTierlist,
+  TierlistDocument,
+} from '@/app/_lib/tierlist-sync';
 import {
   getTierlistDocument,
   sameTierlistDocument,
@@ -34,6 +37,7 @@ import {
   loadLocalTierlist,
   readLocalTierlist,
   replaceDeviceTierlist,
+  replaceLocalDocument,
   saveLocalSyncMetadata,
   saveLocalTierlist,
   saveLocalTierlistEdit,
@@ -49,6 +53,10 @@ type LocalController = {
   flush: () => Promise<void>;
   metadata: (remote: RemoteTierlist, localRevision: number) => Promise<void>;
   replace: (remote: RemoteTierlist, expectedRevision?: number) => Promise<void>;
+  importDocument: (
+    document: TierlistDocument,
+    expected: { seed: string; revision: number },
+  ) => Promise<void>;
 };
 
 export const useLocalTierlist = () => {
@@ -314,6 +322,30 @@ export const useLocalTierlist = () => {
         controller.current = {
           refresh,
           flush: queue.flush,
+          importDocument: async (document, expected) => {
+            let changed = false;
+            await queue.enqueue(async () => {
+              try {
+                if (disposed || current.seed !== expected.seed) {
+                  throw new LocalTierlistChangedError();
+                }
+                current = await replaceLocalDocument(document, expected);
+                unsubscribe();
+                hydrate();
+                unsubscribe = subscribe();
+              } catch (error) {
+                if (!(error instanceof LocalTierlistChangedError)) {
+                  throw error;
+                }
+                changed = true;
+              }
+            });
+            if (changed) {
+              throw new Error(
+                'Your tierlist changed during generation. Generate again before applying.',
+              );
+            }
+          },
           metadata: (remote, localRevision) => {
             if (
               current.sync?.ownerId === remote.ownerId &&
@@ -402,6 +434,15 @@ export const useLocalTierlist = () => {
     replaceDeviceProfile,
     updateSync,
     replaceRemote,
+    importDocument: async (
+      document: TierlistDocument,
+      expected: { seed: string; revision: number },
+    ) => {
+      if (!controller.current) {
+        throw new Error('Wait for your tierlist to load.');
+      }
+      await controller.current.importDocument(document, expected);
+    },
     refresh: async () => controller.current?.refresh(),
     flush: async () => {
       await controller.current?.flush();

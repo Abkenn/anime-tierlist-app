@@ -243,3 +243,24 @@ it('checks a missing cached publication again before returning not found', async
     expire: 5,
   });
 });
+
+it('keeps import history private when publishing a preview', async () => {
+  mocks.owner.mockResolvedValue({
+    id: 'owner',
+    revision: 4,
+    document: {
+      ...document,
+      malImport: {
+        username: 'Abkenn',
+        importedAt: 1,
+        catalog: [],
+        posters: {},
+        dimensions: {},
+      },
+    },
+  });
+  await publishTierlist({ ownerId: 'owner', revision: 4 });
+  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty(
+    'malImport',
+  );
+});

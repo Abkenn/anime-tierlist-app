@@ -27,6 +27,12 @@ import {
 } from './tierlist-identity';
 import { getTierlistPng } from './tierlist-png-cache';
 
+const publicDocument = (input: unknown): TierlistDocument => {
+  const { malImport: _history, ...document } =
+    tierlistDocumentSchema.parse(input);
+  return document;
+};
+
 const previewFormat = 5;
 
 const previewFingerprint = (revision: number, document: TierlistDocument) => {
@@ -69,10 +75,7 @@ export const readExistingTierlistPreview = async (input: {
 
   return findPublishedTierlistPreview(
     owner.id,
-    previewFingerprint(
-      owner.revision,
-      tierlistDocumentSchema.parse(owner.document),
-    ),
+    previewFingerprint(owner.revision, publicDocument(owner.document)),
   );
 };
 
@@ -100,7 +103,7 @@ const publicTierlistSnapshot = (
     ? {
         id: share.id,
         version: tierlistShareVersion(share.fingerprint),
-        document: tierlistDocumentSchema.parse(share.document),
+        document: publicDocument(share.document),
       }
     : null;
 
@@ -171,7 +174,7 @@ export const publishTierlist = async (input: {
       'Your tierlist changed. Reopen Share to share the latest version.',
     );
   }
-  const document = tierlistDocumentSchema.parse(owner.document);
+  const document = publicDocument(owner.document);
   const fingerprint = previewFingerprint(owner.revision, document);
   const existing = await findPublishedTierlistPreview(
     input.ownerId,

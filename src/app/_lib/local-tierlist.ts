@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { malImportHistorySchema } from './mal-import-history';
 import { tierRanks } from './tier-ranks';
 
 const rank = z.union([
@@ -41,6 +42,7 @@ const item = z.object({
 });
 
 export const localTierlistSchema = z.object({
+  malImport: malImportHistorySchema.optional(),
   version: z.literal(1),
   seed: z.string().regex(/^[a-f0-9]{64}$/u),
   revision: z.number().int().nonnegative(),

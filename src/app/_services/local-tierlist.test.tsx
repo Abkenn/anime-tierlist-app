@@ -24,6 +24,7 @@ import {
   loadLocalTierlist,
   readLocalTierlist,
   replaceDeviceTierlist,
+  replaceLocalDocument,
   saveLocalSyncMetadata,
   saveLocalTierlist,
   saveLocalTierlistEdit,
@@ -44,6 +45,38 @@ beforeEach(async () => {
 });
 
 describe('local tierlist durability', () => {
+  it('applies generated documents atomically, preserving identity, sync metadata and a backup, and rejecting stale imports', async () => {
+    const device = {
+      ...initial,
+      sync: {
+        ownerId: 'existing-owner',
+        serverRevision: 7,
+        syncedLocalRevision: 0,
+      },
+    };
+    await loadLocalTierlist(device);
+    const generated = {
+      ...initial,
+      ranks: ['S' as const],
+      items: [
+        { id: 'mal-1', malId: 1, label: 'Generated', rank: 'S' as const },
+      ],
+    };
+    const saved = await replaceLocalDocument(generated, initial);
+    expect(saved).toMatchObject({
+      seed: device.seed,
+      sync: device.sync,
+      revision: 1,
+      items: generated.items,
+    });
+    expect(await get(`before-replace:${device.seed}`, database)).toEqual(
+      device,
+    );
+    await expect(
+      replaceLocalDocument({ ...generated, items: [] }, initial),
+    ).rejects.toBeInstanceOf(tierlistPersistence.LocalTierlistChangedError);
+    expect(await getDeviceTierlist()).toEqual(saved);
+  });
   it('copies a public snapshot into the local identity and refuses a stale replacement', async () => {
     await loadLocalTierlist(initial);
     const document = {
@@ -402,5 +435,39 @@ describe('local tierlist durability', () => {
       save.mockRestore();
       hook.unmount();
     }
+  });
+
+  it('rejects a stale generated import without pausing subsequent editing', async () => {
+    await loadLocalTierlist(initial);
+    const store = createStore();
+    const hook = renderHook(useLocalTierlist, {
+      wrapper: ({ children }: PropsWithChildren) => (
+        <Provider store={store}>{children}</Provider>
+      ),
+    });
+    await waitFor(() => expect(hook.result.current.status).toBe('saved'));
+    const expected = { seed: initial.seed, revision: 0 };
+    act(() =>
+      store.set(tierItemsAtom, [
+        { id: 'new', label: 'Keep my edit', rank: 'S' },
+      ]),
+    );
+    await act(async () => {
+      await hook.result.current.flush();
+    });
+    await act(async () => {
+      await expect(
+        hook.result.current.importDocument({ ...initial, items: [] }, expected),
+      ).rejects.toThrow('changed during generation');
+    });
+    act(() => store.set(imageModeAtom, 'cover'));
+    await act(async () => {
+      await hook.result.current.flush();
+    });
+    expect(hook.result.current.status).toBe('saved');
+    const saved = await getDeviceTierlist();
+    expect(saved.items[0].label).toBe('Keep my edit');
+    expect(saved.imageMode).toBe('cover');
+    hook.unmount();
   });
 });

@@ -19,7 +19,9 @@ import {
   matchesKeyboardBehavior,
 } from '@/app/_lib/keybindings';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
+import { MalImport } from './mal-import';
 import { ProjectFileImport } from './project-file-import';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
@@ -42,6 +44,15 @@ type UserSeedProps = {
   canSignIn: boolean;
   onGoogleSignIn: () => Promise<unknown>;
   onGoogleSignOut: () => Promise<unknown>;
+  malImport?: {
+    seed: string;
+    revision: number;
+    hasItems: boolean;
+    onApply: (
+      document: TierlistDocument,
+      expected: { seed: string; revision: number },
+    ) => Promise<void>;
+  };
 };
 
 export const UserSeed = ({
@@ -63,6 +74,7 @@ export const UserSeed = ({
   onGoogleSignIn,
   onGoogleSignOut,
   onBackup,
+  malImport,
 }: UserSeedProps) => {
   const desktopAnchor = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
@@ -205,7 +217,7 @@ export const UserSeed = ({
         <ChevronDown aria-hidden="true" className="size-3" />
       </Popover.Trigger>
 
-      <Popover.Portal>
+      <Popover.Portal keepMounted>
         <Popover.Positioner
           anchor={() =>
             desktopAnchor.current?.getClientRects().length
@@ -378,7 +390,7 @@ export const UserSeed = ({
                 )}
               </Tabs.Panel>
 
-              <Tabs.Panel value="import">
+              <Tabs.Panel value="import" keepMounted>
                 <form className="mt-4" action={importAction}>
                   <label htmlFor={importId} className="mb-2 block">
                     {googleConnected
@@ -434,6 +446,14 @@ export const UserSeed = ({
                   busy={busy}
                   onOpened={() => onOpenChange(false)}
                 />
+                {malImport && (
+                  <MalImport
+                    key={malImport.seed}
+                    {...malImport}
+                    busy={busy}
+                    onApplied={() => onOpenChange(false)}
+                  />
+                )}
               </Tabs.Panel>
             </Tabs.Root>
 

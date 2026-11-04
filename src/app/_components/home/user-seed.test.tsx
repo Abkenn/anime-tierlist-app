@@ -1,8 +1,20 @@
 import { Popover } from '@base-ui/react/popover';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useState } from 'react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import { type ComponentProps, useState } from 'react';
 import { expect, it, vi } from 'vitest';
+import type { generateMalTierlist } from '@/app/_services/generate-mal-tierlist';
 import { UserSeed } from './user-seed';
+
+const malGeneration = vi.hoisted(() => vi.fn());
+vi.mock('@/app/_services/generate-mal-tierlist', () => ({
+  generateMalTierlist: malGeneration,
+}));
 
 const projectDownload = vi.hoisted(() => vi.fn());
 vi.mock('@/app/_services/tierlist-download', () => ({
@@ -14,11 +26,13 @@ const Fixture = ({
   onBackup,
   onReplaceDevice = async () => true,
   googleConnected = true,
+  malImport,
 }: {
   onImport: () => Promise<boolean>;
   onBackup: () => Promise<string>;
   onReplaceDevice?: () => Promise<boolean>;
   googleConnected?: boolean;
+  malImport?: ComponentProps<typeof UserSeed>['malImport'];
 }) => {
   const [handle] = useState(() => Popover.createHandle());
   const [open, setOpen] = useState(true);
@@ -39,6 +53,7 @@ const Fixture = ({
       onReplaceDevice={onReplaceDevice}
       onGoogleSignIn={async () => {}}
       onGoogleSignOut={async () => {}}
+      malImport={malImport}
     />
   );
 };
@@ -68,6 +83,89 @@ it('offers both local choices and confirms before adopting an imported copy', as
   );
   fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
   await waitFor(() => expect(onReplaceDevice).toHaveBeenCalledOnce());
+});
+
+it('keeps MAL generation, username and results alive while switching tabs and closing the popover', async () => {
+  const pending =
+    Promise.withResolvers<Awaited<ReturnType<typeof generateMalTierlist>>>();
+  let signal: AbortSignal | undefined;
+  malGeneration.mockImplementationOnce(
+    async (input: Parameters<typeof generateMalTierlist>[0]) => {
+      signal = input.signal;
+      input.onProgress({ phase: 'Checking seasons', percent: 42 });
+
+      return pending.promise;
+    },
+  );
+  const document = {
+    version: 1 as const,
+    items: [{ id: 'mal-1', malId: 1, label: 'Test', rank: 'A' as const }],
+    ranks: ['A' as const],
+    imageMode: 'natural' as const,
+    posterSize: 'dynamic' as const,
+  };
+  const onApply = vi.fn(async () => {});
+  render(
+    <Fixture
+      onImport={async () => true}
+      onBackup={async () => ''}
+      googleConnected={false}
+      malImport={{
+        seed: 'a'.repeat(64),
+        revision: 0,
+        hasItems: false,
+        onApply,
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('tab', { name: 'Import' }));
+  fireEvent.change(
+    screen.getByRole('textbox', { name: 'Public MAL username' }),
+    { target: { value: 'Abkenn' } },
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Generate tierlist' }));
+  expect(
+    await screen.findByRole('progressbar', { name: 'Checking seasons' }),
+  ).toHaveAttribute('aria-valuenow', '42');
+  fireEvent.click(screen.getByRole('tab', { name: 'Save for later' }));
+  fireEvent.click(screen.getByRole('tab', { name: 'Import' }));
+  expect(
+    screen.getByRole('progressbar', { name: 'Checking seasons' }),
+  ).toHaveAttribute('aria-valuenow', '42');
+  fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
+  await waitFor(() =>
+    expect(
+      screen.queryByRole('dialog', { name: 'Save and import tierlist' }),
+    ).not.toBeInTheDocument(),
+  );
+  expect(signal?.aborted).toBe(false);
+  await act(async () => {
+    pending.resolve({
+      document,
+      series: [
+        {
+          id: 1,
+          title: 'Test',
+          score: 8,
+          episodes: 12,
+          seasons: 1,
+          seasonIds: [1],
+        },
+      ],
+      completed: 1,
+      skipped: 0,
+      unavailablePosters: 0,
+    });
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
+  expect(
+    await screen.findByRole('button', { name: 'Use generated tierlist' }),
+  ).toBeVisible();
+  expect(
+    screen.getByRole('textbox', { name: 'Public MAL username' }),
+  ).toHaveValue('Abkenn');
+  expect(malGeneration).toHaveBeenCalledOnce();
+  expect(onApply).not.toHaveBeenCalled();
 });
 
 it('offers a separate share seed and requires confirmation before replacing an account list', async () => {
@@ -137,3 +235,7 @@ it('opens saving with Ctrl+S and saves a project copy without publishing a publi
   );
   expect(onBackup).toHaveBeenCalledOnce();
 });
+
+vi.mock('@/app/_services/local-tierlist', () => ({
+  readLocalTierlist: vi.fn(async () => ({})),
+}));

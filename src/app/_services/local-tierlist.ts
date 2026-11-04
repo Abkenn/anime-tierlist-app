@@ -164,6 +164,45 @@ export const activateImportedTierlist = async (
   );
 };
 
+export const replaceLocalDocument = async (
+  document: TierlistDocument,
+  expected: { seed: string; revision: number },
+) => {
+  const target = await profileKey(expected.seed);
+  let saved: LocalTierlist | undefined;
+  await storage('readwrite', async (store) => {
+    const complete = promisifyRequest(store.transaction);
+    const replace = async () => {
+      const current = localTierlistSchema.parse(
+        await promisifyRequest(store.get(target)),
+      );
+      if (
+        current.seed !== expected.seed ||
+        current.revision !== expected.revision
+      ) {
+        throw new LocalTierlistChangedError();
+      }
+      saved = localTierlistSchema.parse({
+        ...current,
+        ...getTierlistDocument(document),
+        revision: current.revision + 1,
+        updatedAt: Date.now(),
+      });
+      try {
+        store.put(current, `before-replace:${current.seed}`);
+        store.put(saved, target);
+      } catch (error) {
+        store.transaction.abort();
+        throw error;
+      }
+    };
+    await Promise.all([replace(), complete]);
+  });
+  notifyTierlistTabs();
+
+  return localTierlistSchema.parse(saved);
+};
+
 export const activateDeviceTierlist = async () => {
   await set(activeKey, (await getDeviceTierlist()).seed, storage);
 };

@@ -114,6 +114,16 @@ export const LocalTierlist = ({
               onGoogleSignIn={actions.signIn}
               onGoogleSignOut={actions.restoreDevice}
               onBackup={actions.backupSeed}
+              malImport={
+                storage.snapshot
+                  ? {
+                      seed: storage.seed,
+                      revision: storage.snapshot.revision,
+                      hasItems: storage.snapshot.items.length > 0,
+                      onApply: storage.importDocument,
+                    }
+                  : undefined
+              }
             />
           </div>
 
