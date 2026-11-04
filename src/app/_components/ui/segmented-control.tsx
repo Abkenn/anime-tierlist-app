@@ -6,6 +6,7 @@ import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { useId } from 'react';
 
 type SegmentedControlProps<Value extends string> = {
+  disabled?: boolean;
   label: string;
   name: string;
   value: Value;
@@ -15,6 +16,7 @@ type SegmentedControlProps<Value extends string> = {
 
 export const SegmentedControl = <Value extends string>({
   label,
+  disabled,
   name,
   value,
   onChange,
@@ -27,6 +29,7 @@ export const SegmentedControl = <Value extends string>({
     <LayoutGroup id={id}>
       <RadioGroup
         aria-label={label}
+        disabled={disabled}
         name={name}
         value={value}
         onValueChange={onChange}

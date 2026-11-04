@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { malImportHistorySchema } from './mal-import-history';
+import { animeImportHistorySchema } from './anime-import-history';
 import { tierRanks } from './tier-ranks';
 
 const rank = z.union([
@@ -42,7 +42,13 @@ const item = z.object({
 });
 
 export const localTierlistSchema = z.object({
-  malImport: malImportHistorySchema.optional(),
+  malImport: animeImportHistorySchema.optional(),
+  animeImports: z
+    .object({
+      mal: animeImportHistorySchema.optional(),
+      anilist: animeImportHistorySchema.optional(),
+    })
+    .optional(),
   version: z.literal(1),
   seed: z.string().regex(/^[a-f0-9]{64}$/u),
   revision: z.number().int().nonnegative(),
@@ -52,7 +58,7 @@ export const localTierlistSchema = z.object({
     .nonnegative()
     .max(8_640_000_000_000_000)
     .optional(),
-  accountOwnerId: z.string().uuid().optional(),
+  accountOwnerId: z.uuid().optional(),
   items: z.array(item),
   ranks: z.array(rank).min(1).max(200),
   rankDetails: z

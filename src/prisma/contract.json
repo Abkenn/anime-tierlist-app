@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "AnimeImportQueue": {
+      "model": "AnimeImportQueue",
+      "namespace": "public"
+    },
     "AuthAccount": {
       "model": "AuthAccount",
       "namespace": "public"
@@ -53,6 +57,67 @@
     "namespaces": {
       "public": {
         "models": {
+          "AnimeImportQueue": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "provider": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "ownerKey": {
+                  "column": "ownerKey"
+                },
+                "provider": {
+                  "column": "provider"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AnimeImportQueue"
+            }
+          },
           "AuthAccount": {
             "fields": {
               "accessToken": {
@@ -941,6 +1006,61 @@
       "public": {
         "entries": {
           "table": {
+            "AnimeImportQueue": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "ownerKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "provider": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "expiresAt"
+                  ],
+                  "name": "AnimeImportQueue_expiresAt_idx_6b6b8c10",
+                  "prefix": "AnimeImportQueue_expiresAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "provider",
+                    "createdAt"
+                  ],
+                  "name": "AnimeImportQueue_provider_createdAt_idx_fd3b9fd1",
+                  "prefix": "AnimeImportQueue_provider_createdAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "AuthAccount": {
               "columns": {
                 "accessToken": {
@@ -1694,7 +1814,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0929f5da40c39f06c189aa3d3d83155c4281cd24cef8ddcf9631fb8f4e1fff18"
+    "storageHash": "0c9de45e96f86f3536cbd992205257dd05c181ea9ac929bb77b344041f53b546"
   },
   "capabilities": {
     "postgres": {

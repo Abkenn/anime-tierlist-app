@@ -37,7 +37,6 @@ const animeSchema = z.object({
   }),
 });
 let activeCatalogRequests = 0;
-let nextCatalogRequest = 0;
 const waitingCatalogRequests: (() => void)[] = [];
 const catalogRequest = async <T>(operation: () => Promise<T>): Promise<T> => {
   if (activeCatalogRequests < 4) {
@@ -49,12 +48,6 @@ const catalogRequest = async <T>(operation: () => Promise<T>): Promise<T> => {
     await new Promise<void>((resolve) => waitingCatalogRequests.push(resolve));
   }
   try {
-    // Tenrai public tier allows four requests/second. Cache hits bypass this scope.
-    const delay = Math.max(0, nextCatalogRequest - Date.now());
-    nextCatalogRequest = Date.now() + delay + 300;
-    if (delay) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
     return await operation();
   } finally {
     const next = waitingCatalogRequests.shift();
@@ -75,12 +68,31 @@ export const readMalListPage = async (username: string, offset: number) => {
       throwHttpErrors: false,
     },
   );
+  if (response.status === 400 || response.status === 404) {
+    throw new Error(
+      'MAL could not find that public list. Check the exact profile username and list privacy.',
+    );
+  }
+  if (response.status === 429) {
+    throw new Error('MAL rate limit reached. Try again in a minute.');
+  }
+  if (response.status >= 500) {
+    throw new Error('MAL is temporarily unavailable. Try again shortly.');
+  }
   if (!response.ok) {
     throw new Error(
       'MAL profile is unavailable or private. Make your anime list public and try again.',
     );
   }
-  const result = malListSchema.safeParse(await response.json());
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(
+      'MAL did not return a readable public anime list. Try again later.',
+    );
+  }
+  const result = malListSchema.safeParse(payload);
   if (!result.success) {
     throw new Error(
       'MAL did not return a readable public anime list. Try again later.',

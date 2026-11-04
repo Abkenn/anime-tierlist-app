@@ -121,3 +121,14 @@ model TierlistPng {
 
   @@index([lastUsedAt])
 }
+
+model AnimeImportQueue {
+  id String @id
+  ownerKey String
+  provider String
+  createdAt BigInt
+  expiresAt BigInt
+
+  @@index([provider, createdAt])
+  @@index([expiresAt])
+}

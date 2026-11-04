@@ -1,0 +1,54 @@
+fragment ImportAnimeFields on Media {
+  id
+  idMal
+  type
+  format
+  episodes
+  title {
+    romaji
+    english
+    native
+  }
+  coverImage {
+    extraLarge
+    large
+  }
+  relations {
+    edges {
+      relationType
+      node {
+        id
+        type
+      }
+    }
+  }
+}
+
+query AnilistCompletedList($username: String!, $page: Int!) {
+  Page(page: $page, perPage: 50) {
+    pageInfo {
+      hasNextPage
+    }
+    mediaList(
+      userName: $username
+      type: ANIME
+      status: COMPLETED
+      sort: MEDIA_ID
+    ) {
+      status
+      score(format: POINT_10_DECIMAL)
+      progress
+      media {
+        ...ImportAnimeFields
+      }
+    }
+  }
+}
+
+query AnilistAnimeBatch($ids: [Int!]!) {
+  Page(page: 1, perPage: 50) {
+    media(id_in: $ids, type: ANIME) {
+      ...ImportAnimeFields
+    }
+  }
+}

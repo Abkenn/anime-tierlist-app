@@ -1,5 +1,6 @@
 'use server';
 
+import { isHTTPError, isTimeoutError } from 'ky';
 import { z } from 'zod';
 import { isError } from '@/app/_lib/is-error';
 import { malUsernameSchema } from '@/app/_lib/mal-import';
@@ -11,15 +12,27 @@ import {
   readMalSeriesPoster,
 } from './mal-import';
 
+const malErrorMessage = (error: unknown, source: 'MAL' | 'Catalog') => {
+  if (isError(error) && /^(MAL |Catalog )/u.test(error.message)) {
+    return error.message;
+  }
+  if (isHTTPError(error)) {
+    return error.response.status === 429
+      ? `${source} rate limit reached. Try again in a minute.`
+      : `${source} request failed (${error.response.status}). Try again shortly.`;
+  }
+  if (isTimeoutError(error)) {
+    return `${source} request timed out. Try again shortly.`;
+  }
+  return 'Unable to load MAL data. The provider may be busy. Try again shortly.';
+};
 const handleMalError = (
   error: unknown,
+  source: 'MAL' | 'Catalog' = 'Catalog',
 ): Extract<SyncResult<never>, { ok: false }> => ({
   ok: false,
   code: 'unavailable',
-  message:
-    isError(error) && /^(MAL |Catalog )/u.test(error.message)
-      ? error.message
-      : 'Unable to load MAL data. The provider may be busy. Try again shortly.',
+  message: malErrorMessage(error, source),
 });
 
 export const loadMalListPage = async (input: unknown) =>
@@ -34,7 +47,7 @@ export const loadMalListPage = async (input: unknown) =>
 
       return readMalListPage(username, offset);
     },
-    onError: handleMalError,
+    onError: (error) => handleMalError(error, 'MAL'),
   });
 
 export const loadMalAnime = async (input: unknown) =>

@@ -21,7 +21,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0929f5da40c39f06c189aa3d3d83155c4281cd24cef8ddcf9631fb8f4e1fff18'>;
+  StorageHashBase<'0c9de45e96f86f3536cbd992205257dd05c181ea9ac929bb77b344041f53b546'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -236,6 +236,13 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AnimeImportQueue: {
+      readonly createdAt: CodecTypes['pg/int8@1']['output'];
+      readonly expiresAt: CodecTypes['pg/int8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+    };
     readonly AuthAccount: {
       readonly accessToken: CodecTypes['pg/text@1']['output'] | null;
       readonly accessTokenExpiresAt: TimestampString<3> | null;
@@ -324,6 +331,13 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AnimeImportQueue: {
+      readonly createdAt: CodecTypes['pg/int8@1']['input'];
+      readonly expiresAt: CodecTypes['pg/int8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+    };
     readonly AuthAccount: {
       readonly accessToken: CodecTypes['pg/text@1']['input'] | null;
       readonly accessTokenExpiresAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
@@ -412,6 +426,13 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly AnimeImportQueue: {
+      readonly createdAt: CodecTypes['pg/int8@1']['output'];
+      readonly expiresAt: CodecTypes['pg/int8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+    };
     readonly AuthAccount: {
       readonly accessToken: CodecTypes['pg/text@1']['output'] | null;
       readonly accessTokenExpiresAt: TimestampString<3> | null;
@@ -500,6 +521,13 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly AnimeImportQueue: {
+      readonly createdAt: CodecTypes['pg/int8@1']['input'];
+      readonly expiresAt: CodecTypes['pg/int8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+    };
     readonly AuthAccount: {
       readonly accessToken: CodecTypes['pg/text@1']['input'] | null;
       readonly accessTokenExpiresAt: CodecTypes['pg/timestamp-string@1']['input'] | null;
@@ -588,6 +616,14 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AnimeImportQueue = {
+    createdAt: CodecTypes['pg/int8@1']['output'];
+    expiresAt: CodecTypes['pg/int8@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    ownerKey: CodecTypes['pg/text@1']['output'];
+    provider: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_AuthAccount = {
     accessToken: CodecTypes['pg/text@1']['output'] | null;
     accessTokenExpiresAt: TimestampString<3> | null;
@@ -693,6 +729,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AnimeImportQueue: Models.public_AnimeImportQueue;
     AuthAccount: Models.public_AuthAccount;
     AuthRateLimit: Models.public_AuthRateLimit;
     AuthSession: Models.public_AuthSession;
@@ -725,6 +762,57 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AnimeImportQueue: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly expiresAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly ownerKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly provider: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'AnimeImportQueue_expiresAt_idx_6b6b8c10';
+                  readonly prefix: 'AnimeImportQueue_expiresAt_idx';
+                  readonly columns: readonly ['expiresAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'AnimeImportQueue_provider_createdAt_idx_fd3b9fd1';
+                  readonly prefix: 'AnimeImportQueue_provider_createdAt_idx';
+                  readonly columns: readonly ['provider', 'createdAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly AuthAccount: {
               columns: {
                 readonly accessToken: {
@@ -1361,6 +1449,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AnimeImportQueue: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AnimeImportQueue';
+    };
     readonly AuthAccount: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AuthAccount';
@@ -1407,6 +1499,42 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AnimeImportQueue: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly provider: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'AnimeImportQueue';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly id: { readonly column: 'id' };
+                readonly ownerKey: { readonly column: 'ownerKey' };
+                readonly provider: { readonly column: 'provider' };
+              };
+            };
+          };
           readonly AuthAccount: {
             readonly fields: {
               readonly accessToken: {

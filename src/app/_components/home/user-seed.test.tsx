@@ -8,12 +8,12 @@ import {
 } from '@testing-library/react';
 import { type ComponentProps, useState } from 'react';
 import { expect, it, vi } from 'vitest';
-import type { generateMalTierlist } from '@/app/_services/generate-mal-tierlist';
+import type { generateAnimeTierlist } from '@/app/_services/generate-anime-tierlist';
 import { UserSeed } from './user-seed';
 
 const malGeneration = vi.hoisted(() => vi.fn());
-vi.mock('@/app/_services/generate-mal-tierlist', () => ({
-  generateMalTierlist: malGeneration,
+vi.mock('@/app/_services/run-anime-import', () => ({
+  runAnimeImport: malGeneration,
 }));
 
 const projectDownload = vi.hoisted(() => vi.fn());
@@ -26,13 +26,13 @@ const Fixture = ({
   onBackup,
   onReplaceDevice = async () => true,
   googleConnected = true,
-  malImport,
+  animeImport,
 }: {
   onImport: () => Promise<boolean>;
   onBackup: () => Promise<string>;
   onReplaceDevice?: () => Promise<boolean>;
   googleConnected?: boolean;
-  malImport?: ComponentProps<typeof UserSeed>['malImport'];
+  animeImport?: ComponentProps<typeof UserSeed>['animeImport'];
 }) => {
   const [handle] = useState(() => Popover.createHandle());
   const [open, setOpen] = useState(true);
@@ -53,7 +53,7 @@ const Fixture = ({
       onReplaceDevice={onReplaceDevice}
       onGoogleSignIn={async () => {}}
       onGoogleSignOut={async () => {}}
-      malImport={malImport}
+      animeImport={animeImport}
     />
   );
 };
@@ -87,10 +87,10 @@ it('offers both local choices and confirms before adopting an imported copy', as
 
 it('keeps MAL generation, username and results alive while switching tabs and closing the popover', async () => {
   const pending =
-    Promise.withResolvers<Awaited<ReturnType<typeof generateMalTierlist>>>();
+    Promise.withResolvers<Awaited<ReturnType<typeof generateAnimeTierlist>>>();
   let signal: AbortSignal | undefined;
   malGeneration.mockImplementationOnce(
-    async (input: Parameters<typeof generateMalTierlist>[0]) => {
+    async (input: Parameters<typeof generateAnimeTierlist>[0]) => {
       signal = input.signal;
       input.onProgress({ phase: 'Checking seasons', percent: 42 });
 
@@ -110,7 +110,7 @@ it('keeps MAL generation, username and results alive while switching tabs and cl
       onImport={async () => true}
       onBackup={async () => ''}
       googleConnected={false}
-      malImport={{
+      animeImport={{
         seed: 'a'.repeat(64),
         revision: 0,
         hasItems: false,
@@ -238,4 +238,9 @@ it('opens saving with Ctrl+S and saves a project copy without publishing a publi
 
 vi.mock('@/app/_services/local-tierlist', () => ({
   readLocalTierlist: vi.fn(async () => ({})),
+}));
+
+vi.mock('@/app/_services/anime-import-checkpoint', () => ({
+  readAnimeImportCheckpoint: vi.fn(async () => undefined),
+  clearAnimeImportCheckpoint: vi.fn(async () => {}),
 }));

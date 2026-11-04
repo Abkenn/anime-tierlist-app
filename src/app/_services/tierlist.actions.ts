@@ -75,7 +75,7 @@ export const replaceAccountFromSeed = async (input: unknown) =>
       const parsed = z
         .object({
           seed: userSeedSchema,
-          ownerId: z.string().uuid(),
+          ownerId: z.uuid(),
           revision: z.number().int().nonnegative(),
         })
         .parse(input);
@@ -90,7 +90,7 @@ export const syncTierlist = async (input: unknown) =>
     operation: () => {
       const parsed = z
         .object({
-          ownerId: z.string().uuid(),
+          ownerId: z.uuid(),
           revision: z.number().int().nonnegative(),
           document: tierlistDocumentSchema,
         })

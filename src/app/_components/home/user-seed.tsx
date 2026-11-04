@@ -21,7 +21,7 @@ import {
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
-import { MalImport } from './mal-import';
+import { AnimeImport } from './anime-import';
 import { ProjectFileImport } from './project-file-import';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
@@ -44,7 +44,7 @@ type UserSeedProps = {
   canSignIn: boolean;
   onGoogleSignIn: () => Promise<unknown>;
   onGoogleSignOut: () => Promise<unknown>;
-  malImport?: {
+  animeImport?: {
     seed: string;
     revision: number;
     hasItems: boolean;
@@ -74,7 +74,7 @@ export const UserSeed = ({
   onGoogleSignIn,
   onGoogleSignOut,
   onBackup,
-  malImport,
+  animeImport,
 }: UserSeedProps) => {
   const desktopAnchor = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
@@ -446,10 +446,10 @@ export const UserSeed = ({
                   busy={busy}
                   onOpened={() => onOpenChange(false)}
                 />
-                {malImport && (
-                  <MalImport
-                    key={malImport.seed}
-                    {...malImport}
+                {animeImport && (
+                  <AnimeImport
+                    key={animeImport.seed}
+                    {...animeImport}
                     busy={busy}
                     onApplied={() => onOpenChange(false)}
                   />

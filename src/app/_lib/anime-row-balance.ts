@@ -1,27 +1,30 @@
 import type { TierRank } from '@/app/_types/tierlist.types';
-import type { MalSeries } from './mal-import';
+import type { ImportSeries } from './anime-import';
 
-export type MalSeriesRow = { rank: TierRank; series: MalSeries[] };
+export type ImportSeriesRow = { rank: TierRank; series: ImportSeries[] };
 
-export const compareMalSeries = (first: MalSeries, second: MalSeries) =>
+export const compareImportSeries = (
+  first: ImportSeries,
+  second: ImportSeries,
+) =>
   second.score - first.score ||
   second.episodes - first.episodes ||
   first.title.localeCompare(second.title) ||
   first.id - second.id;
 
-type MalRowSplitInput = {
+type ImportRowSplitInput = {
   scores: number[];
   episodes?: number[];
   preferLargerLeft?: boolean;
   targetSize?: number;
 };
 
-export const findMalRowSplit = ({
+export const findImportRowSplit = ({
   scores,
   episodes,
   preferLargerLeft = false,
   targetSize,
-}: MalRowSplitInput) => {
+}: ImportRowSplitInput) => {
   const middle =
     targetSize ??
     (preferLargerLeft
@@ -66,13 +69,15 @@ const bellWeights: Partial<Record<TierRank, number>> = {
   'B+': 3,
   B: 1,
 };
-export const balanceMalRows = (input: MalSeriesRow[]): MalSeriesRow[] => {
+export const balanceImportRows = (
+  input: ImportSeriesRow[],
+): ImportSeriesRow[] => {
   const floor = input.findIndex((row) => row.rank === 'B');
   const rows = input.map((row, index) => ({
     rank: row.rank,
     series:
       floor >= 0 && index <= floor
-        ? [...row.series].sort(compareMalSeries)
+        ? [...row.series].sort(compareImportSeries)
         : [...row.series],
   }));
   if (floor < 0) {
@@ -110,7 +115,7 @@ export const balanceMalRows = (input: MalSeriesRow[]): MalSeriesRow[] => {
     if (row.series.length < 6 || row.series.length < targetSize + 2) {
       continue;
     }
-    const cut = findMalRowSplit({
+    const cut = findImportRowSplit({
       scores: row.series.map((series) => series.score),
       episodes: row.series.map((series) => series.episodes),
       preferLargerLeft: row.rank === 'B+',
@@ -125,7 +130,7 @@ export const balanceMalRows = (input: MalSeriesRow[]): MalSeriesRow[] => {
 
     const target = rows[index + 1];
     target.series = [...row.series.splice(cut), ...target.series].sort(
-      compareMalSeries,
+      compareImportSeries,
     );
   }
 

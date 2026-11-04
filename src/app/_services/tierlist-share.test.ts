@@ -250,6 +250,15 @@ it('keeps import history private when publishing a preview', async () => {
     revision: 4,
     document: {
       ...document,
+      animeImports: {
+        anilist: {
+          username: 'Example',
+          importedAt: 1,
+          catalog: [],
+          posters: {},
+          dimensions: {},
+        },
+      },
       malImport: {
         username: 'Abkenn',
         importedAt: 1,
@@ -262,5 +271,8 @@ it('keeps import history private when publishing a preview', async () => {
   await publishTierlist({ ownerId: 'owner', revision: 4 });
   expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty(
     'malImport',
+  );
+  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty(
+    'animeImports',
   );
 });

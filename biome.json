@@ -78,5 +78,16 @@
   },
   "tailwind": {
     "stylesheet": "./src/app/_styles/globals.css"
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/app/_lib/graphql/anilist/generated/**"],
+      "linter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    }
+  ]
 }

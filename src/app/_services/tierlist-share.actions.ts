@@ -12,7 +12,7 @@ import {
 } from './tierlist-share';
 
 const inputSchema = z.object({
-  ownerId: z.string().uuid(),
+  ownerId: z.uuid(),
   revision: z.number().int().nonnegative(),
   seed: userSeedSchema.optional(),
 });

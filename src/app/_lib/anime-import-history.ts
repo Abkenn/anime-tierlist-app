@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
-export const malImportHistorySchema = z.object({
+export const animeImportHistorySchema = z.object({
   username: z.string(),
   importedAt: z.number().nonnegative(),
   catalog: z.array(
     z.object({
       id: z.number().int().positive(),
+      malId: z.number().int().positive().optional(),
       title: z.string(),
       type: z.string(),
       episodes: z.number().nullable(),
@@ -19,4 +20,5 @@ export const malImportHistorySchema = z.object({
     z.object({ width: z.number().positive(), height: z.number().positive() }),
   ),
 });
-export type MalImportHistory = z.infer<typeof malImportHistorySchema>;
+
+export type AnimeImportHistory = z.infer<typeof animeImportHistorySchema>;

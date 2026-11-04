@@ -4,15 +4,18 @@ import { motion, useReducedMotion } from 'motion/react';
 import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
-import { malImportRanks, malUsernameSchema } from '@/app/_lib/mal-import';
+import { SegmentedControl } from '@/app/_components/ui/segmented-control';
+import { anilistUsernameSchema } from '@/app/_lib/anilist-import';
+import { type ImportProvider, importRanks } from '@/app/_lib/anime-import';
+import { malUsernameSchema } from '@/app/_lib/mal-import';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import type {
-  generateMalTierlist,
-  MalImportProgress,
-} from '@/app/_services/generate-mal-tierlist';
+  AnimeImportProgress,
+  generateAnimeTierlist,
+} from '@/app/_services/generate-anime-tierlist';
 
-type MalImportProps = {
+type AnimeImportProps = {
   busy: boolean;
   seed: string;
   revision: number;
@@ -23,30 +26,39 @@ type MalImportProps = {
   ) => Promise<void>;
   onApplied: () => void;
 };
-type Generated = Awaited<ReturnType<typeof generateMalTierlist>> & {
+
+type Generated = Awaited<ReturnType<typeof generateAnimeTierlist>> & {
   expected: { seed: string; revision: number };
 };
 
-export const MalImport = ({
+export const AnimeImport = ({
   busy,
   seed,
   revision,
   hasItems,
   onApply,
   onApplied,
-}: MalImportProps) => {
+}: AnimeImportProps) => {
   const id = useId();
   const reducedMotion = useReducedMotion();
   const controller = useRef<AbortController | null>(null);
-  const [progress, setProgress] = useState<MalImportProgress | null>(null);
-  const [username, setUsername] = useState('');
+  const [progress, setProgress] = useState<AnimeImportProgress | null>(null);
+  const [provider, setProvider] = useState<ImportProvider>('mal');
+  const [usernames, setUsernames] = useState({ mal: '', anilist: '' });
+  const username = usernames[provider];
+  const providerLabel = provider === 'mal' ? 'MAL' : 'AniList';
+  const [resumable, setResumable] = useState(false);
   const [generated, setGenerated] = useState<Generated | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [errorProvider, setErrorProvider] = useState<ImportProvider>('mal');
   const [error, generate, generating] = useActionState(
     async (_previous: string, form: FormData) => {
-      const parsed = malUsernameSchema.safeParse(form.get('username'));
+      setErrorProvider(provider);
+      const parsed = (
+        provider === 'mal' ? malUsernameSchema : anilistUsernameSchema
+      ).safeParse(form.get('username'));
       if (!parsed.success) {
-        return 'Enter a valid MAL username (2–16 letters, numbers, underscores or hyphens).';
+        return `Enter a valid ${providerLabel} username (2–${provider === 'mal' ? 16 : 20} letters, numbers, underscores or hyphens).`;
       }
       const request = new AbortController();
       controller.current = request;
@@ -54,14 +66,18 @@ export const MalImport = ({
       setGenerated(null);
       setConfirmed(false);
       try {
-        const { generateMalTierlist } = await import(
-          '@/app/_services/generate-mal-tierlist'
+        const { runAnimeImport: generateTierlist } = await import(
+          '@/app/_services/run-anime-import'
         );
         const { readLocalTierlist } = await import(
           '@/app/_services/local-tierlist'
         );
         const profile = await readLocalTierlist(seed);
-        const result = await generateMalTierlist({
+        const result = await generateTierlist({
+          seed,
+          onSavedProgress: () => setResumable(true),
+          provider,
+          histories: profile.animeImports,
           history: profile.malImport,
           username: parsed.data,
           signal: request.signal,
@@ -90,6 +106,11 @@ export const MalImport = ({
     }
     try {
       await onApply(generated.document, generated.expected);
+      const { clearAnimeImportCheckpoint } = await import(
+        '@/app/_services/anime-import-checkpoint'
+      );
+      await clearAnimeImportCheckpoint(seed, provider).catch(() => {});
+      setResumable(false);
       onApplied();
 
       return '';
@@ -103,28 +124,73 @@ export const MalImport = ({
   const disabled = busy || generating || applying;
 
   useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => {
+    let active = true;
+    import('@/app/_services/anime-import-checkpoint')
+      .then(async ({ readAnimeImportCheckpoint }) => {
+        const saved = await readAnimeImportCheckpoint(seed, provider);
+        if (active) {
+          setResumable(!!saved && !saved.complete);
+          if (saved) {
+            setUsernames((current) =>
+              current[provider]
+                ? current
+                : { ...current, [provider]: saved.username },
+            );
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [seed, provider]);
 
   return (
     <section
-      aria-label="Import from MyAnimeList"
+      aria-label={
+        provider === 'mal' ? 'Import from MyAnimeList' : 'Import from AniList'
+      }
       className="mt-3 border-t border-divider pt-3"
     >
-      <p className="font-medium">Generate a series tierlist from MAL</p>
+      <p className="font-medium">Generate a series tierlist</p>
+      <div className="mt-3">
+        <SegmentedControl<ImportProvider>
+          label="Import provider"
+          name="import-provider"
+          value={provider}
+          disabled={disabled}
+          options={[
+            { value: 'mal', label: 'MAL' },
+            { value: 'anilist', label: 'AniList' },
+          ]}
+          onChange={(next) => {
+            setProvider(next);
+            setGenerated(null);
+            setConfirmed(false);
+          }}
+        />
+      </div>
       <form action={generate} className="mt-3">
         <label htmlFor={id} className="mb-2 block">
-          Public MAL username
+          Public {providerLabel} username
         </label>
         <input
           id={id}
           name="username"
           required
           minLength={2}
-          maxLength={16}
+          maxLength={provider === 'mal' ? 16 : 20}
           autoComplete="off"
           spellCheck={false}
-          placeholder="Your MAL username"
+          placeholder={`Your ${providerLabel} username`}
           value={username}
-          onChange={(event) => setUsername(event.currentTarget.value)}
+          onChange={(event) =>
+            setUsernames({
+              ...usernames,
+              [provider]: event.currentTarget.value,
+            })
+          }
           disabled={disabled}
           className="h-11 w-full border border-input bg-transparent px-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
         />
@@ -134,7 +200,7 @@ export const MalImport = ({
             pendingLabel="Generating..."
             className="min-h-9 cursor-pointer border border-divider px-3 hover:bg-accent disabled:opacity-50"
           >
-            Generate tierlist
+            {resumable && !generated ? 'Resume import' : 'Generate tierlist'}
           </FormSubmitButton>
           {generating && (
             <button
@@ -152,9 +218,14 @@ export const MalImport = ({
           <div className="mb-2 flex justify-between gap-3 text-muted-foreground">
             <span>{progress.phase}</span>
             <span className="tabular-nums">
-              {progress.percent === null ? '...' : `${progress.percent}%`}
+              {progress.queuePosition && `Queue #${progress.queuePosition}`}
+              {!progress.queuePosition &&
+                (progress.percent === null ? '...' : `${progress.percent}%`)}
             </span>
           </div>
+          {progress.detail && (
+            <p className="mb-2 text-muted-foreground">{progress.detail}</p>
+          )}
           {progress.percent === null ? (
             <progress
               aria-label={progress.phase}
@@ -184,7 +255,7 @@ export const MalImport = ({
           )}
         </div>
       )}
-      {!generating && error && (
+      {!generating && errorProvider === provider && error && (
         <p role="status" className="mt-2">
           <TerminalText text={error} />
         </p>
@@ -197,7 +268,7 @@ export const MalImport = ({
             </p>
           )}
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-            {malImportRanks.map((rank) => (
+            {importRanks.map((rank) => (
               <div key={rank} className="contents">
                 <dt>{rank}</dt>
                 <dd>

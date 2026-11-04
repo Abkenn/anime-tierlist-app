@@ -21,15 +21,19 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test:storybook": "vitest run --config vitest.storybook.config.ts",
-    "test:navigation": "playwright test"
+    "test:navigation": "playwright test",
+    "gql:schema": "node scripts/update-anilist-schema.mts",
+    "gql:codegen": "graphql-codegen --config graphql-codegen.ts && biome format --write src/app/_lib/graphql/anilist/generated"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@graphql-typed-document-node/core": "3.2.0",
     "@orpc/client": "1.16.1",
     "@orpc/server": "1.16.1",
     "@orpc/tanstack-query": "1.16.1",
     "@prisma/orm-postgres": "8.0.0-rc.18",
     "@tanstack/react-query": "5.104.5",
+    "@urql/core": "6.0.3",
     "@vercel/blob": "2.8.2",
     "better-auth": "1.7.12",
     "class-variance-authority": "^0.7.1",
@@ -59,6 +63,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.2",
+    "@graphql-codegen/cli": "7.4.6",
+    "@graphql-codegen/client-preset": "6.2.3",
     "@next/playwright": "16.4.2",
     "@playwright/test": "1.64.1",
     "@storybook/addon-a11y": "11.0.0-alpha.7",
@@ -78,6 +84,7 @@
     "@vitejs/plugin-react": "6.1.2",
     "@vitest/browser-playwright": "^5.0.5",
     "fake-indexeddb": "6.2.6",
+    "graphql": "^16.14.2",
     "husky": "9.1.7",
     "jsdom": "30.1.3",
     "playwright": "1.64.1",

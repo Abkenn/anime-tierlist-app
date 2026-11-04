@@ -9,6 +9,7 @@ export const userSeedSchema = z
 export const tierlistDocumentSchema = localTierlistSchema
   .pick({
     malImport: true,
+    animeImports: true,
     version: true,
     items: true,
     ranks: true,
@@ -42,6 +43,7 @@ export type SyncResult<T> =
 export const getTierlistDocument = (
   snapshot: TierlistDocument,
 ): TierlistDocument => ({
+  ...(snapshot.animeImports ? { animeImports: snapshot.animeImports } : {}),
   ...(snapshot.malImport ? { malImport: snapshot.malImport } : {}),
   version: snapshot.version,
   items: snapshot.items,

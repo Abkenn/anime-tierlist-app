@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { MalListEntry } from '@/app/_lib/mal-import';
 import {
-  generateMalTierlist,
-  type MalImportProgress,
-} from './generate-mal-tierlist';
+  type AnimeImportProgress,
+  generateAnimeTierlist,
+} from './generate-anime-tierlist';
 
+const anilist = vi.hoisted(() => ({ page: vi.fn(), anime: vi.fn() }));
 const api = vi.hoisted(() => ({
   list: vi.fn(),
   anime: vi.fn(),
@@ -78,8 +79,8 @@ it('imports more than 600 entries with batched requests, monotonic phase percent
     Array.from({ length: 601 }, (_, index) => entry(index + 1)),
     starts,
   );
-  const progress: MalImportProgress[] = [];
-  const task = generateMalTierlist({
+  const progress: AnimeImportProgress[] = [];
+  const task = generateAnimeTierlist({
     username: 'Abkenn',
     signal: new AbortController().signal,
     onProgress: (value) => progress.push(value),
@@ -119,7 +120,7 @@ it('continues paginating beyond 5,000 entries rather than rejecting the profile'
     entry(1),
     ...Array.from({ length: 5400 }, (_, index) => entry(index + 2, 'Movie')),
   ]);
-  const task = generateMalTierlist({
+  const task = generateAnimeTierlist({
     username: 'Abkenn',
     signal: new AbortController().signal,
     onProgress: () => {},
@@ -142,7 +143,7 @@ it('deduplicates cyclic season relationships and repeated entries without artifi
       prequels: [id === 1 ? 2 : 1],
     },
   }));
-  const task = generateMalTierlist({
+  const task = generateAnimeTierlist({
     username: 'Abkenn',
     signal: new AbortController().signal,
     onProgress: () => {},
@@ -157,7 +158,7 @@ it('cancels before issuing any server request', async () => {
   const controller = new AbortController();
   controller.abort();
   await expect(
-    generateMalTierlist({
+    generateAnimeTierlist({
       username: 'Abkenn',
       signal: controller.signal,
       onProgress: () => {},
@@ -173,11 +174,11 @@ it('reuses saved relationships and poster lookups while honoring changed scores 
     signal: new AbortController().signal,
     onProgress: () => {},
   };
-  const first = await generateMalTierlist(input);
+  const first = await generateAnimeTierlist(input);
   api.anime.mockClear();
   api.poster.mockClear();
   configure([{ ...entry(1), score: 10 }]);
-  const next = await generateMalTierlist({
+  const next = await generateAnimeTierlist({
     ...input,
     history: first.document.malImport,
   });
@@ -186,7 +187,7 @@ it('reuses saved relationships and poster lookups while honoring changed scores 
   expect(next.series).toHaveLength(1);
   expect(next.series[0].score).toBe(10);
   configure([entry(1), entry(3)]);
-  await generateMalTierlist({ ...input, history: first.document.malImport });
+  await generateAnimeTierlist({ ...input, history: first.document.malImport });
   expect(api.anime).toHaveBeenCalledTimes(1);
   expect(api.anime).toHaveBeenCalledWith(3);
 });
@@ -194,7 +195,7 @@ it('reuses saved relationships and poster lookups while honoring changed scores 
 it('stops a provider that repeats a page instead of paginating forever', async () => {
   configure([entry(1)]);
   api.list.mockResolvedValue({ ok: true, value: [entry(1)] });
-  const task = generateMalTierlist({
+  const task = generateAnimeTierlist({
     username: 'Abkenn',
     signal: new AbortController().signal,
     onProgress: () => {},
@@ -203,4 +204,123 @@ it('stops a provider that repeats a page instead of paginating forever', async (
   await vi.runAllTimersAsync();
   await rejected;
   expect(api.list).toHaveBeenCalledTimes(2);
+});
+
+vi.mock('./anilist-import.actions', () => ({
+  loadAnilistPage: anilist.page,
+  loadAnilistAnimeBatch: anilist.anime,
+}));
+
+it('selects AniList, reuses list metadata, follows missing prequels and separates colliding provider IDs', async () => {
+  configure([entry(1)]);
+  const input = {
+    username: 'Example',
+    signal: new AbortController().signal,
+    onProgress: () => {},
+  };
+  const mal = await generateAnimeTierlist(input);
+  const catalog = [
+    {
+      id: 1,
+      malId: 101,
+      title: 'Earlier',
+      type: 'TV',
+      episodes: 10,
+      prequels: [],
+    },
+    {
+      id: 2,
+      malId: 102,
+      title: 'Later',
+      type: 'TV',
+      episodes: 31,
+      prequels: [3],
+    },
+    { id: 3, title: 'Movie bridge', type: 'MOVIE', episodes: 1, prequels: [1] },
+  ];
+  const entries = [
+    {
+      id: 1,
+      title: 'Earlier',
+      format: 'TV',
+      episodes: 10,
+      watchedEpisodes: 10,
+      completed: true,
+      score: 10,
+    },
+    {
+      id: 2,
+      title: 'Later',
+      format: 'TV',
+      episodes: 31,
+      watchedEpisodes: 31,
+      completed: true,
+      score: 8.5,
+    },
+  ];
+  anilist.page.mockResolvedValue({
+    ok: true,
+    value: { entries, catalog: catalog.slice(0, 2), hasNext: false },
+  });
+  anilist.anime.mockResolvedValue({ ok: true, value: [catalog[2]] });
+  const result = await generateAnimeTierlist({
+    ...input,
+    provider: 'anilist',
+    histories: mal.document.animeImports,
+  });
+  expect(anilist.anime).toHaveBeenCalledWith([3]);
+  expect(result.series).toHaveLength(1);
+  expect(result.series[0]).toMatchObject({
+    episodes: 41,
+    score: (100 + 31 * 8.5) / 41,
+  });
+  expect(result.document.items[0]).toMatchObject({
+    id: 'anilist-1',
+    malId: 101,
+  });
+  expect(result.document.animeImports?.mal).toEqual(
+    mal.document.animeImports?.mal,
+  );
+  anilist.anime.mockClear();
+  await generateAnimeTierlist({
+    ...input,
+    provider: 'anilist',
+    histories: result.document.animeImports,
+  });
+  expect(anilist.anime).not.toHaveBeenCalled();
+});
+
+it('resumes failed generation without repeating completed pages or metadata batches', async () => {
+  configure(Array.from({ length: 12 }, (_, index) => entry(index + 1)));
+  const original = api.anime.getMockImplementation();
+  api.anime.mockImplementation(async (id: number) => {
+    if (id === 9) {
+      throw new Error('Catalog request timed out.');
+    }
+    return original?.(id);
+  });
+  let checkpoint:
+    | import('@/app/_lib/anime-import-checkpoint').AnimeImportCheckpoint
+    | undefined;
+  const input = {
+    username: 'Abkenn',
+    signal: new AbortController().signal,
+    onProgress: () => {},
+    onCheckpoint: async (
+      value: import('@/app/_lib/anime-import-checkpoint').AnimeImportCheckpoint,
+    ) => {
+      checkpoint = value;
+    },
+  };
+  await expect(generateAnimeTierlist(input)).rejects.toThrow('timed out');
+  expect(checkpoint?.catalog).toHaveLength(8);
+  expect(checkpoint?.listComplete).toBe(true);
+  api.list.mockClear();
+  api.anime.mockClear();
+  api.anime.mockImplementation(original ?? (() => {}));
+  const result = await generateAnimeTierlist({ ...input, checkpoint });
+  expect(result.series).toHaveLength(12);
+  expect(api.list).not.toHaveBeenCalled();
+  expect(api.anime).toHaveBeenCalledTimes(4);
+  expect(api.anime.mock.calls.map(([id]) => id)).toEqual([9, 10, 11, 12]);
 });

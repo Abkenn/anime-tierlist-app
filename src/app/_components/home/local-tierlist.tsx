@@ -114,7 +114,7 @@ export const LocalTierlist = ({
               onGoogleSignIn={actions.signIn}
               onGoogleSignOut={actions.restoreDevice}
               onBackup={actions.backupSeed}
-              malImport={
+              animeImport={
                 storage.snapshot
                   ? {
                       seed: storage.seed,

@@ -28,8 +28,11 @@ import {
 import { getTierlistPng } from './tierlist-png-cache';
 
 const publicDocument = (input: unknown): TierlistDocument => {
-  const { malImport: _history, ...document } =
-    tierlistDocumentSchema.parse(input);
+  const {
+    malImport: _history,
+    animeImports: _imports,
+    ...document
+  } = tierlistDocumentSchema.parse(input);
   return document;
 };
 
