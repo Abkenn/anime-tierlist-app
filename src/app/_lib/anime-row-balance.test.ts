@@ -254,6 +254,52 @@ describe('soft bell balancing', () => {
 });
 
 describe('large-list half-point dents', () => {
+  it('fills sparse minus rows downward and sparse lower letters upward at episode boundaries', () => {
+    const make = (
+      rank: ImportSeriesRow['rank'],
+      count: number,
+      score: number,
+      offset: number,
+    ): ImportSeriesRow => ({
+      rank,
+      series: Array.from({ length: count }, (_, index) =>
+        series(offset + index, score, 100 - index),
+      ),
+    });
+    const before = [
+      make('A', 60, 8.3, 0),
+      make('A−', 2, 8.1, 100),
+      make('C', 2, 6.3, 200),
+      make('C−', 60, 6, 300),
+      make('D', 2, 5.3, 400),
+      make('D−', 40, 5, 500),
+      make('F', 30, 4, 600),
+      make('Dropped', 10, 0, 700),
+    ];
+    const snapshot = structuredClone(before);
+    const after = balanceImportRows(before);
+    expect(counts(after).slice(0, 6)).toEqual([31, 31, 37, 25, 25, 17]);
+    expect(after.slice(6)).toEqual(before.slice(6));
+    expect(
+      after.flatMap((entry) => entry.series).map((entry) => entry.id),
+    ).toEqual(before.flatMap((entry) => entry.series).map((entry) => entry.id));
+    expect(before).toEqual(snapshot);
+    expect(balanceImportRows(after)).toEqual(after);
+  });
+
+  it('preserves identical score-and-episode groups and healthy expanded rows', () => {
+    const before = [
+      row('C', Array<number>(2).fill(6), 1),
+      row('C−', Array<number>(60).fill(6), 10),
+    ];
+    expect(balanceImportRows(before)).toEqual(before);
+    const healthy = [
+      row('D', Array<number>(12).fill(5.3), 100),
+      row('D−', Array<number>(10).fill(5), 200),
+    ];
+    expect(balanceImportRows(healthy)).toEqual(healthy);
+  });
+
   it('repairs a severely sparse S using the exceptional A+ prefix, preserving the 9/10 plateau', () => {
     const before = [
       row('S+', [10], 1),

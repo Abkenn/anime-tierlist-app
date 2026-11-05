@@ -1,7 +1,10 @@
 'use client';
 
 import { type RefObject, useLayoutEffect, useState } from 'react';
-import { scrollBoardWheel } from '@/app/_lib/board-wheel-scroll';
+import {
+  type BoardWheelGeometry,
+  scrollBoardWheel,
+} from '@/app/_lib/board-wheel-scroll';
 
 type TierViewportInput = {
   viewport: HTMLElement | null;
@@ -23,7 +26,34 @@ export const useTierViewport = ({
     if (!viewport || !container || !canvas) {
       return;
     }
+    const desktop = window.matchMedia(
+      '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
+    );
+    let geometry: BoardWheelGeometry | undefined;
+    let listening = false;
+    const wheel = (event: WheelEvent) => {
+      if (desktop.matches && geometry) {
+        scrollBoardWheel({ viewport, event, geometry });
+      }
+    };
     const measure = () => {
+      geometry = {
+        clientWidth: viewport.clientWidth,
+        clientHeight: viewport.clientHeight,
+        scrollWidth: viewport.scrollWidth,
+        scrollHeight: viewport.scrollHeight,
+      };
+      const intercept =
+        desktop.matches &&
+        geometry.scrollHeight <= geometry.clientHeight + 1 &&
+        geometry.scrollWidth > geometry.clientWidth + 1;
+      if (intercept !== listening) {
+        viewport.removeEventListener('wheel', wheel);
+        if (intercept) {
+          viewport.addEventListener('wheel', wheel, { passive: false });
+        }
+        listening = intercept;
+      }
       const available = container.clientHeight;
       const gutter = viewport.scrollWidth > viewport.clientWidth + 1 ? 10 : 0;
       const content = Math.ceil(canvas.getBoundingClientRect().height) + gutter;
@@ -54,21 +84,14 @@ export const useTierViewport = ({
     observer.observe(viewport);
     scheduleMeasure();
 
-    const desktop = window.matchMedia(
-      '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
-    );
-    const wheel = (event: WheelEvent) => {
-      if (desktop.matches) {
-        scrollBoardWheel({ viewport, event });
-      }
-    };
-    viewport.addEventListener('wheel', wheel, { passive: false });
+    desktop.addEventListener('change', scheduleMeasure);
     return () => {
       observer.disconnect();
       if (frame !== undefined) {
         cancelAnimationFrame(frame);
       }
       viewport.removeEventListener('wheel', wheel);
+      desktop.removeEventListener('change', scheduleMeasure);
     };
   }, [viewport, containerRef]);
 

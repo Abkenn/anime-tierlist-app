@@ -39,10 +39,8 @@ it('uses anonymous CORS on CDN posters while preserving custom URLs', () => {
   const preload = document.querySelector('link[rel="preload"][as="image"]');
 
   expect(poster?.getAttribute('crossorigin')).toBe('anonymous');
-  expect(preload).not.toBeNull();
-  expect(preload?.getAttribute('crossorigin')).toMatch(/^(anonymous)?$/u);
-  expect(preload?.getAttribute('href')).toBe(poster?.getAttribute('href'));
-  expect(preload?.getAttribute('fetchpriority')).toBe('high');
+  expect(preload).toBeNull();
+  expect(poster?.getAttribute('fetchpriority')).toBe('high');
   expect(render('https://custom.example/poster.jpg')).not.toMatch(
     /crossorigin/iu,
   );

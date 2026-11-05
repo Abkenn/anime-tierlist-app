@@ -126,6 +126,48 @@ const repairSparseTopRow = (rows: ImportSeriesRow[]) => {
   return rows;
 };
 
+const repairExpandedRows = (rows: ImportSeriesRow[]) => {
+  for (const rank of ['A', 'B', 'C', 'D'] as const) {
+    const index = rows.findIndex((row) => row.rank === rank);
+    const upper = rows[index];
+    const lower = rows[index + 1];
+    if (!upper || lower?.rank !== `${rank}−`) {
+      continue;
+    }
+    const largest = Math.max(upper.series.length, lower.series.length);
+    const smallest = Math.min(upper.series.length, lower.series.length);
+    if (largest < Math.max(6, smallest * 3)) {
+      continue;
+    }
+    const combined = [...upper.series, ...lower.series].sort(
+      compareImportSeries,
+    );
+    // Lower tails should taper; upper rows can be roughly equal in length.
+    const target = Math.round(
+      combined.length * (rank === 'C' || rank === 'D' ? 0.6 : 0.5),
+    );
+    const cut = findImportRowSplit({
+      scores: combined.map((entry) => entry.score),
+      episodes: combined.map((entry) => entry.episodes),
+      targetSize: target,
+      preferLargerLeft: true,
+    });
+    if (cut === null) {
+      continue;
+    }
+    const imbalance = (size: number) => Math.abs(size - target);
+    if (imbalance(cut) >= imbalance(upper.series.length)) {
+      continue;
+    }
+    upper.series = combined.slice(0, cut);
+    lower.series = combined.slice(cut);
+  }
+  return rows;
+};
+
+const finishBalancing = (rows: ImportSeriesRow[]) =>
+  repairExpandedRows(repairSparseTopRow(rows));
+
 export const balanceImportRows = (
   input: ImportSeriesRow[],
 ): ImportSeriesRow[] => {
@@ -138,7 +180,7 @@ export const balanceImportRows = (
         : [...row.series],
   }));
   if (floor < 0) {
-    return repairSparseTopRow(rows);
+    return finishBalancing(rows);
   }
   const center = rows.findIndex((row) => row.rank === 'B+');
   const upper = rows[center - 1];
@@ -184,7 +226,7 @@ export const balanceImportRows = (
         splitRowDown(rows, index, targetSize);
       }
     }
-    return repairSparseTopRow(rows);
+    return finishBalancing(rows);
   }
   // A healthy B+-centered result should not be reshaped back toward fixed A targets.
   if (
@@ -200,7 +242,7 @@ export const balanceImportRows = (
         row.series.length <= rows[index + 1].series.length,
     )
   ) {
-    return repairSparseTopRow(rows);
+    return finishBalancing(rows);
   }
 
   const first = rows.findIndex((row, index) => {
@@ -217,7 +259,7 @@ export const balanceImportRows = (
     );
   });
   if (first < 0) {
-    return repairSparseTopRow(rows);
+    return finishBalancing(rows);
   }
   const affected = rows.slice(first, floor + 1);
   const total = affected.reduce((sum, row) => sum + row.series.length, 0);
@@ -233,5 +275,5 @@ export const balanceImportRows = (
     splitRowDown(rows, index, targets[index]);
   }
 
-  return repairSparseTopRow(rows);
+  return finishBalancing(rows);
 };

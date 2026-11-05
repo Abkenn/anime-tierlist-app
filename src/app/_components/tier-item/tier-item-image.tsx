@@ -4,7 +4,7 @@ import { cn } from 'cn';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { preconnect, preload } from 'react-dom';
+import { preconnect } from 'react-dom';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
@@ -49,11 +49,6 @@ export const TierItemImage = ({
     if (posterCrossOrigin(image.src)) {
       preconnect('https://cdn.myanimelist.net', { crossOrigin: 'anonymous' });
     }
-    preload(source, {
-      as: 'image',
-      fetchPriority: 'high',
-      crossOrigin: posterCrossOrigin(image.src),
-    });
   }
 
   const loaded = () => {
