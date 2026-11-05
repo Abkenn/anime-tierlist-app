@@ -41,8 +41,12 @@ export const getPosterSize = ({
   autoWidth,
 }: PosterSizeInput) => {
   if (mode !== 'dynamic') {
-    return { small: '6rem', medium: '8rem', large: '11rem' }[mode];
+    return {
+      small: 'var(--tier-small-size, 6rem)',
+      medium: '8rem',
+      large: '11rem',
+    }[mode];
   }
   const width = autoWidth ?? getAutoPosterWidth({ imageMode, items });
-  return `clamp(6rem, calc(${dynamicRowWidthPercent}cqw / ${width}), var(--tier-max-size, 10rem))`;
+  return `clamp(var(--tier-small-size, 6rem), calc(${dynamicRowWidthPercent}cqw / ${width}), var(--tier-max-size, 10rem))`;
 };

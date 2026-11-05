@@ -11,6 +11,8 @@ export type ImportListEntry = {
   episodes: number | null;
   watchedEpisodes: number;
   completed: boolean;
+  // Optional for checkpoints saved before status imports were supported.
+  status?: 'completed' | 'watching' | 'dropped' | 'skipped';
   score: number;
 };
 
@@ -32,6 +34,7 @@ export type ImportSeries = {
   episodes: number;
   seasons: number;
   seasonIds: number[];
+  status?: 'watching' | 'dropped';
   imageUrl?: string;
 };
 
@@ -45,19 +48,22 @@ export const importRanks: TierRank[] = [
   'C',
   'D',
   'F',
+  'Dropped',
+  'Watching',
 ];
 
 export const isImportSeries = (type: string, episodes: number | null) =>
   type === 'TV' || (type === 'ONA' && (episodes ?? 0) > 1);
 
 export const eligibleImportEntry = (entry: ImportListEntry) =>
-  entry.completed &&
-  entry.score > 0 &&
-  isImportSeries(entry.format, entry.episodes || entry.watchedEpisodes);
+  isImportSeries(entry.format, entry.episodes || entry.watchedEpisodes) &&
+  ((entry.completed && entry.score > 0) ||
+    entry.status === 'watching' ||
+    entry.status === 'dropped');
 
-export const importScoreRank = (score: number, seasons: number): TierRank => {
+export const importScoreRank = (score: number, _seasons: number): TierRank => {
   switch (true) {
-    case score === 10 && seasons >= 2:
+    case score === 10:
       return 'S+';
     case score >= 9.5:
       return 'S';
@@ -132,7 +138,16 @@ export const groupImportSeries = (
           )
           .sort((a, b) => depth(a.id) - depth(b.id) || a.id - b.id)[0] ??
         anime.get(id);
-      const weighted = seasons.map((entry) => ({
+      const rated = seasons.filter(
+        (entry) => entry.completed && entry.score > 0,
+      );
+      const included = rated.length ? rated : seasons;
+      const status: NonNullable<ImportSeries['status']> = seasons.some(
+        (entry) => entry.status === 'watching',
+      )
+        ? 'watching'
+        : 'dropped';
+      const weighted = rated.map((entry) => ({
         entry,
         episodes:
           anime.get(entry.id)?.episodes ||
@@ -144,7 +159,9 @@ export const groupImportSeries = (
           'An episode count is unavailable. Try generating again later.',
         );
       }
-      const episodes = weighted.reduce((sum, entry) => sum + entry.episodes, 0);
+      const episodes = rated.length
+        ? weighted.reduce((sum, entry) => sum + entry.episodes, 0)
+        : seasons.reduce((sum, entry) => sum + entry.watchedEpisodes, 0);
 
       return {
         id: representative?.id ?? id,
@@ -152,16 +169,29 @@ export const groupImportSeries = (
         title: representative?.title ?? seasons[0].title,
         imageUrl: representative?.imageUrl,
         episodes,
-        seasons: seasons.length,
-        seasonIds: seasons.map((entry) => entry.id),
-        score:
-          weighted.reduce(
-            (sum, entry) => sum + entry.entry.score * entry.episodes,
-            0,
-          ) / episodes,
+        seasons: included.length,
+        seasonIds: included.map((entry) => entry.id),
+        ...(!rated.length ? { status } : {}),
+        score: rated.length
+          ? weighted.reduce(
+              (sum, entry) => sum + entry.entry.score * entry.episodes,
+              0,
+            ) / episodes
+          : 0,
       };
     })
     .sort(compareImportSeries);
+};
+
+export const importSeriesRank = (entry: ImportSeries): TierRank => {
+  switch (entry.status) {
+    case 'watching':
+      return 'Watching';
+    case 'dropped':
+      return 'Dropped';
+    default:
+      return importScoreRank(entry.score, entry.seasons);
+  }
 };
 
 export const importSeriesDocument = (
@@ -171,9 +201,7 @@ export const importSeriesDocument = (
   const rows = balanceImportRows(
     importRanks.map((rank) => ({
       rank,
-      series: series.filter(
-        (entry) => importScoreRank(entry.score, entry.seasons) === rank,
-      ),
+      series: series.filter((entry) => importSeriesRank(entry) === rank),
     })),
   );
 
@@ -188,7 +216,9 @@ export const importSeriesDocument = (
         (entry): TierItemData => ({
           id: `${provider}-${entry.id}`,
           ...(entry.malId ? { malId: entry.malId } : {}),
-          label: `${entry.title} (${entry.score.toFixed(2)}/10)`,
+          label: entry.status
+            ? entry.title
+            : `${entry.title} (${entry.score.toFixed(2)}/10)`,
           rank: row.rank,
           ...(entry.imageUrl
             ? {

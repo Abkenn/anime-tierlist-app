@@ -13,6 +13,7 @@ import {
   rankDetailsAtom,
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { ColorPicker } from '@/app/_components/ui/color-picker';
+import { useTierLabelLayout } from '@/app/_hooks/use-tier-label-layout';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import type { HexColor, TierRank } from '@/app/_types/tierlist.types';
@@ -29,6 +30,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const [presetColor, setPresetColor] = useState<HexColor>('#aaaaaa');
   const labelRef = useRef<HTMLDivElement>(null);
   const label = details[rank]?.label ?? rank;
+  const textLayout = useTierLabelLayout({ ref: labelRef, label, editing });
   const color = tierColors[rank] ?? 'stone';
   const addRankButtonClass =
     'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
@@ -131,10 +133,19 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
             setDraft(label);
             setEditing(true);
           }}
-          className="min-w-0 w-full cursor-text wrap-anywhere px-3 py-1 text-center hover:underline"
+          data-tier-label=""
+          style={{ fontSize: textLayout.fontSize }}
+          className="min-w-0 w-full cursor-text pl-4 pr-1 py-1 text-center leading-tight hover:underline"
           aria-label={`Rename ${label}`}
         >
-          {label}
+          {textLayout.lines.map((line, index) => (
+            <span
+              key={textLayout.lines.slice(0, index + 1).join(' ')}
+              className="block whitespace-nowrap"
+            >
+              {line}
+            </span>
+          ))}
         </button>
       )}
 

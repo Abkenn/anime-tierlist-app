@@ -60,7 +60,8 @@ export const generateAnimeTierlist = async ({
     savedCheckpoint.username.toLowerCase() === name.toLowerCase()
       ? savedCheckpoint
       : undefined;
-  const resuming = checkpoint && !checkpoint.complete;
+  const resuming =
+    checkpoint && !checkpoint.complete && checkpoint.scope === 'statuses-v2';
   const request = async <T>(operation: () => Promise<T>) => {
     signal.throwIfAborted();
     await beforeRequest?.();
@@ -84,6 +85,7 @@ export const generateAnimeTierlist = async ({
   const save = (complete = false) =>
     onCheckpoint?.({
       provider,
+      scope: 'statuses-v2',
       username: name,
       importedAt: Date.now(),
       catalog: [...catalog.values()],
@@ -127,7 +129,7 @@ export const generateAnimeTierlist = async ({
   const eligible = entries.filter(eligibleImportEntry);
   if (!eligible.length) {
     throw new Error(
-      'No completed, scored TV or episodic ONA series were found.',
+      'No completed, watching or dropped TV or episodic ONA series were found.',
     );
   }
   const needed = new Set(eligible.map((entry) => entry.id));
@@ -263,7 +265,7 @@ export const generateAnimeTierlist = async ({
     document,
     series,
     unavailablePosters,
-    completed: entries.length,
+    completed: entries.filter((entry) => entry.completed).length,
     skipped: entries.length - eligible.length,
   };
 };

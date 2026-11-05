@@ -69,6 +69,15 @@ export const normalizeAnilistEntry = (
     episodes: anime.episodes,
     watchedEpisodes: entry.progress,
     completed: entry.status === 'COMPLETED',
+    status:
+      (
+        {
+          COMPLETED: 'completed',
+          CURRENT: 'watching',
+          REPEATING: 'watching',
+          DROPPED: 'dropped',
+        } as Record<string, 'completed' | 'watching' | 'dropped'>
+      )[entry.status] ?? 'skipped',
     score: entry.score,
   };
 };

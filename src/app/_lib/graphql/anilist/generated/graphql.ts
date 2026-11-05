@@ -104,12 +104,12 @@ export type ImportAnimeFieldsFragment = {
   } | null;
 };
 
-export type AnilistCompletedListQueryVariables = Exact<{
+export type AnilistImportListQueryVariables = Exact<{
   username: string;
   page: number;
 }>;
 
-export type AnilistCompletedListQuery = {
+export type AnilistImportListQuery = {
   Page: {
     pageInfo: { hasNextPage: boolean | null } | null;
     mediaList: Array<{
@@ -252,13 +252,13 @@ export const ImportAnimeFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<ImportAnimeFieldsFragment, unknown>;
-export const AnilistCompletedListDocument = {
+export const AnilistImportListDocument = {
   kind: 'Document',
   definitions: [
     {
       kind: 'OperationDefinition',
       operation: 'query',
-      name: { kind: 'Name', value: 'AnilistCompletedList' },
+      name: { kind: 'Name', value: 'AnilistImportList' },
       variableDefinitions: [
         {
           kind: 'VariableDefinition',
@@ -339,8 +339,16 @@ export const AnilistCompletedListDocument = {
                     },
                     {
                       kind: 'Argument',
-                      name: { kind: 'Name', value: 'status' },
-                      value: { kind: 'EnumValue', value: 'COMPLETED' },
+                      name: { kind: 'Name', value: 'status_in' },
+                      value: {
+                        kind: 'ListValue',
+                        values: [
+                          { kind: 'EnumValue', value: 'COMPLETED' },
+                          { kind: 'EnumValue', value: 'CURRENT' },
+                          { kind: 'EnumValue', value: 'DROPPED' },
+                          { kind: 'EnumValue', value: 'REPEATING' },
+                        ],
+                      },
                     },
                     {
                       kind: 'Argument',
@@ -480,8 +488,8 @@ export const AnilistCompletedListDocument = {
     },
   ],
 } as unknown as DocumentNode<
-  AnilistCompletedListQuery,
-  AnilistCompletedListQueryVariables
+  AnilistImportListQuery,
+  AnilistImportListQueryVariables
 >;
 export const AnilistAnimeBatchDocument = {
   kind: 'Document',

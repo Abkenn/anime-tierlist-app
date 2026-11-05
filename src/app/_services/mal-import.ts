@@ -16,6 +16,7 @@ const imageSchema = z.object({
     image_url: z.url().nullish(),
   }),
 });
+
 const animeSchema = z.object({
   data: z.object({
     mal_id: z.number().int().positive(),
@@ -36,8 +37,11 @@ const animeSchema = z.object({
     ),
   }),
 });
+
 let activeCatalogRequests = 0;
+
 const waitingCatalogRequests: (() => void)[] = [];
+
 const catalogRequest = async <T>(operation: () => Promise<T>): Promise<T> => {
   if (activeCatalogRequests < 4) {
     activeCatalogRequests += 1;
@@ -64,7 +68,7 @@ export const readMalListPage = async (username: string, offset: number) => {
   const response = await malApi.get(
     `animelist/${encodeURIComponent(name)}/load.json`,
     {
-      searchParams: { status: 2, offset },
+      searchParams: { status: 7, offset },
       throwHttpErrors: false,
     },
   );

@@ -13,10 +13,12 @@ export {
   importScoreRank as malScoreRank,
   isImportSeries as isMalSeries,
 } from './anime-import';
+
 export const malUsernameSchema = z
   .string()
   .trim()
   .regex(/^[\w-]{2,16}$/u);
+
 export const malListSchema = z
   .array(
     z.object({
@@ -30,10 +32,17 @@ export const malListSchema = z
     }),
   )
   .max(300);
+
 export type MalListEntry = z.infer<typeof malListSchema>[number];
 
 export type MalAnime = ImportAnime;
+
 export type MalSeries = ImportSeries;
+
+const malStatuses: Partial<
+  Record<number, NonNullable<ImportListEntry['status']>>
+> = { 1: 'watching', 2: 'completed', 4: 'dropped' };
+
 export const normalizeMalEntry = (entry: MalListEntry): ImportListEntry => ({
   id: entry.anime_id,
   title: entry.anime_title,
@@ -41,15 +50,19 @@ export const normalizeMalEntry = (entry: MalListEntry): ImportListEntry => ({
   episodes: entry.anime_num_episodes,
   watchedEpisodes: entry.num_watched_episodes,
   completed: entry.status === 2,
+  status: malStatuses[entry.status] ?? 'skipped',
   score: entry.score,
 });
+
 export const eligibleMalEntry = (entry: MalListEntry) =>
   eligibleImportEntry(normalizeMalEntry(entry));
+
 export const groupMalSeries = (entries: MalListEntry[], catalog: MalAnime[]) =>
   groupImportSeries(
     entries.map(normalizeMalEntry),
     catalog.map((anime) => ({ ...anime, malId: anime.id })),
   );
+
 export const malSeriesDocument = (series: MalSeries[]) =>
   importSeriesDocument(
     series.map((entry) => ({ ...entry, malId: entry.id })),

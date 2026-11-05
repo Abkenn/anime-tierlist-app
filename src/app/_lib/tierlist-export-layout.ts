@@ -7,10 +7,12 @@ import { rankTextColor } from './rank-text-color';
 import { tierColors } from './tier-colors';
 import { fullImageTrim } from './tier-image-trim';
 import { getTierItemSize } from './tier-item-layout';
+import { getTierLabelLayout } from './tier-label-layout';
 import { getTierTitleLayout } from './tier-title-layout';
 import type { TierlistDocument } from './tierlist-sync';
 
 export const exportPosterSize = 160;
+
 const palette: Record<TierColor, HexColor> = {
   orchid: '#e68ee6',
   rose: '#e68e96',
@@ -64,9 +66,16 @@ export const layoutExportBoard = (document: TierlistDocument) => {
       palette[tierColors[rank]] ??
       '#aaaaaa';
 
+    const label = document.rankDetails?.[rank]?.label ?? rank;
     return {
       rank,
-      label: document.rankDetails?.[rank]?.label ?? rank,
+      label,
+      labelLayout: getTierLabelLayout({
+        text: label,
+        width: exportPosterSize - 16,
+        height: exportPosterSize - 16,
+        fontSize: 20,
+      }),
       color,
       textColor: rankTextColor(color),
       y: index * exportPosterSize,

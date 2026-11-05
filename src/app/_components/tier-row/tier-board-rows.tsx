@@ -97,8 +97,13 @@ export const TierBoardRows = ({
   return (
     <ViewTransition default="none" enter="preview-change" exit="preview-change">
       <ol
-        style={{ '--tier-base-size': size } as React.CSSProperties}
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-max-size:10rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
+        style={
+          {
+            '--tier-base-size': size,
+            '--tier-small-fit': `min(6rem, calc((var(--tier-available-height, 100000px) - ${ranks.length + 16}px) / ${layout === 'two-line' ? ranks.reduce((total, rank) => total + interaction.lines(rank), 0) : ranks.length}))`,
+          } as React.CSSProperties
+        }
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:10rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank, index) => (

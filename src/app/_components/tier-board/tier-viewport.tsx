@@ -1,14 +1,17 @@
 'use client';
 
 import {
+  type CSSProperties,
   type PropsWithChildren,
   type Ref,
   useCallback,
   useId,
+  useRef,
   useState,
 } from 'react';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { useTierOverview } from '@/app/_hooks/use-tier-overview';
+import { useTierViewport } from '@/app/_hooks/use-tier-viewport';
 import { TierScrollOverview } from './tier-scroll-overview';
 
 type TierViewportProps = PropsWithChildren<{
@@ -22,8 +25,13 @@ export const TierViewport = ({
   scrollable,
 }: TierViewportProps) => {
   const viewportId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState<HTMLElement | null>(null);
   const overview = useTierOverview(viewport);
+  const { height, availableHeight } = useTierViewport({
+    viewport,
+    containerRef,
+  });
   const bindViewport = useCallback(
     (element: HTMLElement | null) => {
       setViewport(element);
@@ -52,9 +60,17 @@ export const TierViewport = ({
   }
 
   return (
-    <div className="relative min-h-0 min-w-0 flex-1">
+    <div ref={containerRef} className="relative min-h-0 min-w-0 flex-1">
       <ScrollArea
         orientation="both"
+        style={
+          {
+            height,
+            '--tier-available-height': availableHeight
+              ? `${availableHeight}px`
+              : undefined,
+          } as CSSProperties
+        }
         className="h-full min-h-0 min-w-0 pr-3.5"
         viewportProps={{
           render: (

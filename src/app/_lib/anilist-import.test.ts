@@ -95,3 +95,28 @@ it('shares weighted scores and filtering without confusing AniList IDs with MAL 
   );
   expect(missing.items[0]).not.toHaveProperty('malId');
 });
+
+it('maps AniList current and repeating to Watching, Dropped separately, and skips paused/planning', () => {
+  const statuses = ['CURRENT', 'REPEATING', 'DROPPED', 'PAUSED', 'PLANNING'];
+  const sources = statuses.map((status, index) => ({
+    status,
+    score: 0,
+    progress: 3,
+    media: media(index + 1, 12),
+  }));
+  const series = groupImportSeries(
+    sources.map(normalizeAnilistEntry),
+    sources.map((entry) => normalizeAnilistAnime(entry.media)),
+  );
+  const document = importSeriesDocument(series, 'anilist');
+  expect(
+    document.items.filter((item) => item.rank === 'Watching'),
+  ).toHaveLength(2);
+  expect(document.items.filter((item) => item.rank === 'Dropped')).toHaveLength(
+    1,
+  );
+  expect(document.items).toHaveLength(3);
+  expect(document.items.every((item) => !item.label.includes('/10'))).toBe(
+    true,
+  );
+});

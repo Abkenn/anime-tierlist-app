@@ -3,6 +3,7 @@ import { animeImportHistorySchema } from './anime-import-history';
 
 export const animeImportCheckpointSchema = animeImportHistorySchema.extend({
   provider: z.enum(['mal', 'anilist']),
+  scope: z.literal('statuses-v2').optional(),
   offset: z.number().int().nonnegative(),
   listComplete: z.boolean(),
   complete: z.boolean(),
@@ -14,6 +15,9 @@ export const animeImportCheckpointSchema = animeImportHistorySchema.extend({
       episodes: z.number().nonnegative().nullable(),
       watchedEpisodes: z.number().nonnegative(),
       completed: z.boolean(),
+      status: z
+        .enum(['completed', 'watching', 'dropped', 'skipped'])
+        .optional(),
       score: z.number().min(0).max(10),
     }),
   ),

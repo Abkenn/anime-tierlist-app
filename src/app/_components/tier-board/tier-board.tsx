@@ -90,6 +90,7 @@ export const TierBoard = ({
 
         <motion.div
           ref={interaction.boardRef}
+          data-tier-canvas=""
           animate={scrollable ? { width: interaction.canvasWidth } : undefined}
           transition={{ duration: 0 }}
           className={cn('relative', scrollable && 'min-w-full')}

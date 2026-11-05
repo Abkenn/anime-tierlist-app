@@ -64,7 +64,7 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
 
   return board.rows
     .map((row, rowIndex) => {
-      const lines = exportTextLines(row.label, exportPosterSize - 16, 20);
+      const { lines, fontSize } = row.labelLayout;
       const rank = lines
         .map((text, index) =>
           linePaths(font, {
@@ -73,9 +73,9 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
             y:
               row.y +
               exportPosterSize / 2 +
-              (index - (lines.length - 1) / 2) * 25 +
-              7,
-            size: 20,
+              (index - (lines.length - 1) / 2) * fontSize * 1.25 +
+              fontSize * 0.35,
+            size: fontSize,
             width: exportPosterSize - 12,
           }),
         )

@@ -252,3 +252,84 @@ describe('soft bell balancing', () => {
     expect(tierlistDocumentSchema.safeParse(document).success).toBe(true);
   });
 });
+
+describe('large-list half-point dents', () => {
+  it('fills a sparse B+ from upper rows using only downward moves and preserves the lower tail', () => {
+    const make = (
+      rank: ImportSeriesRow['rank'],
+      length: number,
+      score: number,
+      start: number,
+    ): ImportSeriesRow => ({
+      rank,
+      series: Array.from({ length }, (_, index) =>
+        series(start + index, score, 2000 - index),
+      ),
+    });
+    const before = [
+      make('S+', 8, 10, 1),
+      make('S', 80, 9.6, 100),
+      make('A+', 160, 9, 200),
+      make('A', 300, 8, 500),
+      make('B+', 16, 7.8, 900),
+      make('B', 220, 7, 1000),
+      make('C', 150, 6, 1300),
+      make('D', 100, 5, 1500),
+      make('F', 72, 4, 1700),
+    ];
+    const snapshot = structuredClone(before);
+    const after = balanceImportRows(before);
+    expect(after[4].series.length).toBeGreaterThanOrEqual(
+      after[3].series.length,
+    );
+    expect(after[4].series.length).toBeGreaterThan(after[5].series.length);
+    expect(after[2].series.length).toBeLessThanOrEqual(after[3].series.length);
+    expect(after[0]).toEqual(before[0]);
+    expect(after.slice(5)).toEqual(before.slice(5));
+    expect(before).toEqual(snapshot);
+    expect(
+      after
+        .flatMap((row) => row.series)
+        .map((entry) => entry.id)
+        .sort((a, b) => a - b),
+    ).toEqual(
+      before
+        .flatMap((row) => row.series)
+        .map((entry) => entry.id)
+        .sort((a, b) => a - b),
+    );
+    after.forEach((row, rank) => {
+      row.series.forEach((entry) => {
+        expect(
+          before.findIndex((original) =>
+            original.series.some((candidate) => candidate.id === entry.id),
+          ),
+        ).toBeLessThanOrEqual(rank);
+      });
+    });
+    expect(balanceImportRows(after)).toEqual(after);
+  });
+
+  it('keeps identical score/episode groups intact during dent repair', () => {
+    const before = [
+      row('S+', [], 1),
+      row('S', [], 10),
+      row('A+', [], 20),
+      row('A', Array<number>(30).fill(8), 50),
+      row('B+', [7.8, 7.7], 100),
+      row('B', Array<number>(30).fill(7), 110),
+    ];
+    expect(balanceImportRows(before)).toEqual(before);
+  });
+});
+
+it('places every perfect ten in S+, with multi-season entries before singles and episodes descending within each group', () => {
+  const document = malSeriesDocument([
+    { ...series(1, 10, 100), seasons: 1 },
+    { ...series(2, 10, 26), seasons: 2 },
+    { ...series(3, 10, 46), seasons: 2 },
+    { ...series(4, 10, 13), seasons: 1 },
+  ]);
+  expect(document.items.map((entry) => entry.malId)).toEqual([3, 2, 1, 4]);
+  expect(document.items.every((entry) => entry.rank === 'S+')).toBe(true);
+});

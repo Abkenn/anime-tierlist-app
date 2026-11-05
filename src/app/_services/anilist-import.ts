@@ -9,7 +9,7 @@ import {
 } from '@/app/_lib/anilist-import';
 import {
   AnilistAnimeBatchDocument,
-  AnilistCompletedListDocument,
+  AnilistImportListDocument,
 } from '@/app/_lib/graphql/anilist/generated/graphql';
 import { queryAnilist } from './anilist-api';
 
@@ -40,7 +40,7 @@ export const readAnilistPage = async (username: string, page: number) => {
         mediaList: z.array(anilistListEntrySchema),
       }),
     }),
-    await queryAnilist(AnilistCompletedListDocument, { username, page }),
+    await queryAnilist(AnilistImportListDocument, { username, page }),
   );
   return {
     entries: data.Page.mediaList.map(normalizeAnilistEntry),

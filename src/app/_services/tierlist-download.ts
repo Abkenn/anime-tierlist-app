@@ -111,16 +111,16 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
     context.fillStyle = '#111111';
     context.fillRect(0, row.y, board.width, 1);
     context.fillStyle = row.textColor;
-    context.font = '20px monospace';
-    const lines = exportTextLines(row.label, exportPosterSize - 16, 20);
+    const { lines, fontSize } = row.labelLayout;
+    context.font = `${fontSize}px monospace`;
     lines.forEach((line, index) => {
       context.fillText(
         line,
         exportPosterSize / 2,
         row.y +
           exportPosterSize / 2 +
-          (index - (lines.length - 1) / 2) * 25 +
-          7,
+          (index - (lines.length - 1) / 2) * fontSize * 1.25 +
+          fontSize * 0.35,
         exportPosterSize - 12,
       );
     });

@@ -5,7 +5,6 @@ import {
   type ExportRow,
   exportImageFrame,
   exportPosterSize,
-  exportTextLines,
   exportTitle,
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
@@ -66,25 +65,25 @@ export const PreviewBoardSurface = ({
           <text
             fill={row.textColor}
             textAnchor="middle"
-            fontSize={20}
+            fontSize={row.labelLayout.fontSize}
             fontFamily="monospace"
           >
-            {exportTextLines(row.label, exportPosterSize - 16, 20).map(
-              (line, index, lines) => (
-                <tspan
-                  key={`${row.label.slice(0, index)}:${line}`}
-                  x={exportPosterSize / 2}
-                  y={
-                    row.y +
-                    exportPosterSize / 2 +
-                    (index - (lines.length - 1) / 2) * 25 +
-                    7
-                  }
-                >
-                  {line}
-                </tspan>
-              ),
-            )}
+            {row.labelLayout.lines.map((line, index, lines) => (
+              <tspan
+                key={`${row.label.slice(0, index)}:${line}`}
+                x={exportPosterSize / 2}
+                y={
+                  row.y +
+                  exportPosterSize / 2 +
+                  (index - (lines.length - 1) / 2) *
+                    row.labelLayout.fontSize *
+                    1.25 +
+                  row.labelLayout.fontSize * 0.35
+                }
+              >
+                {line}
+              </tspan>
+            ))}
           </text>
           {row.posters
             .filter((box) => !visibleIds || visibleIds.has(box.item.id))

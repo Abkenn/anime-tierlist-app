@@ -24,7 +24,7 @@ fragment ImportAnimeFields on Media {
   }
 }
 
-query AnilistCompletedList($username: String!, $page: Int!) {
+query AnilistImportList($username: String!, $page: Int!) {
   Page(page: $page, perPage: 50) {
     pageInfo {
       hasNextPage
@@ -32,7 +32,7 @@ query AnilistCompletedList($username: String!, $page: Int!) {
     mediaList(
       userName: $username
       type: ANIME
-      status: COMPLETED
+      status_in: [COMPLETED, CURRENT, DROPPED, REPEATING]
       sort: MEDIA_ID
     ) {
       status
