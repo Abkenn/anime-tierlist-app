@@ -28,6 +28,7 @@ import {
   matchesTierItemLabel,
 } from '@/app/_lib/tier-item-label';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
+import type { TierRank } from '@/app/_types/tierlist.types';
 
 type TierBoardItemsProps = {
   interaction: Pick<
@@ -62,6 +63,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const editingItemId = useAtomValue(editingItemIdAtom);
   const query = useDeferredValue(useAtomValue(tierFindQueryAtom));
   const actions = useTierItemActions(interaction);
+  const virtualized = interaction.items.length > 200;
   const visiblePosters = interaction.items.filter((item) => {
     const poster = geometry.get(item.id);
 
@@ -100,6 +102,47 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       .map((item) => item.id),
   );
 
+  const mountedItems = interaction.items.filter((item) => {
+    if (
+      !virtualized ||
+      item.id === interaction.draggingId ||
+      item.id === editingItemId ||
+      item.id === menuItemId ||
+      item.id === renamingItemId ||
+      item.id === focusedId
+    ) {
+      return true;
+    }
+
+    const rect = geometry.get(item.id);
+    const offset = getRankOffset(offsets, interaction.visibleRank(item)).get();
+
+    return (
+      rect &&
+      rect.x + rect.width >= window.left &&
+      rect.x <= window.right &&
+      rect.y + offset + rect.height >= window.top &&
+      rect.y + offset <= window.bottom
+    );
+  });
+  const mountedIds = new Set(mountedItems.map((item) => item.id));
+  const placeholderPaths = new Map<TierRank, string[]>();
+  interaction.items.forEach((item) => {
+    if (mountedIds.has(item.id)) {
+      return;
+    }
+    const rect = geometry.get(item.id);
+    const rank = interaction.visibleRank(item);
+    if (!rect || !rank) {
+      return;
+    }
+    const paths = placeholderPaths.get(rank) ?? [];
+    paths.push(
+      `M${rect.x},${rect.y}h${rect.width}v${rect.height}h${-rect.width}Z`,
+    );
+    placeholderPaths.set(rank, paths);
+  });
+
   return (
     <TierItemActionsContext value={actions}>
       <TierItemInteractionHost>
@@ -123,6 +166,22 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
             }
           }}
         >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            data-tier-placeholders=""
+            className="pointer-events-none absolute inset-0 size-full overflow-visible fill-muted"
+          >
+            {Array.from(placeholderPaths, ([rank, paths]) => (
+              <motion.path
+                key={rank}
+                data-placeholder-rank={rank}
+                d={paths.join('')}
+                style={{ y: getRankOffset(offsets, rank) }}
+              />
+            ))}
+          </svg>
+
           {interaction.dropPosition && (
             <motion.div
               aria-hidden="true"
@@ -134,84 +193,57 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
             />
           )}
 
-          {interaction.items
-            .filter((item) => {
-              if (
-                item.id === interaction.draggingId ||
-                item.id === editingItemId ||
-                item.id === menuItemId ||
-                item.id === renamingItemId ||
-                item.id === focusedId
-              ) {
-                return true;
-              }
+          {mountedItems.map((item) => {
+            const position = interaction.position(item);
+            const rank = interaction.visibleRank(item);
 
-              const rect = geometry.get(item.id);
-              const offset = getRankOffset(
-                offsets,
-                interaction.visibleRank(item),
-              ).get();
-
-              return (
-                rect &&
-                rect.x + rect.width >= window.left &&
-                rect.x <= window.right &&
-                rect.y + offset + rect.height >= window.top &&
-                rect.y + offset <= window.bottom
-              );
-            })
-            .map((item) => {
-              const position = interaction.position(item);
-              const rank = interaction.visibleRank(item);
-
-              return position && rank ? (
-                <motion.div
+            return position && rank ? (
+              <motion.div
+                key={item.id}
+                data-rank-posters={rank}
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  y: getRankOffset(offsets, rank),
+                  zIndex:
+                    draggedRank === rank ||
+                    interaction.draggingId === item.id ||
+                    editingItemId === item.id
+                      ? 40
+                      : 10,
+                }}
+              >
+                <TierItemPassive
                   key={item.id}
-                  data-rank-posters={rank}
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    y: getRankOffset(offsets, rank),
-                    zIndex:
-                      draggedRank === rank ||
-                      interaction.draggingId === item.id ||
-                      editingItemId === item.id
-                        ? 40
-                        : 10,
-                  }}
-                >
-                  <TierItemPassive
-                    key={item.id}
-                    id={item.id}
-                    label={getTierItemLabel(item)}
-                    dimmed={
-                      Boolean(query.trim()) &&
-                      !matchesTierItemLabel(item, query)
-                    }
-                    rank={rank}
-                    editing={editingItemId === item.id}
-                    image={item.image}
-                    priority={priorityIds.has(item.id)}
-                    title={item.title}
-                    crop={item.crop}
-                    trim={item.trim}
-                    sizingControl={
-                      <TierItemSizing
-                        image={
-                          item.image && getTrimmedImage(item.image, item.trim)
-                        }
-                        expansion={item.rowHeightExpansion ?? 1}
-                        onChange={(rowHeightExpansion) =>
-                          interaction.updateItem(item.id, {
-                            rowHeightExpansion,
-                          })
-                        }
-                      />
-                    }
-                    position={position}
-                  />
-                </motion.div>
-              ) : null;
-            })}
+                  id={item.id}
+                  label={getTierItemLabel(item)}
+                  dimmed={
+                    Boolean(query.trim()) && !matchesTierItemLabel(item, query)
+                  }
+                  rank={rank}
+                  editing={editingItemId === item.id}
+                  image={item.image}
+                  priority={priorityIds.has(item.id)}
+                  title={item.title}
+                  crop={item.crop}
+                  trim={item.trim}
+                  sizingControl={
+                    <TierItemSizing
+                      image={
+                        item.image && getTrimmedImage(item.image, item.trim)
+                      }
+                      expansion={item.rowHeightExpansion ?? 1}
+                      onChange={(rowHeightExpansion) =>
+                        interaction.updateItem(item.id, {
+                          rowHeightExpansion,
+                        })
+                      }
+                    />
+                  }
+                  position={position}
+                />
+              </motion.div>
+            ) : null;
+          })}
         </div>
       </TierItemInteractionHost>
     </TierItemActionsContext>
