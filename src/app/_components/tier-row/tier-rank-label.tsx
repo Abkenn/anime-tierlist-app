@@ -135,7 +135,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
           }}
           data-tier-label=""
           style={{ fontSize: textLayout.fontSize }}
-          className="min-w-0 w-full cursor-text pl-4 pr-1 py-1 text-center leading-tight hover:underline"
+          className="min-w-0 w-full cursor-text p-1 text-center leading-tight hover:underline"
           aria-label={`Rename ${label}`}
         >
           {textLayout.lines.map((line, index) => (

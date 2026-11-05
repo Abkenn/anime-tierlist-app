@@ -100,6 +100,32 @@ const splitRowDown = (
   );
 };
 
+const repairSparseTopRow = (rows: ImportSeriesRow[]) => {
+  const top = rows.find((row) => row.rank === 'S');
+  const next = rows.find((row) => row.rank === 'A+');
+  if (
+    !top ||
+    !next ||
+    next.series.length < Math.max(12, top.series.length * 6)
+  ) {
+    return rows;
+  }
+  // Promote only the exceptional prefix above the common 9/10 plateau.
+  // Keep equal scores together, and leave at least twice as many entries in A+.
+  const target = Math.floor((top.series.length + next.series.length) / 4);
+  const limit = Math.min(
+    target - top.series.length,
+    Math.floor(next.series.length / 3),
+  );
+  const cut = next.series.findIndex((entry) => entry.score <= 9);
+  if (cut > 0 && cut <= limit) {
+    top.series = [...top.series, ...next.series.splice(0, cut)].sort(
+      compareImportSeries,
+    );
+  }
+  return rows;
+};
+
 export const balanceImportRows = (
   input: ImportSeriesRow[],
 ): ImportSeriesRow[] => {
@@ -112,7 +138,7 @@ export const balanceImportRows = (
         : [...row.series],
   }));
   if (floor < 0) {
-    return rows;
+    return repairSparseTopRow(rows);
   }
   const center = rows.findIndex((row) => row.rank === 'B+');
   const upper = rows[center - 1];
@@ -158,7 +184,7 @@ export const balanceImportRows = (
         splitRowDown(rows, index, targetSize);
       }
     }
-    return rows;
+    return repairSparseTopRow(rows);
   }
   // A healthy B+-centered result should not be reshaped back toward fixed A targets.
   if (
@@ -174,7 +200,7 @@ export const balanceImportRows = (
         row.series.length <= rows[index + 1].series.length,
     )
   ) {
-    return rows;
+    return repairSparseTopRow(rows);
   }
 
   const first = rows.findIndex((row, index) => {
@@ -191,7 +217,7 @@ export const balanceImportRows = (
     );
   });
   if (first < 0) {
-    return rows;
+    return repairSparseTopRow(rows);
   }
   const affected = rows.slice(first, floor + 1);
   const total = affected.reduce((sum, row) => sum + row.series.length, 0);
@@ -207,5 +233,5 @@ export const balanceImportRows = (
     splitRowDown(rows, index, targets[index]);
   }
 
-  return rows;
+  return repairSparseTopRow(rows);
 };

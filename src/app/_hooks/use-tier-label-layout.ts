@@ -22,6 +22,7 @@ export const useTierLabelLayout = ({ ref, label, editing }: TierLabelInput) => {
       return;
     }
     let active = true;
+    let frame: number | undefined;
     const context = document.createElement('canvas').getContext('2d');
     const measure = () => {
       if (!active) {
@@ -63,14 +64,25 @@ export const useTierLabelLayout = ({ ref, label, editing }: TierLabelInput) => {
           : { label, ...next },
       );
     };
-    const observer = new ResizeObserver(measure);
+    const scheduleMeasure = () => {
+      if (active && frame === undefined) {
+        frame = requestAnimationFrame(() => {
+          frame = undefined;
+          measure();
+        });
+      }
+    };
+    const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(root);
     observer.observe(text);
-    document.fonts?.ready.then(measure);
-    measure();
+    document.fonts?.ready.then(scheduleMeasure);
+    scheduleMeasure();
     return () => {
       active = false;
       observer.disconnect();
+      if (frame !== undefined) {
+        cancelAnimationFrame(frame);
+      }
     };
   }, [ref, label, editing]);
   return layout.label === label

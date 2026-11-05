@@ -61,7 +61,12 @@ export const eligibleImportEntry = (entry: ImportListEntry) =>
     entry.status === 'watching' ||
     entry.status === 'dropped');
 
-export const importScoreRank = (score: number, _seasons: number): TierRank => {
+export const importScoreRank = (
+  score: number,
+  _seasons: number,
+  expanded = false,
+  detailed = false,
+): TierRank => {
   switch (true) {
     case score === 10:
       return 'S+';
@@ -69,16 +74,28 @@ export const importScoreRank = (score: number, _seasons: number): TierRank => {
       return 'S';
     case score >= 8.5:
       return 'A+';
-    case score >= 8:
+    case score >= 8 + (detailed ? 0.25 : 0):
       return 'A';
+    case detailed && score >= 8:
+      return 'A−';
     case score >= 7.5:
       return 'B+';
-    case score >= 7:
+    case score >= 7 + (detailed ? 0.25 : 0):
       return 'B';
-    case score >= 6:
+    case detailed && score >= 7:
+      return 'B−';
+    case expanded && score >= 6.5:
+      return 'C+';
+    case score >= 6 + (detailed ? 0.25 : 0):
       return 'C';
-    case score >= 5:
+    case detailed && score >= 6:
+      return 'C−';
+    case expanded && score >= 5.5:
+      return 'D+';
+    case score >= 5 + (detailed ? 0.25 : 0):
       return 'D';
+    case detailed && score >= 5:
+      return 'D−';
     default:
       return 'F';
   }
@@ -183,14 +200,18 @@ export const groupImportSeries = (
     .sort(compareImportSeries);
 };
 
-export const importSeriesRank = (entry: ImportSeries): TierRank => {
+export const importSeriesRank = (
+  entry: ImportSeries,
+  expanded = false,
+  detailed = false,
+): TierRank => {
   switch (entry.status) {
     case 'watching':
       return 'Watching';
     case 'dropped':
       return 'Dropped';
     default:
-      return importScoreRank(entry.score, entry.seasons);
+      return importScoreRank(entry.score, entry.seasons, expanded, detailed);
   }
 };
 
@@ -198,16 +219,34 @@ export const importSeriesDocument = (
   series: ImportSeries[],
   provider: ImportProvider,
 ): TierlistDocument => {
+  const expanded = series.length > 100;
+  const detailed = series.length > 1000;
+  const ranks = importRanks.flatMap<TierRank>((rank) => {
+    const result: TierRank[] = [];
+    if (expanded && (rank === 'C' || rank === 'D')) {
+      result.push(`${rank}+`);
+    }
+    result.push(rank);
+    if (
+      detailed &&
+      (rank === 'A' || rank === 'B' || rank === 'C' || rank === 'D')
+    ) {
+      result.push(`${rank}−`);
+    }
+    return result;
+  });
   const rows = balanceImportRows(
-    importRanks.map((rank) => ({
+    ranks.map((rank) => ({
       rank,
-      series: series.filter((entry) => importSeriesRank(entry) === rank),
+      series: series.filter(
+        (entry) => importSeriesRank(entry, expanded, detailed) === rank,
+      ),
     })),
   );
 
   return {
     version: 1,
-    ranks: [...importRanks],
+    ranks,
     imageMode: 'natural',
     posterSize: 'dynamic',
     rankDetails: {},

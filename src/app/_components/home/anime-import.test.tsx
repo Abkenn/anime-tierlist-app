@@ -3,6 +3,8 @@ import { expect, it, vi } from 'vitest';
 import { AnimeImport } from './anime-import';
 
 const generate = vi.hoisted(() => vi.fn());
+
+const readProfile = vi.hoisted(() => vi.fn(async () => ({})));
 vi.mock('@/app/_services/run-anime-import', () => ({
   runAnimeImport: generate,
 }));
@@ -62,7 +64,7 @@ it('reviews generated results before applying and requires explicit replacement 
 });
 
 vi.mock('@/app/_services/local-tierlist', () => ({
-  readLocalTierlist: vi.fn(async () => ({})),
+  readLocalTierlist: readProfile,
 }));
 
 it('switches providers, retains separate usernames and locks the selector during generation', async () => {
@@ -119,3 +121,41 @@ vi.mock('@/app/_services/anime-import-checkpoint', () => ({
   readAnimeImportCheckpoint: vi.fn(async () => undefined),
   clearAnimeImportCheckpoint: vi.fn(async () => {}),
 }));
+
+it('restores provider and both usernames from the current profile after remounting', async () => {
+  readProfile.mockResolvedValue({
+    animeImports: {
+      mal: { username: 'MalAccount', importedAt: 1 },
+      anilist: { username: 'AniAccount', importedAt: 2 },
+    },
+  });
+  const mount = () =>
+    render(
+      <AnimeImport
+        busy={false}
+        seed={'b'.repeat(64)}
+        revision={0}
+        hasItems
+        onApply={async () => {}}
+        onApplied={() => {}}
+      />,
+    );
+  const first = mount();
+  await waitFor(() =>
+    expect(
+      screen.getByRole('textbox', { name: 'Public AniList username' }),
+    ).toHaveValue('AniAccount'),
+  );
+  expect(screen.getByRole('radio', { name: 'AniList' })).toBeChecked();
+  fireEvent.click(screen.getByRole('radio', { name: 'MAL' }));
+  expect(screen.getByRole('textbox')).toHaveValue('MalAccount');
+  first.unmount();
+  mount();
+  await waitFor(() =>
+    expect(
+      screen.getByRole('textbox', { name: 'Public AniList username' }),
+    ).toHaveValue('AniAccount'),
+  );
+  expect(readProfile).toHaveBeenCalledWith('b'.repeat(64));
+  readProfile.mockResolvedValue({});
+});

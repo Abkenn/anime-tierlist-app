@@ -254,6 +254,48 @@ describe('soft bell balancing', () => {
 });
 
 describe('large-list half-point dents', () => {
+  it('repairs a severely sparse S using the exceptional A+ prefix, preserving the 9/10 plateau', () => {
+    const before = [
+      row('S+', [10], 1),
+      row('S', [9.7, 9.6], 10),
+      row(
+        'A+',
+        [9.4, 9.3, 9.2, 9.1, 9.02, 9.01, ...Array<number>(60).fill(9)],
+        20,
+      ),
+      row('A', Array<number>(80).fill(8), 100),
+      row('B+', Array<number>(90).fill(7.5), 200),
+      row('B', Array<number>(60).fill(7), 300),
+    ];
+    const snapshot = structuredClone(before);
+    const after = balanceImportRows(before);
+    expect(after[1].series).toHaveLength(8);
+    expect(after[2].series).toHaveLength(60);
+    expect(after[2].series.every((entry) => entry.score === 9)).toBe(true);
+    expect(after[0]).toEqual(before[0]);
+    expect(after.slice(3)).toEqual(before.slice(3));
+    expect(before).toEqual(snapshot);
+    expect(balanceImportRows(after)).toEqual(after);
+    expect(after.flatMap((entry) => entry.series)).toHaveLength(
+      before.flatMap((entry) => entry.series).length,
+    );
+  });
+
+  it('does not promote a 9/10 plateau or an excessively large exceptional group', () => {
+    for (const scores of [
+      Array<number>(60).fill(9),
+      [...Array<number>(30).fill(9.1), ...Array<number>(30).fill(9)],
+    ]) {
+      const before = [
+        row('S', [9.7, 9.6], 1),
+        row('A+', scores, 10),
+        row('B', [], 100),
+      ];
+      const after = balanceImportRows(before);
+      expect(after[0]).toEqual(before[0]);
+    }
+  });
+
   it('fills a sparse B+ from upper rows using only downward moves and preserves the lower tail', () => {
     const make = (
       rank: ImportSeriesRow['rank'],

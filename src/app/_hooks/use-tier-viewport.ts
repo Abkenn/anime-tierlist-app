@@ -39,11 +39,20 @@ export const useTierViewport = ({
         );
       }
     };
-    const observer = new ResizeObserver(measure);
+    let frame: number | undefined;
+    const scheduleMeasure = () => {
+      if (frame === undefined) {
+        frame = requestAnimationFrame(() => {
+          frame = undefined;
+          measure();
+        });
+      }
+    };
+    const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(container);
     observer.observe(canvas);
     observer.observe(viewport);
-    measure();
+    scheduleMeasure();
 
     const desktop = window.matchMedia(
       '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
@@ -56,6 +65,9 @@ export const useTierViewport = ({
     viewport.addEventListener('wheel', wheel, { passive: false });
     return () => {
       observer.disconnect();
+      if (frame !== undefined) {
+        cancelAnimationFrame(frame);
+      }
       viewport.removeEventListener('wheel', wheel);
     };
   }, [viewport, containerRef]);

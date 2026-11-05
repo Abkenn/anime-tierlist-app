@@ -6,7 +6,7 @@ import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { SegmentedControl } from '@/app/_components/ui/segmented-control';
 import { anilistUsernameSchema } from '@/app/_lib/anilist-import';
-import { type ImportProvider, importRanks } from '@/app/_lib/anime-import';
+import type { ImportProvider } from '@/app/_lib/anime-import';
 import { malUsernameSchema } from '@/app/_lib/mal-import';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -124,6 +124,34 @@ export const AnimeImport = ({
   const disabled = busy || generating || applying;
 
   useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => {
+    let active = true;
+    import('@/app/_services/local-tierlist')
+      .then(async ({ readLocalTierlist }) => {
+        const profile = await readLocalTierlist(seed);
+        if (!active) {
+          return;
+        }
+        const mal = profile.animeImports?.mal ?? profile.malImport;
+        const anilist = profile.animeImports?.anilist;
+        setUsernames((current) => ({
+          mal: current.mal || mal?.username || '',
+          anilist: current.anilist || anilist?.username || '',
+        }));
+        if (mal || anilist) {
+          setProvider(
+            anilist && (!mal || anilist.importedAt > mal.importedAt)
+              ? 'anilist'
+              : 'mal',
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [seed]);
+
   useEffect(() => {
     let active = true;
     import('@/app/_services/anime-import-checkpoint')
@@ -268,7 +296,7 @@ export const AnimeImport = ({
             </p>
           )}
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-            {importRanks.map((rank) => (
+            {generated.document.ranks.map((rank) => (
               <div key={rank} className="contents">
                 <dt>{rank}</dt>
                 <dd>
