@@ -70,6 +70,11 @@ export const TierItemButton = ({
       className={cn(
         'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
         'touch-none',
+        image &&
+          !editing &&
+          !dragging &&
+          !positioning &&
+          'pointer-coarse:[clip-path:inset(4px)]',
         dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
         editing && 'z-30 cursor-move ring-2 ring-white',
         image ? 'border-0 bg-transparent' : 'bg-gray',

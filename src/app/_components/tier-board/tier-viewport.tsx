@@ -71,7 +71,7 @@ export const TierViewport = ({
               : undefined,
           } as CSSProperties
         }
-        className="h-full min-h-0 min-w-0 pr-3.5"
+        className="h-full min-h-0 min-w-0 pr-3.5 pb-2.5"
         viewportProps={{
           render: (
             <section

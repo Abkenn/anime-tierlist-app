@@ -50,6 +50,7 @@ export const useTierItemDrag = ({
   const rowDragging = useAtomValue(draggedRankAtom) !== null;
   const reducedMotion = useReducedMotion();
   const session = useRef<DragSession | null>(null);
+  const positioned = useRef(false);
   const [dragging, setDragging] = useState(false);
 
   const settle = (target: TierItemPosition) =>
@@ -191,7 +192,8 @@ export const useTierItemDrag = ({
       return;
     }
 
-    if (rowDragging) {
+    if (!positioned.current || rowDragging) {
+      positioned.current = true;
       controls.stop();
       controls.set({
         x: position.x,

@@ -55,7 +55,7 @@ export const useTierViewport = ({
         listening = intercept;
       }
       const available = container.clientHeight;
-      const gutter = viewport.scrollWidth > viewport.clientWidth + 1 ? 10 : 0;
+      const gutter = 10;
       const content = Math.ceil(canvas.getBoundingClientRect().height) + gutter;
       if (available > 0 && content > 0) {
         setSize((current) =>

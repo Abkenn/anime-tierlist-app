@@ -4,7 +4,13 @@ import { Menu } from '@base-ui/react/menu';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { Ellipsis, Pencil } from 'lucide-react';
 import { motion } from 'motion/react';
-import { type ReactElement, type RefObject, useRef, useState } from 'react';
+import {
+  type ReactElement,
+  type RefObject,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import { renamingItemIdAtom } from '@/app/_atoms/tierlist/find.atoms';
 import { menuItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
@@ -57,6 +63,9 @@ export const TierItemMenu = ({
   position,
   dragging = false,
 }: TierItemMenuProps) => {
+  const focusPopup = useCallback((element: HTMLDivElement | null) => {
+    element?.focus({ preventScroll: true });
+  }, []);
   const mode = useAtomValue(imageModeAtom);
   const setMenuItem = useSetAtom(menuItemIdAtom);
   const setRenamingItem = useSetAtom(renamingItemIdAtom);
@@ -143,6 +152,7 @@ export const TierItemMenu = ({
       </div>
 
       <ContextMenuContent
+        ref={focusPopup}
         spawnFrom={menuOrigin}
         finalFocus={textEditorOpen ? false : finalFocus}
         className="w-72 max-w-[calc(100vw-2rem)]"

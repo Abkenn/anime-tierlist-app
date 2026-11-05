@@ -62,10 +62,10 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         bottom: Math.min(window.innerHeight, view.bottom) - bounds.top,
       };
       const next = {
-        left: visible.left - 300,
-        right: visible.right + 300,
-        top: Math.max(0, visible.top - 300),
-        bottom: visible.bottom + 300,
+        left: Math.floor(visible.left / 256) * 256 - 300,
+        right: Math.ceil(visible.right / 256) * 256 + 300,
+        top: Math.max(0, Math.floor(visible.top / 256) * 256 - 300),
+        bottom: Math.ceil(visible.bottom / 256) * 256 + 300,
         visible,
         columns,
         rem: Number.parseFloat(
@@ -75,9 +75,6 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
       setWindow((previous) =>
         (['left', 'right', 'top', 'bottom', 'columns', 'rem'] as const).every(
           (key) => previous[key] === next[key],
-        ) &&
-        (['left', 'right', 'top', 'bottom'] as const).every(
-          (key) => previous.visible[key] === next.visible[key],
         )
           ? previous
           : next,
