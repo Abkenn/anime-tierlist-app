@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from 'cn';
-import { motion } from 'motion/react';
 import { useTierTitleFrame } from '@/app/_hooks/use-tier-title-frame';
 import { useTitleColors } from '@/app/_hooks/use-title-colors';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
@@ -49,20 +48,16 @@ export const TierItemTitle = ({
       data-tier-title=""
       className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
     >
-      <motion.span
-        initial={false}
-        animate={frame}
-        transition={{ duration: 0 }}
+      <span
+        style={frame}
         className="@container-size relative block overflow-hidden"
       >
-        <motion.span
-          initial={false}
-          animate={{
+        <span
+          style={{
             color,
             fontSize: layout.fontSize,
             textShadow: `0 1px 2px ${outline}, 0 0 2px ${outline}`,
           }}
-          transition={{ duration: 0 }}
           className={cn(
             'absolute inset-x-0 px-1 text-center font-sans font-semibold [text-shadow:0_0.0625rem_0.125rem_var(--ink),0_0_0.125rem_var(--ink)]',
             'leading-tight',
@@ -76,8 +71,8 @@ export const TierItemTitle = ({
           <span className={cn('line-clamp-4 whitespace-pre')}>
             {layout.lines.join('\n')}
           </span>
-        </motion.span>
-      </motion.span>
+        </span>
+      </span>
     </span>
   );
 };

@@ -15,7 +15,8 @@ import {
   draggedRankAtom,
   rankOffsetsAtom,
 } from '@/app/_atoms/tierlist/layout.atoms';
-import { TierItem } from '@/app/_components/tier-item/tier-item';
+import { TierItemInteractionHost } from '@/app/_components/tier-item/tier-item-interaction-host';
+import { TierItemPassive } from '@/app/_components/tier-item/tier-item-passive';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { useTierItemActions } from '@/app/_hooks/use-tier-item-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
@@ -101,115 +102,118 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
 
   return (
     <TierItemActionsContext value={actions}>
-      <p role="status" className="sr-only">
-        {interaction.announcement}
-      </p>
+      <TierItemInteractionHost>
+        <p role="status" className="sr-only">
+          {interaction.announcement}
+        </p>
 
-      <div
-        inert={draggedRank !== null}
-        className="pointer-events-none absolute inset-0"
-        onFocusCapture={(event) =>
-          setFocusedId(
-            (event.target as HTMLElement).closest<HTMLElement>(
-              '[data-tier-item-id]',
-            )?.dataset.tierItemId ?? null,
-          )
-        }
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setFocusedId(null);
+        <div
+          inert={draggedRank !== null}
+          className="pointer-events-none absolute inset-0"
+          onFocusCapture={(event) =>
+            setFocusedId(
+              (event.target as HTMLElement).closest<HTMLElement>(
+                '[data-tier-item-id]',
+              )?.dataset.tierItemId ?? null,
+            )
           }
-        }}
-      >
-        {interaction.dropPosition && (
-          <motion.div
-            aria-hidden="true"
-            data-drop-slot=""
-            initial={false}
-            animate={interaction.dropPosition}
-            transition={{ duration: 0.12 }}
-            className="absolute left-0 top-0 z-1 border border-dashed border-white/80 bg-white/15"
-          />
-        )}
-
-        {interaction.items
-          .filter((item) => {
-            if (
-              item.id === interaction.draggingId ||
-              item.id === editingItemId ||
-              item.id === menuItemId ||
-              item.id === renamingItemId ||
-              item.id === focusedId
-            ) {
-              return true;
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setFocusedId(null);
             }
+          }}
+        >
+          {interaction.dropPosition && (
+            <motion.div
+              aria-hidden="true"
+              data-drop-slot=""
+              initial={false}
+              animate={interaction.dropPosition}
+              transition={{ duration: 0.12 }}
+              className="absolute left-0 top-0 z-1 border border-dashed border-white/80 bg-white/15"
+            />
+          )}
 
-            const rect = geometry.get(item.id);
-            const offset = getRankOffset(
-              offsets,
-              interaction.visibleRank(item),
-            ).get();
+          {interaction.items
+            .filter((item) => {
+              if (
+                item.id === interaction.draggingId ||
+                item.id === editingItemId ||
+                item.id === menuItemId ||
+                item.id === renamingItemId ||
+                item.id === focusedId
+              ) {
+                return true;
+              }
 
-            return (
-              rect &&
-              rect.x + rect.width >= window.left &&
-              rect.x <= window.right &&
-              rect.y + offset + rect.height >= window.top &&
-              rect.y + offset <= window.bottom
-            );
-          })
-          .map((item) => {
-            const position = interaction.position(item);
-            const rank = interaction.visibleRank(item);
+              const rect = geometry.get(item.id);
+              const offset = getRankOffset(
+                offsets,
+                interaction.visibleRank(item),
+              ).get();
 
-            return position && rank ? (
-              <motion.div
-                key={item.id}
-                data-rank-posters={rank}
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  y: getRankOffset(offsets, rank),
-                  zIndex:
-                    draggedRank === rank ||
-                    interaction.draggingId === item.id ||
-                    editingItemId === item.id
-                      ? 40
-                      : 10,
-                }}
-              >
-                <TierItem
+              return (
+                rect &&
+                rect.x + rect.width >= window.left &&
+                rect.x <= window.right &&
+                rect.y + offset + rect.height >= window.top &&
+                rect.y + offset <= window.bottom
+              );
+            })
+            .map((item) => {
+              const position = interaction.position(item);
+              const rank = interaction.visibleRank(item);
+
+              return position && rank ? (
+                <motion.div
                   key={item.id}
-                  id={item.id}
-                  label={getTierItemLabel(item)}
-                  dimmed={
-                    Boolean(query.trim()) && !matchesTierItemLabel(item, query)
-                  }
-                  rank={rank}
-                  editing={editingItemId === item.id}
-                  image={item.image}
-                  priority={priorityIds.has(item.id)}
-                  title={item.title}
-                  crop={item.crop}
-                  trim={item.trim}
-                  sizingControl={
-                    <TierItemSizing
-                      image={
-                        item.image && getTrimmedImage(item.image, item.trim)
-                      }
-                      expansion={item.rowHeightExpansion ?? 1}
-                      onChange={(rowHeightExpansion) =>
-                        interaction.updateItem(item.id, {
-                          rowHeightExpansion,
-                        })
-                      }
-                    />
-                  }
-                  position={position}
-                />
-              </motion.div>
-            ) : null;
-          })}
-      </div>
+                  data-rank-posters={rank}
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    y: getRankOffset(offsets, rank),
+                    zIndex:
+                      draggedRank === rank ||
+                      interaction.draggingId === item.id ||
+                      editingItemId === item.id
+                        ? 40
+                        : 10,
+                  }}
+                >
+                  <TierItemPassive
+                    key={item.id}
+                    id={item.id}
+                    label={getTierItemLabel(item)}
+                    dimmed={
+                      Boolean(query.trim()) &&
+                      !matchesTierItemLabel(item, query)
+                    }
+                    rank={rank}
+                    editing={editingItemId === item.id}
+                    image={item.image}
+                    priority={priorityIds.has(item.id)}
+                    title={item.title}
+                    crop={item.crop}
+                    trim={item.trim}
+                    sizingControl={
+                      <TierItemSizing
+                        image={
+                          item.image && getTrimmedImage(item.image, item.trim)
+                        }
+                        expansion={item.rowHeightExpansion ?? 1}
+                        onChange={(rowHeightExpansion) =>
+                          interaction.updateItem(item.id, {
+                            rowHeightExpansion,
+                          })
+                        }
+                      />
+                    }
+                    position={position}
+                  />
+                </motion.div>
+              ) : null;
+            })}
+        </div>
+      </TierItemInteractionHost>
     </TierItemActionsContext>
   );
 };

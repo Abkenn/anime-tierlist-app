@@ -7,6 +7,7 @@ import {
   type ReactElement,
   type RefObject,
   useContext,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -28,7 +29,7 @@ import type {
   TierKeyboardMove,
 } from '@/app/_types/tierlist.types';
 import { TierCropControls } from './tier-crop-controls';
-import { TierItemButton } from './tier-item-button';
+import { TierItemButton, type TierItemButtonProps } from './tier-item-button';
 import { TierItemMenu } from './tier-item-menu';
 
 const TierImageTrimEditor = dynamic(() =>
@@ -42,7 +43,11 @@ const TierItemTitleEditor = dynamic(() =>
   ),
 );
 
-type TierItemProps = {
+export type TierItemProps = {
+  menuTriggerId?: string;
+  onMenuOpenChange?: (value: boolean) => void;
+  buttonRef?: RefObject<HTMLButtonElement | null>;
+  onButtonChange?: (props: TierItemButtonProps) => void;
   dimmed?: boolean;
   priority?: boolean;
   id: string;
@@ -67,6 +72,10 @@ type TierItemProps = {
 };
 
 export const TierItem = ({
+  menuTriggerId,
+  onMenuOpenChange,
+  buttonRef,
+  onButtonChange,
   dimmed = false,
   priority = false,
   id,
@@ -91,7 +100,8 @@ export const TierItem = ({
 }: TierItemProps) => {
   const actions = useContext(TierItemActionsContext);
   const fallbackBoardRef = useRef<HTMLDivElement>(null);
-  const itemRef = useRef<HTMLButtonElement>(null);
+  const localItemRef = useRef<HTMLButtonElement>(null);
+  const itemRef = buttonRef ?? localItemRef;
   const [titleDraft, setTitleDraft] = useState<ItemTitle | null>(null);
   const [localTrimEditing, setLocalTrimEditing] = useState(false);
   const [localPositioning, setLocalPositioning] = useState(false);
@@ -268,6 +278,8 @@ export const TierItem = ({
   return (
     <>
       <TierItemMenu
+        menuTriggerId={menuTriggerId}
+        onMenuOpenChange={onMenuOpenChange}
         position={position}
         dragging={drag.dragging}
         itemId={id}
@@ -295,7 +307,8 @@ export const TierItem = ({
             : onCropChange?.({ x: 0.5, y: 0.5 })
         }
         trigger={
-          <TierItemButton
+          <TierItemButtonBridge
+            onButtonChange={onButtonChange}
             data-tier-item-id={id}
             className={dimmed ? 'opacity-20' : undefined}
             ref={itemRef}
@@ -375,4 +388,17 @@ export const TierItem = ({
       )}
     </>
   );
+};
+
+// Active controls publish into the existing button so focus and pointer capture survive.
+const TierItemButtonBridge = ({
+  onButtonChange,
+  ...props
+}: TierItemButtonProps & {
+  onButtonChange?: (props: TierItemButtonProps) => void;
+}) => {
+  useLayoutEffect(() => {
+    onButtonChange?.(props);
+  });
+  return onButtonChange ? null : <TierItemButton {...props} />;
 };

@@ -16,7 +16,7 @@ import { TierCropPreview } from './tier-crop-preview';
 import { TierItemImage } from './tier-item-image';
 import { TierItemTitle } from './tier-item-title';
 
-type TierItemButtonProps = HTMLMotionProps<'button'> & {
+export type TierItemButtonProps = HTMLMotionProps<'button'> & {
   ref?: Ref<HTMLButtonElement>;
   label: string;
   rank: string;
@@ -69,7 +69,7 @@ export const TierItemButton = ({
       data-tier-item={label}
       className={cn(
         'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
-        'touch-none',
+        'touch-none [-webkit-touch-callout:none]',
         image &&
           !editing &&
           !dragging &&

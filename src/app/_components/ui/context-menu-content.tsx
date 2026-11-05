@@ -1,6 +1,7 @@
 'use client';
 
 import { ContextMenu as Primitive } from '@base-ui/react/context-menu';
+import { Menu } from '@base-ui/react/menu';
 import { cn } from 'cn';
 import { animate, motion, useReducedMotion } from 'motion/react';
 import { useCallback } from 'react';
@@ -8,14 +9,19 @@ import { useCallback } from 'react';
 type ContextMenuContentProps = Primitive.Popup.Props & {
   positionerProps?: Primitive.Positioner.Props;
   spawnFrom?: { x: number; y: number };
+  menu?: boolean;
 };
 
 export const ContextMenuContent = ({
   className,
   positionerProps,
   spawnFrom,
+  menu = false,
   ...props
 }: ContextMenuContentProps) => {
+  const Portal = menu ? Menu.Portal : Primitive.Portal;
+  const Positioner = menu ? Menu.Positioner : Primitive.Positioner;
+  const Popup = menu ? Menu.Popup : Primitive.Popup;
   const reducedMotion = useReducedMotion();
   const surface = useCallback(
     (element: HTMLDivElement | null) => {
@@ -43,15 +49,15 @@ export const ContextMenuContent = ({
   );
 
   return (
-    <Primitive.Portal>
-      <Primitive.Positioner
+    <Portal>
+      <Positioner
         className="isolate z-50 outline-none"
         side="right"
         align="start"
         alignOffset={4}
         {...positionerProps}
       >
-        <Primitive.Popup
+        <Popup
           render={
             spawnFrom ? (
               <motion.div
@@ -68,7 +74,7 @@ export const ContextMenuContent = ({
           )}
           {...props}
         />
-      </Primitive.Positioner>
-    </Primitive.Portal>
+      </Positioner>
+    </Portal>
   );
 };

@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from 'cn';
-import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { preconnect } from 'react-dom';
@@ -14,8 +13,6 @@ import type {
   TierImageMode,
   TierImageTrim,
 } from '@/app/_types/tierlist.types';
-
-const MotionImage = motion.create(Image);
 
 type TierItemImageProps = {
   image: TierImage;
@@ -133,7 +130,7 @@ export const TierItemImage = ({
 
   return (
     <span className={placeholderClass} aria-busy={loading}>
-      <MotionImage
+      <Image
         src={source}
         crossOrigin={posterCrossOrigin(image.src)}
         alt={image.alt}
@@ -148,11 +145,10 @@ export const TierItemImage = ({
           mode === 'cover' ? 'object-cover' : 'object-contain',
           loading && 'invisible',
         )}
-        animate={{
+        style={{
           objectPosition:
             mode === 'cover' ? `${crop.x * 100}% ${crop.y * 100}%` : '50% 50%',
         }}
-        transition={{ duration: 0 }}
         onError={failed}
         onLoad={loaded}
       />

@@ -8,6 +8,8 @@ import {
   type ReactElement,
   type RefObject,
   useCallback,
+  useContext,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -19,8 +21,11 @@ import { ContextMenuContent } from '@/app/_components/ui/context-menu-content';
 import { ContextMenuItem } from '@/app/_components/ui/context-menu-item';
 import { ContextMenuTrigger } from '@/app/_components/ui/context-menu-trigger';
 import type { TierItemPosition } from '@/app/_lib/tier-board-geometry';
+import { TierItemInteractionContext } from './tier-item-interaction-host';
 
 type TierItemMenuProps = {
+  menuTriggerId?: string;
+  onMenuOpenChange?: (value: boolean) => void;
   itemId?: string;
   label?: string;
   onLabelChange?: (label: string) => void;
@@ -43,6 +48,8 @@ type TierItemMenuProps = {
 };
 
 export const TierItemMenu = ({
+  menuTriggerId,
+  onMenuOpenChange,
   itemId,
   label = 'Unknown',
   onLabelChange,
@@ -63,8 +70,13 @@ export const TierItemMenu = ({
   position,
   dragging = false,
 }: TierItemMenuProps) => {
+  const host = useContext(TierItemInteractionContext);
+  const focusedPopup = useRef<HTMLDivElement | null>(null);
   const focusPopup = useCallback((element: HTMLDivElement | null) => {
-    element?.focus({ preventScroll: true });
+    if (element && focusedPopup.current !== element) {
+      focusedPopup.current = element;
+      element.focus({ preventScroll: true });
+    }
   }, []);
   const mode = useAtomValue(imageModeAtom);
   const setMenuItem = useSetAtom(menuItemIdAtom);
@@ -97,6 +109,7 @@ export const TierItemMenu = ({
     }
 
     setOpen(next);
+    host?.open(next);
     setMenuItem((current) => {
       if (next) {
         return itemId ?? null;
@@ -110,48 +123,73 @@ export const TierItemMenu = ({
     }
   };
 
-  return (
-    <ContextMenu
-      open={open}
-      onOpenChange={changeOpen}
-      highlightItemOnHover={!renaming}
-    >
-      <div
-        className="group/item contents"
-        onPointerDownCapture={(event) =>
-          setMenuOrigin({ x: event.clientX, y: event.clientY })
-        }
-        onContextMenuCapture={(event) =>
-          setMenuOrigin({ x: event.clientX, y: event.clientY })
-        }
-      >
-        <ContextMenuTrigger
-          render={trigger}
-          aria-haspopup={mode === 'natural' ? 'dialog' : 'menu'}
-        />
+  const menuState = useRef({ changeOpen, open, dragging });
 
-        {position && !dragging && !editing && (
-          <motion.div
-            initial={false}
-            animate={position}
-            className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:visible`}
-          >
-            <Menu.Trigger
-              aria-label="Edit poster"
-              tabIndex={-1}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                changeOpen(true);
-              }}
-              className="pointer-events-auto absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center border border-white/20 bg-black/65 text-white hover:bg-black/90 focus-visible:outline-2 focus-visible:outline-white"
+  useLayoutEffect(() => {
+    menuState.current = { changeOpen, open, dragging };
+  });
+
+  useLayoutEffect(() => {
+    host?.highlight(!renaming);
+  }, [host, renaming]);
+
+  useLayoutEffect(
+    () =>
+      host?.register({
+        id: itemId ?? '',
+        triggerId: menuTriggerId,
+        changeOpen: (value) => menuState.current.changeOpen(value),
+        origin: setMenuOrigin,
+        setRootOpen: (value) => onMenuOpenChange?.(value),
+        locked: () => menuState.current.open || menuState.current.dragging,
+      }),
+    [host, itemId, menuTriggerId, onMenuOpenChange],
+  );
+
+  const content = (
+    <>
+      {host ? (
+        trigger
+      ) : (
+        <div
+          className="group/item contents"
+          onPointerDownCapture={(event) =>
+            setMenuOrigin({ x: event.clientX, y: event.clientY })
+          }
+          onContextMenuCapture={(event) =>
+            setMenuOrigin({ x: event.clientX, y: event.clientY })
+          }
+        >
+          <ContextMenuTrigger
+            render={trigger}
+            aria-haspopup={mode === 'natural' ? 'dialog' : 'menu'}
+          />
+
+          {position && !dragging && !editing && (
+            <motion.div
+              initial={false}
+              animate={position}
+              className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:visible`}
             >
-              <Ellipsis aria-hidden="true" className="size-4" />
-            </Menu.Trigger>
-          </motion.div>
-        )}
-      </div>
+              <Menu.Trigger
+                aria-label="Edit poster"
+                tabIndex={-1}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  changeOpen(true);
+                }}
+                className="pointer-events-auto absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center border border-white/20 bg-black/65 text-white hover:bg-black/90 focus-visible:outline-2 focus-visible:outline-white"
+              >
+                <Ellipsis aria-hidden="true" className="size-4" />
+              </Menu.Trigger>
+            </motion.div>
+          )}
+        </div>
+      )}
 
       <ContextMenuContent
+        menu={!!host}
+        onMouseUpCapture={host?.contextRelease}
         ref={focusPopup}
         spawnFrom={menuOrigin}
         finalFocus={textEditorOpen ? false : finalFocus}
@@ -267,6 +305,17 @@ export const TierItemMenu = ({
           <ContextMenuItem disabled>Image centered in square</ContextMenuItem>
         )}
       </ContextMenuContent>
+    </>
+  );
+  return host ? (
+    content
+  ) : (
+    <ContextMenu
+      open={open}
+      onOpenChange={changeOpen}
+      highlightItemOnHover={!renaming}
+    >
+      {content}
     </ContextMenu>
   );
 };
