@@ -3,7 +3,7 @@
 import { cn } from 'cn';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { preconnect } from 'react-dom';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
@@ -40,6 +40,46 @@ export const TierItemImage = ({
   const [loadedSource, setLoadedSource] = useState<string | null>(null);
   const loading = loadedSource !== image.src;
   const source = posterDisplaySource(image.src);
+  const notifyReady = useEffectEvent(() => onReady?.());
+
+  useEffect(() => {
+    if (mode !== 'natural') {
+      return;
+    }
+    // SVG load events can precede React's commit during a cached/concurrent
+    // remount. An HTML image also exposes synchronous cache readiness.
+    let active = true;
+    let settled = false;
+    const resource = new window.Image();
+    const ready = () => {
+      if (!active || settled) {
+        return;
+      }
+      settled = true;
+      setLoadedSource(image.src);
+      notifyReady();
+    };
+    resource.onload = ready;
+    resource.onerror = () => {
+      if (active) {
+        setFailedSource(image.src);
+      }
+    };
+    const crossOrigin = posterCrossOrigin(image.src);
+    if (crossOrigin) {
+      resource.crossOrigin = crossOrigin;
+    }
+    resource.src = source;
+    if (resource.complete && resource.naturalWidth > 0) {
+      ready();
+    }
+    return () => {
+      active = false;
+      resource.onload = null;
+      resource.onerror = null;
+    };
+  }, [image.src, mode, source]);
+
   const placeholderClass = cn(
     'relative block size-full',
     loading && showPlaceholder && 'bg-muted',
