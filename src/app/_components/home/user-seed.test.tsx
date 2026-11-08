@@ -125,7 +125,7 @@ it('keeps MAL generation, username and results alive while switching tabs and cl
       }}
     />,
   );
-  fireEvent.click(screen.getByRole('tab', { name: 'Import' }));
+  fireEvent.click(screen.getByRole('tab', { name: 'MAL/AniList' }));
   fireEvent.change(
     screen.getByRole('textbox', { name: 'Public MAL username' }),
     { target: { value: 'Abkenn' } },
@@ -135,7 +135,7 @@ it('keeps MAL generation, username and results alive while switching tabs and cl
     await screen.findByRole('progressbar', { name: 'Checking seasons' }),
   ).toHaveAttribute('aria-valuenow', '42');
   fireEvent.click(screen.getByRole('tab', { name: 'Save for later' }));
-  fireEvent.click(screen.getByRole('tab', { name: 'Import' }));
+  fireEvent.click(screen.getByRole('tab', { name: 'MAL/AniList' }));
   expect(
     screen.getByRole('progressbar', { name: 'Checking seasons' }),
   ).toHaveAttribute('aria-valuenow', '42');

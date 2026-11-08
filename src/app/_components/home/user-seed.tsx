@@ -286,13 +286,20 @@ export const UserSeed = ({
                 className="relative mt-3 flex gap-4 border-b border-divider"
                 aria-label="Save or import a tierlist"
               >
-                {(['save', 'import'] as const).map((value) => (
+                {[
+                  { value: 'save', label: 'Save for later' },
+                  { value: 'import', label: 'Import' },
+                  ...(animeImport
+                    ? [{ value: 'anime', label: 'MAL/AniList' }]
+                    : []),
+                ].map(({ value, label }) => (
                   <Tabs.Tab
                     key={value}
                     value={value}
                     className="relative min-h-9 cursor-pointer px-1 font-medium text-muted-foreground data-active:text-foreground"
                   >
-                    {value === 'save' ? 'Save for later' : 'Import'}
+                    {label}
+
                     {tab === value && (
                       <motion.span
                         layoutId={`${importId}-tab`}
@@ -446,6 +453,9 @@ export const UserSeed = ({
                   busy={busy}
                   onOpened={() => onOpenChange(false)}
                 />
+              </Tabs.Panel>
+
+              <Tabs.Panel value="anime" keepMounted>
                 {animeImport && (
                   <AnimeImport
                     key={animeImport.seed}
