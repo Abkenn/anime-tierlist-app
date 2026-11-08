@@ -7,6 +7,7 @@ import { OfflineStatus } from '@/app/_components/offline/offline-status';
 import { AppFrame } from '@/app/_components/shell/app-frame';
 
 import { HomeLink } from '@/app/_components/shell/home-link';
+import { PerformanceInsights } from '@/app/_components/shell/speed-insights';
 import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
 import { WebAnalytics } from '@/app/_components/shell/web-analytics';
 import { Toaster } from '@/app/_components/ui/toast';
@@ -67,7 +68,13 @@ const RootLayout = ({ children, preview }: RootLayoutProps) => (
         <Toaster />
       </ThemeProvider>
 
-      {process.env.VERCEL_ENV === 'production' && <WebAnalytics />}
+      {process.env.VERCEL_ENV === 'production' && (
+        <>
+          <WebAnalytics />
+
+          <PerformanceInsights />
+        </>
+      )}
     </body>
   </html>
 );
