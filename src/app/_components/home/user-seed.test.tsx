@@ -12,6 +12,13 @@ import type { generateAnimeTierlist } from '@/app/_services/generate-anime-tierl
 import { UserSeed } from './user-seed';
 
 const malGeneration = vi.hoisted(() => vi.fn());
+vi.mock('@/app/_services/anime-import-queue.actions', () => ({
+  pollAnimeImportQueue: vi.fn(async () => ({
+    ok: true,
+    value: { position: 0 },
+  })),
+}));
+
 vi.mock('@/app/_services/run-anime-import', () => ({
   runAnimeImport: malGeneration,
 }));
