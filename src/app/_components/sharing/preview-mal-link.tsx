@@ -64,6 +64,15 @@ export const PreviewMalLink = ({ item, style }: PreviewMalLinkProps) => {
       onPointerEnter={load}
       onFocusCapture={load}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 hidden items-center justify-center overflow-hidden bg-neutral-800/80 px-2 py-8 text-center text-xs leading-snug font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:flex"
+      >
+        <span className="line-clamp-4 wrap-anywhere">
+          {getTierItemLabel(item)}
+        </span>
+      </span>
+
       <a
         data-preview-mal=""
         href={id ? `https://myanimelist.net/anime/${id}` : undefined}
