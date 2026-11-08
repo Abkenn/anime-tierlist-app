@@ -132,3 +132,29 @@ model AnimeImportQueue {
   @@index([provider, createdAt])
   @@index([expiresAt])
 }
+
+model AnimeImportAttempt {
+  id String @id
+  ownerKey String
+  provider String
+  startedAt BigInt
+  lastSeenAt BigInt
+  admittedAt BigInt?
+  releasedAt BigInt?
+  generatedAt BigInt?
+  appliedAt BigInt?
+  endedAt BigInt?
+  outcome String?
+  maxQueueDepth Int
+
+  @@index([provider, startedAt])
+}
+
+model AnimeImportQueueSample {
+  id String @id
+  provider String
+  observedAt BigInt
+  depth Int
+
+  @@index([provider, observedAt])
+}

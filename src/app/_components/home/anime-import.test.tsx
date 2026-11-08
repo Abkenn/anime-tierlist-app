@@ -3,6 +3,13 @@ import { expect, it, vi } from 'vitest';
 import { AnimeImport } from './anime-import';
 
 const generate = vi.hoisted(() => vi.fn());
+const metric = vi.hoisted(() =>
+  vi.fn(async (_input: unknown) => ({ ok: true })),
+);
+
+vi.mock('@/app/_services/anime-import-queue.actions', () => ({
+  pollAnimeImportQueue: metric,
+}));
 
 const readProfile = vi.hoisted(() => vi.fn(async () => ({})));
 vi.mock('@/app/_services/run-anime-import', () => ({
@@ -43,6 +50,7 @@ it('reviews generated results before applying and requires explicit replacement 
     name: 'Use generated tierlist',
   });
   expect(onApply).not.toHaveBeenCalled();
+  expect(metric).not.toHaveBeenCalled();
   expect(apply).toBeDisabled();
   fireEvent.click(
     screen.getByRole('checkbox', { name: /Replace my current tierlist/u }),
@@ -52,6 +60,12 @@ it('reviews generated results before applying and requires explicit replacement 
   expect(onApply).toHaveBeenCalledWith(document, {
     seed: 'a'.repeat(64),
     revision: 7,
+  });
+  expect(metric).toHaveBeenCalledWith({
+    seed: 'a'.repeat(64),
+    ticket: expect.any(String),
+    provider: 'mal',
+    event: 'applied',
   });
   expect(
     screen.getByRole('textbox', { name: 'Public MAL username' }),

@@ -4,8 +4,16 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "AnimeImportAttempt": {
+      "model": "AnimeImportAttempt",
+      "namespace": "public"
+    },
     "AnimeImportQueue": {
       "model": "AnimeImportQueue",
+      "namespace": "public"
+    },
+    "AnimeImportQueueSample": {
+      "model": "AnimeImportQueueSample",
       "namespace": "public"
     },
     "AuthAccount": {
@@ -57,6 +65,137 @@
     "namespaces": {
       "public": {
         "models": {
+          "AnimeImportAttempt": {
+            "fields": {
+              "admittedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "appliedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "endedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "generatedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastSeenAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "maxQueueDepth": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "provider": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "releasedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "startedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "admittedAt": {
+                  "column": "admittedAt"
+                },
+                "appliedAt": {
+                  "column": "appliedAt"
+                },
+                "endedAt": {
+                  "column": "endedAt"
+                },
+                "generatedAt": {
+                  "column": "generatedAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lastSeenAt": {
+                  "column": "lastSeenAt"
+                },
+                "maxQueueDepth": {
+                  "column": "maxQueueDepth"
+                },
+                "outcome": {
+                  "column": "outcome"
+                },
+                "ownerKey": {
+                  "column": "ownerKey"
+                },
+                "provider": {
+                  "column": "provider"
+                },
+                "releasedAt": {
+                  "column": "releasedAt"
+                },
+                "startedAt": {
+                  "column": "startedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AnimeImportAttempt"
+            }
+          },
           "AnimeImportQueue": {
             "fields": {
               "createdAt": {
@@ -116,6 +255,57 @@
               },
               "namespaceId": "public",
               "table": "AnimeImportQueue"
+            }
+          },
+          "AnimeImportQueueSample": {
+            "fields": {
+              "depth": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "observedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "provider": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "depth": {
+                  "column": "depth"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "observedAt": {
+                  "column": "observedAt"
+                },
+                "provider": {
+                  "column": "provider"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AnimeImportQueueSample"
             }
           },
           "AuthAccount": {
@@ -1006,6 +1196,88 @@
       "public": {
         "entries": {
           "table": {
+            "AnimeImportAttempt": {
+              "columns": {
+                "admittedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "appliedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "endedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "generatedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "lastSeenAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                },
+                "maxQueueDepth": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "outcome": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "ownerKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "provider": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "releasedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": true
+                },
+                "startedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "provider",
+                    "startedAt"
+                  ],
+                  "name": "AnimeImportAttempt_provider_startedAt_idx_a990f843",
+                  "prefix": "AnimeImportAttempt_provider_startedAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "AnimeImportQueue": {
               "columns": {
                 "createdAt": {
@@ -1051,6 +1323,48 @@
                   ],
                   "name": "AnimeImportQueue_provider_createdAt_idx_fd3b9fd1",
                   "prefix": "AnimeImportQueue_provider_createdAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "AnimeImportQueueSample": {
+              "columns": {
+                "depth": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "observedAt": {
+                  "codecId": "pg/int8@1",
+                  "dataType": "pg/int8",
+                  "nullable": false
+                },
+                "provider": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "provider",
+                    "observedAt"
+                  ],
+                  "name": "AnimeImportQueueSample_provider_observedAt_idx_1d92b588",
+                  "prefix": "AnimeImportQueueSample_provider_observedAt_idx",
                   "unique": false
                 }
               ],
@@ -1814,7 +2128,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0c9de45e96f86f3536cbd992205257dd05c181ea9ac929bb77b344041f53b546"
+    "storageHash": "746c37810dfa1fd1e5bb738fb6f38dcfc5c63b7baaab8ee1a21b43e8207e5ede"
   },
   "capabilities": {
     "postgres": {

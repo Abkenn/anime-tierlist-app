@@ -10,6 +10,7 @@ import type { ImportProvider } from '@/app/_lib/anime-import';
 import { malUsernameSchema } from '@/app/_lib/mal-import';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
+import { pollAnimeImportQueue } from '@/app/_services/anime-import-queue.actions';
 import type {
   AnimeImportProgress,
   generateAnimeTierlist,
@@ -29,6 +30,8 @@ type AnimeImportProps = {
 
 type Generated = Awaited<ReturnType<typeof generateAnimeTierlist>> & {
   expected: { seed: string; revision: number };
+  ticket: string;
+  provider: ImportProvider;
 };
 
 export const AnimeImport = ({
@@ -61,6 +64,7 @@ export const AnimeImport = ({
         return `Enter a valid ${providerLabel} username (2–${provider === 'mal' ? 16 : 20} letters, numbers, underscores or hyphens).`;
       }
       const request = new AbortController();
+      const ticket = crypto.randomUUID();
       controller.current = request;
       const expected = { seed, revision };
       setGenerated(null);
@@ -75,6 +79,7 @@ export const AnimeImport = ({
         const profile = await readLocalTierlist(seed);
         const result = await generateTierlist({
           seed,
+          ticket,
           onSavedProgress: () => setResumable(true),
           provider,
           histories: profile.animeImports,
@@ -83,7 +88,7 @@ export const AnimeImport = ({
           signal: request.signal,
           onProgress: setProgress,
         });
-        setGenerated({ ...result, expected });
+        setGenerated({ ...result, expected, ticket, provider });
 
         return '';
       } catch (failure) {
@@ -106,6 +111,12 @@ export const AnimeImport = ({
     }
     try {
       await onApply(generated.document, generated.expected);
+      void pollAnimeImportQueue({
+        seed: generated.expected.seed,
+        ticket: generated.ticket,
+        provider: generated.provider,
+        event: 'applied',
+      }).catch(() => {});
       const { clearAnimeImportCheckpoint } = await import(
         '@/app/_services/anime-import-checkpoint'
       );

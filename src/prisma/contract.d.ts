@@ -21,7 +21,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0c9de45e96f86f3536cbd992205257dd05c181ea9ac929bb77b344041f53b546'>;
+  StorageHashBase<'746c37810dfa1fd1e5bb738fb6f38dcfc5c63b7baaab8ee1a21b43e8207e5ede'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -236,11 +236,31 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AnimeImportAttempt: {
+      readonly admittedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly appliedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly endedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly generatedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly lastSeenAt: CodecTypes['pg/int8@1']['output'];
+      readonly maxQueueDepth: CodecTypes['pg/int4@1']['output'];
+      readonly outcome: CodecTypes['pg/text@1']['output'] | null;
+      readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+      readonly releasedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly startedAt: CodecTypes['pg/int8@1']['output'];
+    };
     readonly AnimeImportQueue: {
       readonly createdAt: CodecTypes['pg/int8@1']['output'];
       readonly expiresAt: CodecTypes['pg/int8@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+    };
+    readonly AnimeImportQueueSample: {
+      readonly depth: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly observedAt: CodecTypes['pg/int8@1']['output'];
       readonly provider: CodecTypes['pg/text@1']['output'];
     };
     readonly AuthAccount: {
@@ -331,11 +351,31 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AnimeImportAttempt: {
+      readonly admittedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly appliedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly endedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly generatedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly lastSeenAt: CodecTypes['pg/int8@1']['input'];
+      readonly maxQueueDepth: CodecTypes['pg/int4@1']['input'];
+      readonly outcome: CodecTypes['pg/text@1']['input'] | null;
+      readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+      readonly releasedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly startedAt: CodecTypes['pg/int8@1']['input'];
+    };
     readonly AnimeImportQueue: {
       readonly createdAt: CodecTypes['pg/int8@1']['input'];
       readonly expiresAt: CodecTypes['pg/int8@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+    };
+    readonly AnimeImportQueueSample: {
+      readonly depth: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly observedAt: CodecTypes['pg/int8@1']['input'];
       readonly provider: CodecTypes['pg/text@1']['input'];
     };
     readonly AuthAccount: {
@@ -426,11 +466,31 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly AnimeImportAttempt: {
+      readonly admittedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly appliedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly endedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly generatedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly lastSeenAt: CodecTypes['pg/int8@1']['output'];
+      readonly maxQueueDepth: CodecTypes['pg/int4@1']['output'];
+      readonly outcome: CodecTypes['pg/text@1']['output'] | null;
+      readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+      readonly releasedAt: CodecTypes['pg/int8@1']['output'] | null;
+      readonly startedAt: CodecTypes['pg/int8@1']['output'];
+    };
     readonly AnimeImportQueue: {
       readonly createdAt: CodecTypes['pg/int8@1']['output'];
       readonly expiresAt: CodecTypes['pg/int8@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly ownerKey: CodecTypes['pg/text@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+    };
+    readonly AnimeImportQueueSample: {
+      readonly depth: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly observedAt: CodecTypes['pg/int8@1']['output'];
       readonly provider: CodecTypes['pg/text@1']['output'];
     };
     readonly AuthAccount: {
@@ -521,11 +581,31 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly AnimeImportAttempt: {
+      readonly admittedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly appliedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly endedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly generatedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly lastSeenAt: CodecTypes['pg/int8@1']['input'];
+      readonly maxQueueDepth: CodecTypes['pg/int4@1']['input'];
+      readonly outcome: CodecTypes['pg/text@1']['input'] | null;
+      readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+      readonly releasedAt: CodecTypes['pg/int8@1']['input'] | null;
+      readonly startedAt: CodecTypes['pg/int8@1']['input'];
+    };
     readonly AnimeImportQueue: {
       readonly createdAt: CodecTypes['pg/int8@1']['input'];
       readonly expiresAt: CodecTypes['pg/int8@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly ownerKey: CodecTypes['pg/text@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+    };
+    readonly AnimeImportQueueSample: {
+      readonly depth: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly observedAt: CodecTypes['pg/int8@1']['input'];
       readonly provider: CodecTypes['pg/text@1']['input'];
     };
     readonly AuthAccount: {
@@ -616,11 +696,33 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AnimeImportAttempt = {
+    admittedAt: CodecTypes['pg/int8@1']['output'] | null;
+    appliedAt: CodecTypes['pg/int8@1']['output'] | null;
+    endedAt: CodecTypes['pg/int8@1']['output'] | null;
+    generatedAt: CodecTypes['pg/int8@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    lastSeenAt: CodecTypes['pg/int8@1']['output'];
+    maxQueueDepth: CodecTypes['pg/int4@1']['output'];
+    outcome: CodecTypes['pg/text@1']['output'] | null;
+    ownerKey: CodecTypes['pg/text@1']['output'];
+    provider: CodecTypes['pg/text@1']['output'];
+    releasedAt: CodecTypes['pg/int8@1']['output'] | null;
+    startedAt: CodecTypes['pg/int8@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_AnimeImportQueue = {
     createdAt: CodecTypes['pg/int8@1']['output'];
     expiresAt: CodecTypes['pg/int8@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     ownerKey: CodecTypes['pg/text@1']['output'];
+    provider: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_AnimeImportQueueSample = {
+    depth: CodecTypes['pg/int4@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    observedAt: CodecTypes['pg/int8@1']['output'];
     provider: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
@@ -729,7 +831,9 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AnimeImportAttempt: Models.public_AnimeImportAttempt;
     AnimeImportQueue: Models.public_AnimeImportQueue;
+    AnimeImportQueueSample: Models.public_AnimeImportQueueSample;
     AuthAccount: Models.public_AuthAccount;
     AuthRateLimit: Models.public_AuthRateLimit;
     AuthSession: Models.public_AuthSession;
@@ -762,6 +866,93 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AnimeImportAttempt: {
+              columns: {
+                readonly admittedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly appliedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly endedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly generatedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly lastSeenAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly maxQueueDepth: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly outcome: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly ownerKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly provider: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly releasedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly startedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'AnimeImportAttempt_provider_startedAt_idx_a990f843';
+                  readonly prefix: 'AnimeImportAttempt_provider_startedAt_idx';
+                  readonly columns: readonly ['provider', 'startedAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly AnimeImportQueue: {
               columns: {
                 readonly createdAt: {
@@ -808,6 +999,45 @@ type ContractBase = Omit<
                   readonly name: 'AnimeImportQueue_provider_createdAt_idx_fd3b9fd1';
                   readonly prefix: 'AnimeImportQueue_provider_createdAt_idx';
                   readonly columns: readonly ['provider', 'createdAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly AnimeImportQueueSample: {
+              columns: {
+                readonly depth: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly observedAt: {
+                  readonly dataType: 'pg/int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly provider: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'AnimeImportQueueSample_provider_observedAt_idx_1d92b588';
+                  readonly prefix: 'AnimeImportQueueSample_provider_observedAt_idx';
+                  readonly columns: readonly ['provider', 'observedAt'];
                   readonly unique: false;
                 },
               ];
@@ -1449,9 +1679,17 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AnimeImportAttempt: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AnimeImportAttempt';
+    };
     readonly AnimeImportQueue: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AnimeImportQueue';
+    };
+    readonly AnimeImportQueueSample: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AnimeImportQueueSample';
     };
     readonly AuthAccount: {
       readonly namespace: 'public' & NamespaceId;
@@ -1499,6 +1737,77 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AnimeImportAttempt: {
+            readonly fields: {
+              readonly admittedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly appliedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly endedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly generatedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly lastSeenAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly maxQueueDepth: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly outcome: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly provider: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly releasedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly startedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'AnimeImportAttempt';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly admittedAt: { readonly column: 'admittedAt' };
+                readonly appliedAt: { readonly column: 'appliedAt' };
+                readonly endedAt: { readonly column: 'endedAt' };
+                readonly generatedAt: { readonly column: 'generatedAt' };
+                readonly id: { readonly column: 'id' };
+                readonly lastSeenAt: { readonly column: 'lastSeenAt' };
+                readonly maxQueueDepth: { readonly column: 'maxQueueDepth' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly ownerKey: { readonly column: 'ownerKey' };
+                readonly provider: { readonly column: 'provider' };
+                readonly releasedAt: { readonly column: 'releasedAt' };
+                readonly startedAt: { readonly column: 'startedAt' };
+              };
+            };
+          };
           readonly AnimeImportQueue: {
             readonly fields: {
               readonly createdAt: {
@@ -1531,6 +1840,37 @@ type ContractBase = Omit<
                 readonly expiresAt: { readonly column: 'expiresAt' };
                 readonly id: { readonly column: 'id' };
                 readonly ownerKey: { readonly column: 'ownerKey' };
+                readonly provider: { readonly column: 'provider' };
+              };
+            };
+          };
+          readonly AnimeImportQueueSample: {
+            readonly fields: {
+              readonly depth: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly observedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly provider: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'AnimeImportQueueSample';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly depth: { readonly column: 'depth' };
+                readonly id: { readonly column: 'id' };
+                readonly observedAt: { readonly column: 'observedAt' };
                 readonly provider: { readonly column: 'provider' };
               };
             };

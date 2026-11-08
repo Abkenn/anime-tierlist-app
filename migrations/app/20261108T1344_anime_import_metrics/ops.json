@@ -1,0 +1,158 @@
+[
+  {
+    "id": "table.AnimeImportAttempt",
+    "label": "Create table \"AnimeImportAttempt\"",
+    "summary": "Creates table \"AnimeImportAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "AnimeImportAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"AnimeImportAttempt\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportAttempt\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"AnimeImportAttempt\"",
+        "sql": "CREATE TABLE \"public\".\"AnimeImportAttempt\" (\n  \"admittedAt\" int8,\n  \"appliedAt\" int8,\n  \"endedAt\" int8,\n  \"generatedAt\" int8,\n  \"id\" text NOT NULL,\n  \"lastSeenAt\" int8 NOT NULL,\n  \"maxQueueDepth\" int4 NOT NULL,\n  \"outcome\" text,\n  \"ownerKey\" text NOT NULL,\n  \"provider\" text NOT NULL,\n  \"releasedAt\" int8,\n  \"startedAt\" int8 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"AnimeImportAttempt\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportAttempt\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.AnimeImportQueueSample",
+    "label": "Create table \"AnimeImportQueueSample\"",
+    "summary": "Creates table \"AnimeImportQueueSample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "AnimeImportQueueSample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"AnimeImportQueueSample\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportQueueSample\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"AnimeImportQueueSample\"",
+        "sql": "CREATE TABLE \"public\".\"AnimeImportQueueSample\" (\n  \"depth\" int4 NOT NULL,\n  \"id\" text NOT NULL,\n  \"observedAt\" int8 NOT NULL,\n  \"provider\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"AnimeImportQueueSample\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportQueueSample\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AnimeImportAttempt.AnimeImportAttempt_provider_startedAt_idx_a990f843",
+    "label": "Create index \"AnimeImportAttempt_provider_startedAt_idx_a990f843\" on \"AnimeImportAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AnimeImportAttempt_provider_startedAt_idx_a990f843",
+        "table": "AnimeImportAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AnimeImportAttempt_provider_startedAt_idx_a990f843\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportAttempt_provider_startedAt_idx_a990f843\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AnimeImportAttempt_provider_startedAt_idx_a990f843\"",
+        "sql": "CREATE INDEX \"AnimeImportAttempt_provider_startedAt_idx_a990f843\" ON \"public\".\"AnimeImportAttempt\" (\"provider\", \"startedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AnimeImportAttempt_provider_startedAt_idx_a990f843\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportAttempt_provider_startedAt_idx_a990f843\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.AnimeImportQueueSample.AnimeImportQueueSample_provider_observedAt_idx_1d92b588",
+    "label": "Create index \"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\" on \"AnimeImportQueueSample\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "AnimeImportQueueSample_provider_observedAt_idx_1d92b588",
+        "table": "AnimeImportQueueSample"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\"",
+        "sql": "CREATE INDEX \"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\" ON \"public\".\"AnimeImportQueueSample\" (\"provider\", \"observedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"AnimeImportQueueSample_provider_observedAt_idx_1d92b588\""
+        ]
+      }
+    ]
+  }
+]

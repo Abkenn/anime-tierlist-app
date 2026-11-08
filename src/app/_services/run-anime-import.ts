@@ -10,21 +10,23 @@ import { waitForImport } from './import-wait';
 
 type RunImportInput = Parameters<typeof generateAnimeTierlist>[0] & {
   seed: string;
+  ticket?: string;
   onSavedProgress?: () => void;
 };
 
 export const runAnimeImport = async ({
   seed,
+  ticket = crypto.randomUUID(),
   onSavedProgress,
   ...input
 }: RunImportInput) => {
   const provider = input.provider ?? 'mal';
   const label = provider === 'mal' ? 'MAL' : 'AniList';
-  const ticket = crypto.randomUUID();
   let checkpoint: AnimeImportCheckpoint | undefined =
     await readAnimeImportCheckpoint(seed, provider);
   let heartbeat = 0;
   let released = false;
+  let outcome: 'generated' | 'failed' = 'failed';
   const queue = async () => {
     while (true) {
       input.signal.throwIfAborted();
@@ -45,20 +47,26 @@ export const runAnimeImport = async ({
       await waitForImport(4000, input.signal);
     }
   };
-  const release = async () => {
-    if (released) {
+  const release = async (event?: 'generated' | 'failed' | 'cancelled') => {
+    if (released && !event) {
       return;
     }
+
+    const shouldRelease = !released;
     released = true;
-    await pollAnimeImportQueue({ seed, ticket, provider, release: true }).catch(
-      () => {},
-    );
+    await pollAnimeImportQueue({
+      seed,
+      ticket,
+      provider,
+      release: shouldRelease,
+      event,
+    }).catch(() => {});
   };
   try {
     await queue();
     for (let attempt = 0; ; attempt += 1) {
       try {
-        return await generateAnimeTierlist({
+        const result = await generateAnimeTierlist({
           ...input,
           provider,
           checkpoint,
@@ -67,13 +75,16 @@ export const runAnimeImport = async ({
               await queue();
             }
           },
-          onCatalogReady: release,
+          onCatalogReady: () => release(),
           onCheckpoint: async (value) => {
             checkpoint = value;
             await saveAnimeImportCheckpoint(seed, value);
             onSavedProgress?.();
           },
         });
+        outcome = 'generated';
+
+        return result;
       } catch (error) {
         input.signal.throwIfAborted();
         const transient =
@@ -96,6 +107,12 @@ export const runAnimeImport = async ({
       }
     }
   } finally {
-    await release();
+    const event = input.signal.aborted ? 'cancelled' : outcome;
+
+    if (released) {
+      void release(event);
+    } else {
+      await release(event);
+    }
   }
 };

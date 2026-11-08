@@ -8,6 +8,7 @@ import { AppFrame } from '@/app/_components/shell/app-frame';
 
 import { HomeLink } from '@/app/_components/shell/home-link';
 import { ThemeToggle } from '@/app/_components/shell/theme-toggle';
+import { WebAnalytics } from '@/app/_components/shell/web-analytics';
 import { Toaster } from '@/app/_components/ui/toast';
 import { siteAccent, siteUrl } from '@/app/_lib/site-metadata';
 import { ThemeProvider } from '@/app/_providers/theme-provider';
@@ -65,6 +66,8 @@ const RootLayout = ({ children, preview }: RootLayoutProps) => (
 
         <Toaster />
       </ThemeProvider>
+
+      {process.env.VERCEL_ENV === 'production' && <WebAnalytics />}
     </body>
   </html>
 );

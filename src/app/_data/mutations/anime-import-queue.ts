@@ -29,7 +29,7 @@ export const updateAnimeImportQueue = (input: QueueInput) =>
         id: input.id,
         ownerKey: input.ownerKey,
       }).deleteAll();
-      return { position: 0 };
+      return { position: 0, depth: 0, joined: false, observedAt: now };
     }
     const existing = await tx.orm.public.AnimeImportQueue.where({
       id: input.id,
@@ -66,5 +66,10 @@ export const updateAnimeImportQueue = (input: QueueInput) =>
         .returnsRow({ id: 'pg/text@1' })
         .build(),
     );
-    return { position: queue.findIndex((entry) => entry.id === input.id) + 1 };
+    return {
+      position: queue.findIndex((entry) => entry.id === input.id) + 1,
+      depth: queue.length,
+      joined: !existing,
+      observedAt: now,
+    };
   });

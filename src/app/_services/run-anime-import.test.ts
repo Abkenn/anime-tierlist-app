@@ -52,7 +52,7 @@ it('starts immediately for one importer and releases its ticket', async () => {
   await expect(runAnimeImport(input())).resolves.toBe('ready');
   expect(Date.now()).toBe(0);
   expect(mocks.queue).toHaveBeenLastCalledWith(
-    expect.objectContaining({ release: true }),
+    expect.objectContaining({ release: true, event: 'generated' }),
   );
 });
 it('shows the real queue position and waits for its turn before requesting provider data', async () => {
@@ -103,7 +103,7 @@ it('cancels while queued without starting provider calls and releases the ticket
   await rejected;
   expect(mocks.generate).not.toHaveBeenCalled();
   expect(mocks.queue).toHaveBeenLastCalledWith(
-    expect.objectContaining({ release: true }),
+    expect.objectContaining({ release: true, event: 'cancelled' }),
   );
   expect(vi.getTimerCount()).toBe(0);
 });
@@ -113,4 +113,40 @@ it('does not retry a permanent profile error', async () => {
   );
   await expect(runAnimeImport(input())).rejects.toThrow('could not find');
   expect(mocks.generate).toHaveBeenCalledOnce();
+  expect(mocks.queue).toHaveBeenLastCalledWith(
+    expect.objectContaining({ release: true, event: 'failed' }),
+  );
+});
+
+it('records generation after early slot release without rejoining the queue', async () => {
+  mocks.generate.mockImplementationOnce(async ({ onCatalogReady }) => {
+    await onCatalogReady();
+
+    return 'ready';
+  });
+  await expect(runAnimeImport(input())).resolves.toBe('ready');
+  expect(mocks.queue).toHaveBeenCalledTimes(3);
+  expect(mocks.queue).toHaveBeenLastCalledWith(
+    expect.objectContaining({ release: false, event: 'generated' }),
+  );
+});
+
+it('does not lose a generated tierlist when metric delivery fails', async () => {
+  mocks.generate.mockResolvedValue('ready');
+  mocks.queue.mockResolvedValueOnce({ ok: true, value: { position: 1 } });
+  mocks.queue.mockRejectedValueOnce(new Error('offline'));
+  await expect(runAnimeImport(input())).resolves.toBe('ready');
+});
+
+it('returns the generated result without waiting for completion telemetry after release', async () => {
+  mocks.generate.mockImplementationOnce(async ({ onCatalogReady }) => {
+    await onCatalogReady();
+    mocks.queue.mockReturnValueOnce(new Promise(() => {}));
+
+    return 'ready';
+  });
+  await expect(runAnimeImport(input())).resolves.toBe('ready');
+  expect(mocks.queue).toHaveBeenLastCalledWith(
+    expect.objectContaining({ event: 'generated', release: false }),
+  );
 });
