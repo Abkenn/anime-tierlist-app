@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
 import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
@@ -35,7 +35,7 @@ export const PreviewImage = ({
     () => new Set(),
   );
   const deferredQuery = useDeferredValue(query);
-  const posters = rows.flatMap((row) => row.posters);
+  const posters = useMemo(() => rows.flatMap((row) => row.posters), [rows]);
   const visible = usePreviewPosters(root, posters, width, height);
   const colors = useTitleColors(
     visible.map((poster) => poster.item),

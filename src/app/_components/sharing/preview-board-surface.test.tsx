@@ -1,8 +1,42 @@
+import { render } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
 import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { PreviewBoardSurface } from './preview-board-surface';
+
+it('keeps a visible poster and its clipping identity stable when earlier posters leave the viewport', () => {
+  const document: TierlistDocument = {
+    version: 1,
+    imageMode: 'natural',
+    ranks: ['S'],
+    items: ['first', 'second'].map((id) => ({
+      id,
+      label: id,
+      rank: 'S',
+      image: { src: `/${id}.jpg`, width: 100, height: 150, alt: id },
+    })),
+  };
+  const board = layoutExportBoard(document);
+  const { container, rerender } = render(
+    <PreviewBoardSurface
+      {...board}
+      mode="natural"
+      visibleIds={new Set(['first', 'second'])}
+    />,
+  );
+  const image = container.querySelector('image[href="/second.jpg"]');
+  const clip = image?.closest('g[clip-path]')?.getAttribute('clip-path');
+  rerender(
+    <PreviewBoardSurface
+      {...board}
+      mode="natural"
+      visibleIds={new Set(['second'])}
+    />,
+  );
+  expect(container.querySelector('image[href="/second.jpg"]')).toBe(image);
+  expect(image?.closest('g[clip-path]')?.getAttribute('clip-path')).toBe(clip);
+});
 
 it('lets posters paint without waiting for React loading-state updates', () => {
   const document: TierlistDocument = {
