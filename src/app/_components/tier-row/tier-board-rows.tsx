@@ -70,7 +70,10 @@ export const TierBoardRows = ({
     setAutoFit({ mode, imageMode, restoring, width: autoWidth });
   }
   const size = getPosterSize({
-    mode: restoring ? 'small' : mode,
+    mode:
+      restoring || (mode === 'dynamic' && interaction.items.length === 0)
+        ? 'small'
+        : mode,
     imageMode,
     items: interaction.items,
     autoWidth,
@@ -100,7 +103,7 @@ export const TierBoardRows = ({
         style={
           {
             '--tier-base-size': size,
-            '--tier-small-fit': `min(6rem, calc((var(--tier-available-height, 100000px) - ${ranks.length + 16}px) / ${layout === 'two-line' ? ranks.reduce((total, rank) => total + interaction.lines(rank), 0) : ranks.length}))`,
+            '--tier-small-fit': `min(6rem, calc((var(--tier-available-height, 100cqh) - ${ranks.length + 16}px) / ${layout === 'two-line' ? ranks.reduce((total, rank) => total + interaction.lines(rank), 0) : ranks.length}))`,
           } as React.CSSProperties
         }
         className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:10rem] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"

@@ -4,6 +4,7 @@ import { Popover } from '@base-ui/react/popover';
 import { Tabs } from '@base-ui/react/tabs';
 import { ArrowRight, Check, ChevronDown, Copy } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import {
   type RefObject,
   useActionState,
@@ -21,9 +22,12 @@ import {
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
-import { AnimeImport } from './anime-import';
 import { ProjectFileImport } from './project-file-import';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
+
+const AnimeImport = dynamic(() =>
+  import('./anime-import').then((module) => module.AnimeImport),
+);
 
 type UserSeedProps = {
   seed: string;
@@ -79,6 +83,7 @@ export const UserSeed = ({
   const desktopAnchor = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
   const [tab, setTab] = useState('save');
+  const [animeOpened, setAnimeOpened] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [importSeed, setImportSeed] = useState('');
@@ -280,7 +285,12 @@ export const UserSeed = ({
 
             <Tabs.Root
               value={tab}
-              onValueChange={(value) => setTab(String(value))}
+              onValueChange={(value) => {
+                setTab(String(value));
+                if (value === 'anime') {
+                  setAnimeOpened(true);
+                }
+              }}
             >
               <Tabs.List
                 className="relative mt-3 flex gap-4 border-b border-divider"
@@ -456,7 +466,7 @@ export const UserSeed = ({
               </Tabs.Panel>
 
               <Tabs.Panel value="anime" keepMounted>
-                {animeImport && (
+                {animeImport && animeOpened && (
                   <AnimeImport
                     key={animeImport.seed}
                     {...animeImport}

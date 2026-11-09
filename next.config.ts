@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
   htmlLimitedBots: /.*/,
   images: {
     qualities: [60, 75],
-    remotePatterns: [new URL('https://cdn.myanimelist.net/images/anime/**')],
+    remotePatterns: [
+      new URL('https://cdn.myanimelist.net/images/anime/**'),
+      new URL('https://cdn.myanimelist.net/s/common/uploaded_files/**'),
+    ],
   },
   outputFileTracingIncludes: {
     '/*': ['./src/app/_assets/fonts/**/*'],

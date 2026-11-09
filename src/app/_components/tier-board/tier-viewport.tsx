@@ -60,7 +60,10 @@ export const TierViewport = ({
   }
 
   return (
-    <div ref={containerRef} className="relative min-h-0 min-w-0 flex-1">
+    <div
+      ref={containerRef}
+      className="relative min-h-0 min-w-0 flex-1 @container-size"
+    >
       <ScrollArea
         orientation="both"
         style={

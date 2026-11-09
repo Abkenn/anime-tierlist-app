@@ -14,6 +14,7 @@ import {
 } from '@/app/_services/tierlist-identity';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
 import { PreviewControls } from './preview-controls';
+import { PreviewControlsLoading } from './preview-controls-loading';
 import { PreviewImage } from './preview-image';
 
 const OwnerControls = async ({ id }: { id: string }) => {
@@ -71,13 +72,7 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
 
   return (
     <>
-      <Suspense
-        fallback={
-          <div className="mb-3 flex min-h-17.5 items-center py-2 text-xs text-muted-foreground">
-            You’re in preview mode.
-          </div>
-        }
-      >
+      <Suspense fallback={<PreviewControlsLoading />}>
         <OwnerControls id={id} />
       </Suspense>
 

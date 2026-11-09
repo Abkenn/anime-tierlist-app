@@ -10,6 +10,12 @@ import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { toast } from '@/app/_components/ui/toast';
 import { isError } from '@/app/_lib/is-error';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import {
+  previewControlsLayout,
+  previewExportLayout,
+  previewNoticeLayout,
+  previewTemplateLayout,
+} from '@/app/_lib/preview-controls-layout';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
 import {
   previewDragEndedEvent,
@@ -183,13 +189,13 @@ export const PreviewControls = ({
   }, '');
 
   return (
-    <div className="sticky top-0 z-20 mb-3 flex flex-wrap items-center justify-between gap-3 bg-background py-2 text-xs">
+    <div className={previewControlsLayout}>
       <motion.div
         animate={notice}
-        className="border border-umber/50 bg-lemon-cream px-3 py-2 text-brown dark:bg-olive dark:text-lemon-cream"
+        className={previewNoticeLayout}
         data-preview-notice=""
       >
-        <span className="mr-3 font-medium">You’re in preview mode.</span>
+        <span className="font-medium">You’re in preview mode.</span>
         {isOwner ||
         (active?.items.length &&
           sameTierlistDocument(getTierlistDocument(active), document)) ? (
@@ -205,10 +211,7 @@ export const PreviewControls = ({
             Go to edit mode
           </Link>
         ) : (
-          <form
-            action={copyAction}
-            className="inline-flex flex-wrap items-center gap-x-4"
-          >
+          <form action={copyAction} className={previewTemplateLayout}>
             <Link
               href="/"
               onNavigate={(event) => {
@@ -240,10 +243,7 @@ export const PreviewControls = ({
         )}
       </motion.div>
 
-      <form
-        action={download}
-        className="flex flex-wrap items-center gap-x-4 gap-y-1"
-      >
+      <form action={download} className={previewExportLayout}>
         <FormSubmitButton
           name="format"
           value="project"
