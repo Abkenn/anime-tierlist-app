@@ -14,7 +14,8 @@ next-env.d.ts
 /src/prisma/generated/
 
 # Tests
-/e2e/
+/e2e/*
+!/e2e/homepage-startup.spec.ts
 /coverage/
 /test-results/
 /playwright-report/

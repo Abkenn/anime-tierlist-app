@@ -68,7 +68,9 @@ export const getTierlistAccountStatus = ({
   const settledMessage = restoringAccount ? restoredMessage : saveMessage;
   const verifyingIdentity = !identityReady && !busy;
   const visibleMessage =
-    verifyingIdentity && !restoringAccount ? '' : settledMessage;
+    verifyingIdentity && !restoringAccount && storage.status !== 'error'
+      ? ''
+      : settledMessage;
   const message = busy ? 'Opening tierlist...' : visibleMessage;
   const controlsBusy =
     busy || !identityReady || storage.status === 'loading' || !storage.seed;
