@@ -96,8 +96,12 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
     return { id: item.id, area };
   });
   const priorityIds = new Set(
-    priorityItems
-      .sort((a, b) => b.area - a.area)
+    (window.visible.right > window.visible.left && geometry.size > 0
+      ? priorityItems
+          .filter((item) => item.area > 0)
+          .sort((a, b) => b.area - a.area)
+      : interaction.items.filter((item) => item.image)
+    )
       .slice(0, 3)
       .map((item) => item.id),
   );

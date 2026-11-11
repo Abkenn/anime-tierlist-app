@@ -4,7 +4,7 @@ import { Popover } from '@base-ui/react/popover';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useAtom, useAtomValue } from 'jotai';
 import { Plus } from 'lucide-react';
-import { type CSSProperties, useEffect, useRef } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   animeSearchClientAtom,
   searchTargetRankAtom,
@@ -23,7 +23,14 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
   const details = useAtomValue(rankDetailsAtom);
   const client = useAtomValue(animeSearchClientAtom);
   const input = useRef<HTMLInputElement>(null);
+  const [hasOpened, setHasOpened] = useState(false);
   const label = details[rank]?.label ?? rank;
+  const triggerClass =
+    'pointer-events-none absolute left-1 top-1/2 z-20 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground/60 opacity-0 transition-opacity hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-has-focus-visible/row:pointer-events-auto group-has-focus-visible/row:opacity-100 pointer-coarse:group-focus-within/row:pointer-events-auto pointer-coarse:group-focus-within/row:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100';
+
+  if (target === rank && !hasOpened) {
+    setHasOpened(true);
+  }
 
   useEffect(
     () => () => {
@@ -31,6 +38,23 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
     },
     [rank, setTarget],
   );
+
+  if (!hasOpened) {
+    return (
+      <button
+        type="button"
+        aria-label={`Add anime to ${label}`}
+        title={`Add anime to ${label}`}
+        aria-haspopup="dialog"
+        aria-expanded={false}
+        style={position}
+        className={triggerClass}
+        onClick={() => setTarget(rank)}
+      >
+        <Plus aria-hidden="true" className="size-3.5" />
+      </button>
+    );
+  }
 
   return (
     <Popover.Root
@@ -41,7 +65,7 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
         aria-label={`Add anime to ${label}`}
         title={`Add anime to ${label}`}
         style={position}
-        className="pointer-events-none absolute left-1 top-1/2 z-20 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground/60 opacity-0 transition-opacity hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-has-focus-visible/row:pointer-events-auto group-has-focus-visible/row:opacity-100 pointer-coarse:group-focus-within/row:pointer-events-auto pointer-coarse:group-focus-within/row:opacity-100 data-popup-open:pointer-events-auto data-popup-open:opacity-100"
+        className={triggerClass}
       >
         <Plus aria-hidden="true" className="size-3.5" />
       </Popover.Trigger>

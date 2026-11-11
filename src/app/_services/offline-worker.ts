@@ -19,7 +19,7 @@ const buildAsset = (
 
 const cacheOfflineHomepage = async () => {
   const cache = await caches.open(CACHE_NAME);
-  const homepage = await fetch('/offline', {
+  const homepage = await fetch('/offline?offline', {
     cache: 'reload',
     redirect: 'error',
   });
@@ -51,6 +51,48 @@ const cacheOfflineHomepage = async () => {
       (url) => new Request(url, { cache: 'force-cache', priority: 'low' }),
     ),
   );
+
+  let scripts = [...assets].filter((asset) =>
+    new URL(asset).pathname.endsWith('.js'),
+  );
+
+  while (scripts.length) {
+    const sources = await Promise.all(
+      scripts.map(async (asset) => {
+        const response = await cache.match(asset);
+
+        if (!response) {
+          throw new Error('Offline JavaScript was not saved.');
+        }
+
+        return response.text();
+      }),
+    );
+    const discovered = new Set<string>();
+    sources.forEach((source) => {
+      for (const match of source.matchAll(
+        /["']((?:\/_next\/)?static\/(?:immutable\/)?(?:chunks|media)\/[^"'\s<>]+\.(?:js|css|woff2))["']/g,
+      )) {
+        const asset = buildAsset(
+          match[1].startsWith('/_next/') ? match[1] : `/_next/${match[1]}`,
+        );
+
+        if (asset && !assets.has(asset)) {
+          assets.add(asset);
+          discovered.add(asset);
+        }
+      }
+    });
+
+    await cache.addAll(
+      [...discovered].map(
+        (url) => new Request(url, { cache: 'force-cache', priority: 'low' }),
+      ),
+    );
+    scripts = [...discovered].filter((asset) =>
+      new URL(asset).pathname.endsWith('.js'),
+    );
+  }
 
   const fonts = new Set<string>();
 

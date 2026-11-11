@@ -3,7 +3,7 @@
 import { cn } from 'cn';
 import Image from 'next/image';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { preconnect } from 'react-dom';
+import { preload } from 'react-dom';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { fullImageTrim, getTrimViewBox } from '@/app/_lib/tier-image-trim';
@@ -39,6 +39,14 @@ export const TierItemImage = ({
   const source = posterDisplaySource(image.src);
   const notifyReady = useEffectEvent(() => onReady?.());
 
+  if (priority && mode === 'natural') {
+    preload(source, {
+      as: 'image',
+      fetchPriority: 'high',
+      crossOrigin: posterCrossOrigin(image.src),
+    });
+  }
+
   useEffect(() => {
     if (mode !== 'natural') {
       return;
@@ -48,6 +56,7 @@ export const TierItemImage = ({
     let active = true;
     let settled = false;
     const resource = new window.Image();
+    resource.fetchPriority = priority ? 'high' : 'auto';
     const ready = () => {
       if (!active || settled) {
         return;
@@ -75,18 +84,12 @@ export const TierItemImage = ({
       resource.onload = null;
       resource.onerror = null;
     };
-  }, [image.src, mode, source]);
+  }, [image.src, mode, source, priority]);
 
   const placeholderClass = cn(
     'relative block size-full',
     loading && showPlaceholder && 'bg-muted',
   );
-
-  if (priority) {
-    if (posterCrossOrigin(image.src)) {
-      preconnect('https://cdn.myanimelist.net', { crossOrigin: 'anonymous' });
-    }
-  }
 
   const loaded = () => {
     setLoadedSource(image.src);

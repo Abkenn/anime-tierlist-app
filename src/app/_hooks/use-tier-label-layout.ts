@@ -21,6 +21,12 @@ export const useTierLabelLayout = ({ ref, label, editing }: TierLabelInput) => {
     if (!root || !text || editing) {
       return;
     }
+    if (
+      /^[A-FS][+−]?$/u.test(label) &&
+      root.clientWidth >= Number.parseFloat(getComputedStyle(root).fontSize) * 3
+    ) {
+      return;
+    }
     let active = true;
     let frame: number | undefined;
     const context = document.createElement('canvas').getContext('2d');

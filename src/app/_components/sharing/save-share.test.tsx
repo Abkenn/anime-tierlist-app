@@ -40,6 +40,11 @@ it('keeps sharing separate from private backups and reuses prepared previews', a
     <SaveShare document={document} disabled={false} onPublish={publish} />,
   );
   fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
+  await screen.findByRole(
+    'dialog',
+    { name: 'Share tierlist' },
+    { timeout: 10_000 },
+  );
   expect(
     screen.queryByRole('textbox', { name: 'Tierlist seed' }),
   ).not.toBeInTheDocument();
@@ -84,7 +89,11 @@ it('restores an existing server preview on Share open without republishing', asy
   );
   fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
   expect(
-    await screen.findByRole('link', { name: 'Open Preview' }),
+    await screen.findByRole(
+      'link',
+      { name: 'Open Preview' },
+      { timeout: 10_000 },
+    ),
   ).toHaveAttribute('href', 'https://example.com/existing.v3.4');
   expect(find).toHaveBeenCalledOnce();
   expect(publish).not.toHaveBeenCalled();

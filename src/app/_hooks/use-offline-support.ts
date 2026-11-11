@@ -53,15 +53,26 @@ export const useOfflineSupport = () => {
   }, []);
 
   useEffect(() => {
-    if (document.readyState === 'complete') {
-      void setupOfflineWorker();
+    let idle: number | undefined;
+    const setup = () => {
+      if ('requestIdleCallback' in window) {
+        idle = window.requestIdleCallback(() => void setupOfflineWorker());
+      } else {
+        void setupOfflineWorker();
+      }
+    };
 
-      return;
+    if (document.readyState === 'complete') {
+      setup();
+    } else {
+      window.addEventListener('load', setup, { once: true });
     }
 
-    const setup = () => void setupOfflineWorker();
-    window.addEventListener('load', setup, { once: true });
-
-    return () => window.removeEventListener('load', setup);
+    return () => {
+      window.removeEventListener('load', setup);
+      if (idle !== undefined) {
+        window.cancelIdleCallback(idle);
+      }
+    };
   }, []);
 };

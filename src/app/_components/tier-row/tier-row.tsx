@@ -1,15 +1,19 @@
 import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
-import type { CSSProperties } from 'react';
+import { type CSSProperties, lazy, Suspense } from 'react';
 import {
   draggedRankAtom,
   rankOffsetsAtom,
 } from '@/app/_atoms/tierlist/layout.atoms';
+import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
-import { TierRankLabel } from './tier-rank-label';
 import { TierRowSearch } from './tier-row-search';
+
+const TierRankLabel = lazy(async () => ({
+  default: (await import('./tier-rank-label')).TierRankLabel,
+}));
 
 type TierRowProps = {
   rank: TierRank;
@@ -32,6 +36,21 @@ export const TierRow = ({
 }: TierRowProps) => {
   const offsets = useAtomValue(rankOffsetsAtom);
   const dragged = useAtomValue(draggedRankAtom) === rank;
+  const placeholder = (
+    <div
+      className={cn(
+        'relative flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-graphite',
+        tierColorClasses[tierColors[rank] ?? 'stone'],
+        rank.length > 4
+          ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'
+          : 'text-[clamp(1rem,calc(var(--tier-size,6rem)*0.15),1.75rem)]',
+      )}
+    >
+      <span className="min-w-0 w-full p-1 text-center leading-tight">
+        {rank}
+      </span>
+    </div>
+  );
 
   return (
     <motion.li
@@ -51,7 +70,13 @@ export const TierRow = ({
         itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`
       }
     >
-      <TierRankLabel rank={rank} />
+      {skeletonCount !== undefined ? (
+        placeholder
+      ) : (
+        <Suspense fallback={placeholder}>
+          <TierRankLabel rank={rank} />
+        </Suspense>
+      )}
 
       <div
         tabIndex={-1}
@@ -89,7 +114,9 @@ export const TierRow = ({
             (slot) => <span key={slot} aria-hidden="true" />,
           )}
 
-        <TierRowSearch rank={rank} position={searchPosition} />
+        {skeletonCount === undefined && (
+          <TierRowSearch rank={rank} position={searchPosition} />
+        )}
       </div>
     </motion.li>
   );

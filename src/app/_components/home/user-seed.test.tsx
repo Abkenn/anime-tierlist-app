@@ -34,15 +34,17 @@ const Fixture = ({
   onReplaceDevice = async () => true,
   googleConnected = true,
   animeImport,
+  initialOpen = true,
 }: {
   onImport: () => Promise<boolean>;
   onBackup: () => Promise<string>;
   onReplaceDevice?: () => Promise<boolean>;
   googleConnected?: boolean;
   animeImport?: ComponentProps<typeof UserSeed>['animeImport'];
+  initialOpen?: boolean;
 }) => {
   const [handle] = useState(() => Popover.createHandle());
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(initialOpen);
 
   return (
     <UserSeed
@@ -64,6 +66,25 @@ const Fixture = ({
     />
   );
 };
+
+it('defers the unopened save panel and retains it after first use', async () => {
+  render(
+    <Fixture
+      initialOpen={false}
+      onImport={async () => true}
+      onBackup={async () => ''}
+    />,
+  );
+  expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
+  const dialog = await screen.findByRole('dialog', {}, { timeout: 10_000 });
+  expect(dialog).toBeInTheDocument();
+
+  fireEvent.keyDown(dialog, { key: 'Escape' });
+  await waitFor(() => expect(dialog).not.toBeVisible());
+  expect(dialog).toBeInTheDocument();
+});
 
 it('offers both local choices and confirms before adopting an imported copy', async () => {
   const onReplaceDevice = vi.fn(async () => true);

@@ -1,12 +1,12 @@
 'use client';
 
-import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Input } from '@base-ui/react/input';
 import { cn } from 'cn';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useRef, useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import {
   enabledTierRanksAtom,
@@ -18,6 +18,12 @@ import { rankTextColor } from '@/app/_lib/rank-text-color';
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import type { HexColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRankMove } from './tier-rank-move';
+
+const TierRankDeleteDialog = dynamic(() =>
+  import('./tier-rank-delete-dialog').then(
+    (module) => module.TierRankDeleteDialog,
+  ),
+);
 
 export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const [details, setDetails] = useAtom(rankDetailsAtom);
@@ -35,7 +41,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const addRankButtonClass =
     'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
 
-  useLayoutEffect(() => {
+  const readPresetColor = () => {
     if (!labelRef.current || !color) {
       return;
     }
@@ -48,7 +54,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         `#${channels.map((channel) => Math.round(Number(channel)).toString(16).padStart(2, '0')).join('')}`,
       );
     }
-  }, [color]);
+  };
   const commit = () => {
     setEditing(false);
     if (!draft.trim()) {
@@ -152,6 +158,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
       <ColorPicker
         label={`Color for ${label}`}
         color={details[rank]?.color ?? presetColor}
+        onOpen={readPresetColor}
         onChange={(next) =>
           setDetails({ ...details, [rank]: { label, color: next } })
         }
@@ -171,39 +178,17 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         </button>
       )}
 
-      <AlertDialog.Root open={confirming} onOpenChange={setConfirming}>
-        <AlertDialog.Portal>
-          <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-background/50" />
-
-          <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 w-80 -translate-1/2 border border-divider bg-popover p-4 text-sm text-popover-foreground shadow-md">
-            <AlertDialog.Title>Delete {label}?</AlertDialog.Title>
-
-            <AlertDialog.Description className="my-3 text-xs text-muted-foreground">
-              {ranks.length === 1
-                ? 'Keep at least one tier.'
-                : 'Its posters move to the adjacent tier.'}
-            </AlertDialog.Description>
-
-            <div className="flex gap-5">
-              <button
-                type="button"
-                disabled={ranks.length === 1}
-                onClick={() => {
-                  remove(rank);
-                  setConfirming(false);
-                }}
-                className="cursor-pointer underline disabled:opacity-40"
-              >
-                Delete tier
-              </button>
-
-              <AlertDialog.Close className="cursor-pointer underline">
-                Cancel
-              </AlertDialog.Close>
-            </div>
-          </AlertDialog.Popup>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+      {confirming && (
+        <TierRankDeleteDialog
+          label={label}
+          rankCount={ranks.length}
+          onOpenChange={setConfirming}
+          onDelete={() => {
+            remove(rank);
+            setConfirming(false);
+          }}
+        />
+      )}
     </motion.div>
   );
 };

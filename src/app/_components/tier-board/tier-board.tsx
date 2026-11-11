@@ -4,6 +4,7 @@ import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import { motion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import { useContext } from 'react';
 import { keyboardModeAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
@@ -19,8 +20,11 @@ import type {
   TierRank,
 } from '@/app/_types/tierlist.types';
 import { TierBoardFind } from './tier-board-find';
-import { TierBoardItems } from './tier-board-items';
 import { TierViewport } from './tier-viewport';
+
+const TierBoardItems = dynamic(() =>
+  import('./tier-board-items').then((module) => module.TierBoardItems),
+);
 
 type TierBoardProps = {
   ranks?: TierRank[];
@@ -97,7 +101,9 @@ export const TierBoard = ({
           aria-busy={restoring}
           inert={restoring}
         >
-          {!restoring && <TierBoardItems interaction={interaction} />}
+          {!restoring && interaction.items.length > 0 && (
+            <TierBoardItems interaction={interaction} />
+          )}
 
           <TierBoardRows
             ranks={ranks}
