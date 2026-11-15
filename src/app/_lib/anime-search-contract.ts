@@ -4,9 +4,10 @@ import { normalizeAnimeQuery } from './anime-search';
 
 export const animeSearchEndpoint = defineRpcEndpoint('/api/rpc', {
   searchAnime: {
+    kind: 'infinite',
+    pagination: { input: 'page', next: 'nextPage', initial: 1 },
     input: z.object({
       query: z.string().transform(normalizeAnimeQuery).pipe(z.string().min(2).max(300)),
-      page: z.number().int().min(1).max(20000),
     }),
     output: z.object({
       items: z.array(
@@ -17,7 +18,6 @@ export const animeSearchEndpoint = defineRpcEndpoint('/api/rpc', {
           malId: z.number().int().positive().optional(),
         }),
       ),
-      nextPage: z.number().int().positive().nullable(),
     }),
   },
 });

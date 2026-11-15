@@ -1,6 +1,5 @@
 'use client';
 
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
 import { createQueries } from 'orpc-stack/client';
 import { kyTransport } from 'orpc-stack/ky';
@@ -10,7 +9,7 @@ import { classifySearchInput, normalizeAnimeQuery } from '@/app/_lib/anime-searc
 import { animeSearchEndpoint } from '@/app/_lib/anime-search-contract';
 import type { AnimeSearchSeed } from '@/app/_types/anime-search.types';
 
-const animeSearchQueries = createQueries(animeSearchEndpoint, {
+export const { useSearchAnimeInfiniteQuery } = createQueries(animeSearchEndpoint, {
   fetch: kyTransport,
 });
 
@@ -27,21 +26,19 @@ export const useAnimeSearch = (
   const url = classification.kind === 'image' ? classification.url : null;
   const urlError = classification.kind === 'invalid' ? classification.message : null;
   const query = normalizeAnimeQuery(settledInput);
-  const search = useInfiniteQuery(
-    animeSearchQueries.searchAnime.infiniteOptions({
-      input: (page: number) => ({ query, page }),
+  const search = useSearchAnimeInfiniteQuery(
+    { query },
+    {
       enabled: catalogSearchEnabled && classification.kind === 'search',
-      initialPageParam: 1,
       initialData:
         initialPage && query === initialQuery
           ? { pages: [initialPage], pageParams: [1] }
           : undefined,
-      getNextPageParam: (last) => last.nextPage ?? undefined,
       staleTime: 30 * 24 * 60 * 60 * 1000,
       gcTime: 60 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: false,
-    }),
+    },
   );
 
   useEffect(() => {
