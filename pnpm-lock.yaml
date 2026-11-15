@@ -251,8 +251,8 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       orpc-stack:
-        specifier: 1.0.1
-        version: 1.0.1(@orpc/client@1.16.1)(@orpc/server@1.16.1(ws@8.22.0))(@orpc/tanstack-query@1.16.1(@orpc/client@1.16.1)(@tanstack/query-core@5.107.1))(@tanstack/query-core@5.107.1)(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(hono@4.13.18)(ky@2.2.0)(react@19.3.1)
+        specifier: 1.1.0
+        version: 1.1.0(@orpc/client@1.16.1)(@orpc/server@1.16.1(ws@8.22.0))(@orpc/tanstack-query@1.16.1(@orpc/client@1.16.1)(@tanstack/query-core@5.107.1))(@tanstack/query-core@5.107.1)(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(hono@4.13.18)(ky@2.2.0)(react@19.3.1)
       pg:
         specifier: 8.23.1
         version: 8.23.1
@@ -5188,8 +5188,8 @@ packages:
     resolution: {integrity: sha512-weP+BZ8MVNnlCm8c0Qdc1WSWq4Qn7I+9CJGm7Qali6g44e/PUzbjNqJX5NJ9ljlNMosfJvg1fKEGILklK9cwnw==}
     engines: {node: '>=18'}
 
-  orpc-stack@1.0.1:
-    resolution: {integrity: sha512-d4QapX2YygsKYNKMnZp5F03AFtbDZ3Jlcxo+u1UJGSCM7uhDkpaEWtTF307aXzKIFih4LI7odtfR9S23ZoLapw==}
+  orpc-stack@1.1.0:
+    resolution: {integrity: sha512-BMtxXtp61Ggrq9/bsf8TXmP6S7UKjUv1c6ZgEC2LkPaQ01zS9JlZmxGyVZMjG10IdqLQzdsLAukotSHRtY+S4g==}
     engines: {node: '>=22'}
     peerDependencies:
       '@orpc/client': ^1.15.4
@@ -10929,7 +10929,7 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.2.0
 
-  orpc-stack@1.0.1(@orpc/client@1.16.1)(@orpc/server@1.16.1(ws@8.22.0))(@orpc/tanstack-query@1.16.1(@orpc/client@1.16.1)(@tanstack/query-core@5.107.1))(@tanstack/query-core@5.107.1)(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(hono@4.13.18)(ky@2.2.0)(react@19.3.1):
+  orpc-stack@1.1.0(@orpc/client@1.16.1)(@orpc/server@1.16.1(ws@8.22.0))(@orpc/tanstack-query@1.16.1(@orpc/client@1.16.1)(@tanstack/query-core@5.107.1))(@tanstack/query-core@5.107.1)(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(hono@4.13.18)(ky@2.2.0)(react@19.3.1):
     dependencies:
       '@orpc/client': 1.16.1
       '@orpc/server': 1.16.1(ws@8.22.0)
