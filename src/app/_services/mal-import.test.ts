@@ -27,9 +27,7 @@ it('bounds catalog concurrency and releases slots after failure', async () => {
   finish.splice(0).forEach((resolve) => {
     resolve();
   });
-  expect((await settled).every((result) => result.status === 'rejected')).toBe(
-    true,
-  );
+  expect((await settled).every((result) => result.status === 'rejected')).toBe(true);
   const last = readMalAnime(9);
   const rejection = expect(last).rejects.toBeDefined();
   await vi.runAllTimersAsync();
@@ -43,15 +41,9 @@ it('bounds catalog concurrency and releases slots after failure', async () => {
 
 it('distinguishes a rejected MAL profile from a provider outage or unreadable response', async () => {
   provider.list.mockResolvedValueOnce(new Response('{}', { status: 400 }));
-  await expect(readMalListPage('Example', 0)).rejects.toThrow(
-    'Check the exact profile username',
-  );
+  await expect(readMalListPage('Example', 0)).rejects.toThrow('Check the exact profile username');
   provider.list.mockResolvedValueOnce(new Response('{}', { status: 503 }));
-  await expect(readMalListPage('Example', 0)).rejects.toThrow(
-    'temporarily unavailable',
-  );
+  await expect(readMalListPage('Example', 0)).rejects.toThrow('temporarily unavailable');
   provider.list.mockResolvedValueOnce(new Response('<html>Challenge</html>'));
-  await expect(readMalListPage('Example', 0)).rejects.toThrow(
-    'readable public anime list',
-  );
+  await expect(readMalListPage('Example', 0)).rejects.toThrow('readable public anime list');
 });

@@ -16,8 +16,7 @@ it('scrolls at 3x speed and stops at the last tier even if a dragged image infla
     clientHeight: { value: 600 },
   });
   viewport.getBoundingClientRect = () => new DOMRect(0, 0, 800, 600);
-  tiers.getBoundingClientRect = () =>
-    new DOMRect(0, -viewport.scrollTop, 800, 1200);
+  tiers.getBoundingClientRect = () => new DOMRect(0, -viewport.scrollTop, 800, 1200);
 
   try {
     scrollTierDrag({ board, x: 400, y: 900, delta: 16 });

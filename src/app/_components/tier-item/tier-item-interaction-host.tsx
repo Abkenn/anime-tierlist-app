@@ -40,9 +40,7 @@ type InteractionHost = {
   touchEnd: () => void;
 };
 
-export const TierItemInteractionContext = createContext<InteractionHost | null>(
-  null,
-);
+export const TierItemInteractionContext = createContext<InteractionHost | null>(null);
 
 export const TierItemInteractionHost = ({ children }: PropsWithChildren) => {
   const [triggerId, setTriggerId] = useState<string | null>(null);
@@ -89,9 +87,7 @@ export const TierItemInteractionHost = ({ children }: PropsWithChildren) => {
         if (menu.current === session) {
           menu.current = null;
           setMenuItem((current) => (current === session.id ? null : current));
-          setRenamingItem((current) =>
-            current === session.id ? null : current,
-          );
+          setRenamingItem((current) => (current === session.id ? null : current));
           setEditingItem({ id: session.id, editing: false });
           if (owner.current?.id === session.id) {
             owner.current = null;
@@ -153,8 +149,7 @@ export const TierItemInteractionHost = ({ children }: PropsWithChildren) => {
         !press ||
         event.button !== 2 ||
         !/Macintosh|MacIntel/u.test(navigator.userAgent) ||
-        (Math.abs(event.clientX - press.x) <= 1 &&
-          Math.abs(event.clientY - press.y) <= 1)
+        (Math.abs(event.clientX - press.x) <= 1 && Math.abs(event.clientY - press.y) <= 1)
       ) {
         return;
       }

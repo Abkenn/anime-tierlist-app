@@ -34,11 +34,7 @@ const RefCleanupSandbox = ({ scrollable }: { scrollable: boolean }) => {
 
   return (
     <div>
-      <button
-        type="button"
-        className="min-h-11"
-        onClick={() => setVisible(false)}
-      >
+      <button type="button" className="min-h-11" onClick={() => setVisible(false)}>
         Unmount viewport
       </button>
 
@@ -69,21 +65,13 @@ export const RefCleanup: Story = {
   render: () => <RefCleanupSandbox scrollable />,
   play: async ({ canvas, userEvent }) => {
     await waitFor(() =>
-      expect(canvas.getByLabelText('Viewport element')).toHaveTextContent(
-        'SECTION',
-      ),
+      expect(canvas.getByLabelText('Viewport element')).toHaveTextContent('SECTION'),
     );
-    const before = Number(
-      canvas.getByLabelText('Ref cleanup count').textContent,
-    );
+    const before = Number(canvas.getByLabelText('Ref cleanup count').textContent);
 
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Unmount viewport' }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Unmount viewport' }));
     await waitFor(() =>
-      expect(canvas.getByLabelText('Ref cleanup count')).toHaveTextContent(
-        String(before + 1),
-      ),
+      expect(canvas.getByLabelText('Ref cleanup count')).toHaveTextContent(String(before + 1)),
     );
   },
 };

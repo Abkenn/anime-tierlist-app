@@ -17,9 +17,7 @@ export const blendAnimeSearchResults = (
   const blended = first.flatMap((item, index) => {
     const extra = extras[Math.floor(index / CURATED_RESULT_INTERVAL)];
 
-    return (index + 1) % CURATED_RESULT_INTERVAL === 0 && extra
-      ? [item, extra]
-      : [item];
+    return (index + 1) % CURATED_RESULT_INTERVAL === 0 && extra ? [item, extra] : [item];
   });
 
   return [

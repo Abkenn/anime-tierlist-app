@@ -3,10 +3,7 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import { useLayoutEffect } from 'react';
-import {
-  changeImageModeAtom,
-  imageModeAtom,
-} from '@/app/_atoms/tierlist/settings.atoms';
+import { changeImageModeAtom, imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
 
 type TierImageModeInput = {

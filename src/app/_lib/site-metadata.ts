@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
 import { env } from '@/env';
 
-export const siteUrl = new URL(
-  '/',
-  env.SITE_URL ?? 'https://anime-tierlist.com/',
-);
+export const siteUrl = new URL('/', env.SITE_URL ?? 'https://anime-tierlist.com/');
 export const siteName = 'Anime Tierlist';
 export const siteTitle = 'Anime Tierlist | Your anime. Your order.';
 export const siteDescription =

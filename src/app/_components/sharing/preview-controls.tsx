@@ -17,25 +17,16 @@ import {
   previewTemplateLayout,
 } from '@/app/_lib/preview-controls-layout';
 import { defaultTierRanks } from '@/app/_lib/tier-ranks';
-import {
-  previewDragEndedEvent,
-  previewReturnEvent,
-} from '@/app/_lib/tierlist-share-id';
+import { previewDragEndedEvent, previewReturnEvent } from '@/app/_lib/tierlist-share-id';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
-import {
-  getTierlistDocument,
-  sameTierlistDocument,
-} from '@/app/_lib/tierlist-sync';
+import { getTierlistDocument, sameTierlistDocument } from '@/app/_lib/tierlist-sync';
 import {
   getDeviceTierlist,
   loadLocalTierlist,
   readLocalTierlist,
 } from '@/app/_services/local-tierlist';
 import { copyPreviewPng } from '@/app/_services/preview-clipboard';
-import {
-  adoptPreviewTemplate,
-  type PreviewAccount,
-} from '@/app/_services/preview-template';
+import { adoptPreviewTemplate, type PreviewAccount } from '@/app/_services/preview-template';
 import { copyShareSeed } from '@/app/_services/tierlist-share.actions';
 
 export const PreviewControls = ({
@@ -60,9 +51,7 @@ export const PreviewControls = ({
   const [message, download, downloading] = useActionState(
     async (_previous: string, form: FormData) => {
       try {
-        const { downloadTierlistProject } = await import(
-          '@/app/_services/tierlist-download'
-        );
+        const { downloadTierlistProject } = await import('@/app/_services/tierlist-download');
         if (form.get('format') === 'project') {
           const result = await copyShareSeed(id);
           if (!result.ok) {
@@ -116,11 +105,7 @@ export const PreviewControls = ({
   }, [account]);
 
   const nudge = useEffectEvent((event: Event) => {
-    if (
-      event instanceof CustomEvent &&
-      event.detail === id.split('.')[0] &&
-      !reducedMotion
-    ) {
+    if (event instanceof CustomEvent && event.detail === id.split('.')[0] && !reducedMotion) {
       void notice.start({
         x: [0, -10, 10, -8, 8, -4, 4, 0],
         transition: { duration: 0.48 },
@@ -135,8 +120,7 @@ export const PreviewControls = ({
   }, []);
 
   const replacingExisting = account
-    ? account.hasItems ||
-      (active?.accountOwnerId === account.ownerId && active.items.length > 0)
+    ? account.hasItems || (active?.accountOwnerId === account.ownerId && active.items.length > 0)
     : Boolean(local?.items.length);
 
   const copyPng = async () => {
@@ -178,9 +162,7 @@ export const PreviewControls = ({
         router.push(destination);
       }
     } catch (error) {
-      setError(
-        isError(error) ? error.message : 'Unable to open this template.',
-      );
+      setError(isError(error) ? error.message : 'Unable to open this template.');
     }
   };
   const [copyError, copyAction, copying] = useActionState(async () => {
@@ -190,15 +172,10 @@ export const PreviewControls = ({
 
   return (
     <div className={previewControlsLayout}>
-      <motion.div
-        animate={notice}
-        className={previewNoticeLayout}
-        data-preview-notice=""
-      >
+      <motion.div animate={notice} className={previewNoticeLayout} data-preview-notice="">
         <span className="font-medium">You’re in preview mode.</span>
         {isOwner ||
-        (active?.items.length &&
-          sameTierlistDocument(getTierlistDocument(active), document)) ? (
+        (active?.items.length && sameTierlistDocument(getTierlistDocument(active), document)) ? (
           <Link
             href="/"
             onNavigate={(event) => {

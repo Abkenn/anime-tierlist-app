@@ -44,9 +44,7 @@ it('uses anonymous CORS on CDN posters while preserving custom URLs', () => {
   expect(preload?.getAttribute('crossorigin')).toBe('');
   expect(preload?.getAttribute('fetchpriority')).toBe('high');
   expect(poster?.getAttribute('fetchpriority')).toBe('high');
-  expect(render('https://custom.example/poster.jpg')).not.toMatch(
-    /crossorigin/iu,
-  );
+  expect(render('https://custom.example/poster.jpg')).not.toMatch(/crossorigin/iu);
 });
 
 it('reveals cached natural posters after remount even without an SVG load event', async () => {
@@ -80,17 +78,13 @@ it('reveals cached natural posters after remount even without an SVG load event'
   try {
     const first = mount();
     await waitFor(() =>
-      expect(
-        screen.getByRole('img', { name: 'Cached poster' }),
-      ).not.toHaveClass('invisible'),
+      expect(screen.getByRole('img', { name: 'Cached poster' })).not.toHaveClass('invisible'),
     );
     expect(first.container.querySelector('[aria-busy="true"]')).toBeNull();
     first.unmount();
     const second = mount();
     await waitFor(() =>
-      expect(
-        screen.getByRole('img', { name: 'Cached poster' }),
-      ).not.toHaveClass('invisible'),
+      expect(screen.getByRole('img', { name: 'Cached poster' })).not.toHaveClass('invisible'),
     );
     expect(second.container.querySelector('[aria-busy="true"]')).toBeNull();
     expect(onReady).toHaveBeenCalledTimes(2);

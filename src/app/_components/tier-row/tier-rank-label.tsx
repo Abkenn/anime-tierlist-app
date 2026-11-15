@@ -8,10 +8,7 @@ import { motion } from 'motion/react';
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
-import {
-  enabledTierRanksAtom,
-  rankDetailsAtom,
-} from '@/app/_atoms/tierlist/settings.atoms';
+import { enabledTierRanksAtom, rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ColorPicker } from '@/app/_components/ui/color-picker';
 import { useTierLabelLayout } from '@/app/_hooks/use-tier-label-layout';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
@@ -20,9 +17,7 @@ import type { HexColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRankMove } from './tier-rank-move';
 
 const TierRankDeleteDialog = dynamic(() =>
-  import('./tier-rank-delete-dialog').then(
-    (module) => module.TierRankDeleteDialog,
-  ),
+  import('./tier-rank-delete-dialog').then((module) => module.TierRankDeleteDialog),
 );
 
 export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
@@ -159,9 +154,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         label={`Color for ${label}`}
         color={details[rank]?.color ?? presetColor}
         onOpen={readPresetColor}
-        onChange={(next) =>
-          setDetails({ ...details, [rank]: { label, color: next } })
-        }
+        onChange={(next) => setDetails({ ...details, [rank]: { label, color: next } })}
       />
 
       {rank === ranks.at(-1) && (

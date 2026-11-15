@@ -8,11 +8,7 @@ const clientSnapshot = () => true;
 const serverSnapshot = () => false;
 
 export const ThemeProvider = ({ children }: PropsWithChildren) => {
-  const client = useSyncExternalStore(
-    subscribe,
-    clientSnapshot,
-    serverSnapshot,
-  );
+  const client = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
 
   return (
     <NextThemesProvider

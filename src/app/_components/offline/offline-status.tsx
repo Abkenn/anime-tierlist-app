@@ -19,27 +19,15 @@ export const OfflineStatus = () => {
     return null;
   }
 
-  return (
-    <OfflineNotice
-      key={connection.mode}
-      {...connection}
-      mode={connection.mode}
-    />
-  );
+  return <OfflineNotice key={connection.mode} {...connection} mode={connection.mode} />;
 };
 
-const OfflineNotice = ({
-  mode,
-  checking,
-  reconnect,
-  retryAt,
-}: OfflineNoticeProps) => {
+const OfflineNotice = ({ mode, checking, reconnect, retryAt }: OfflineNoticeProps) => {
   const [open, setOpen] = useState(true);
   const noticeId = useId();
 
   const descriptions = {
-    offline:
-      'Your tierlist still works. Changes stay on this device until you reconnect.',
+    offline: 'Your tierlist still works. Changes stay on this device until you reconnect.',
     dev: 'Offline preview is pinned. Automatic reconnection is paused.',
     'dev-temporary': 'Offline preview. Reconnect to return to the live app.',
   };
@@ -84,11 +72,7 @@ const OfflineNotice = ({
                 </p>
 
                 <p className="text-xs leading-5">
-                  <TerminalText
-                    text={descriptions[mode]}
-                    pending={false}
-                    line={1}
-                  />
+                  <TerminalText text={descriptions[mode]} pending={false} line={1} />
                 </p>
               </div>
 

@@ -8,10 +8,7 @@ import { findTierlistShare } from '@/app/_data/queries/tierlist-share';
 import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { getGoogleIdentity } from '@/app/_services/google-session';
-import {
-  hashTierlistSecret,
-  readAnonymousTierlistOwner,
-} from '@/app/_services/tierlist-identity';
+import { hashTierlistSecret, readAnonymousTierlistOwner } from '@/app/_services/tierlist-identity';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
 import { PreviewControls } from './preview-controls';
 import { PreviewControlsLoading } from './preview-controls-loading';
@@ -31,9 +28,7 @@ const OwnerControls = async ({ id }: { id: string }) => {
     return null;
   }
   const accountOwner = google ? await findOwnerById(google.ownerId) : null;
-  const isOwner = Boolean(
-    share && (google?.ownerId ?? anonymous?.id) === share.ownerId,
-  );
+  const isOwner = Boolean(share && (google?.ownerId ?? anonymous?.id) === share.ownerId);
 
   return (
     <PreviewControls
@@ -43,14 +38,10 @@ const OwnerControls = async ({ id }: { id: string }) => {
       account={
         accountOwner
           ? {
-              profileKey: hashTierlistSecret(
-                `google-profile:${accountOwner.id}`,
-              ),
+              profileKey: hashTierlistSecret(`google-profile:${accountOwner.id}`),
               ownerId: accountOwner.id,
               revision: accountOwner.revision,
-              hasItems:
-                tierlistDocumentSchema.parse(accountOwner.document).items
-                  .length > 0,
+              hasItems: tierlistDocumentSchema.parse(accountOwner.document).items.length > 0,
             }
           : undefined
       }
@@ -76,11 +67,7 @@ export const SharedTierlist = async ({ id }: { id: string }) => {
         <OwnerControls id={id} />
       </Suspense>
 
-      <ViewTransition
-        name={`tierlist-preview-${share.id}`}
-        default="none"
-        share="preview-expand"
-      >
+      <ViewTransition name={`tierlist-preview-${share.id}`} default="none" share="preview-expand">
         <div data-preview-scroll="" className="overflow-x-auto pl-6">
           <PreviewImage
             key={`${share.id}.${share.version}`}

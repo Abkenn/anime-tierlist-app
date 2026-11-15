@@ -61,8 +61,7 @@ export const classifySearchInput = (input: string): SearchInput => {
   } catch {
     return {
       kind: 'invalid',
-      message:
-        'Use a direct image URL ending in .jpg, .png, .webp, or another image extension.',
+      message: 'Use a direct image URL ending in .jpg, .png, .webp, or another image extension.',
     };
   }
 

@@ -487,10 +487,7 @@ export const AnilistImportListDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<
-  AnilistImportListQuery,
-  AnilistImportListQueryVariables
->;
+} as unknown as DocumentNode<AnilistImportListQuery, AnilistImportListQueryVariables>;
 export const AnilistAnimeBatchDocument = {
   kind: 'Document',
   definitions: [
@@ -653,7 +650,4 @@ export const AnilistAnimeBatchDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<
-  AnilistAnimeBatchQuery,
-  AnilistAnimeBatchQueryVariables
->;
+} as unknown as DocumentNode<AnilistAnimeBatchQuery, AnilistAnimeBatchQueryVariables>;

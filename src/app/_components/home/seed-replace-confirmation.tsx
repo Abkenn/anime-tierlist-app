@@ -40,9 +40,7 @@ export const SeedReplaceConfirmation = ({
 
         <AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 w-84 max-w-[calc(100vw-2rem)] -translate-1/2 border border-divider bg-popover p-4 text-sm text-popover-foreground shadow-md">
           <AlertDialog.Title className="font-medium">
-            {target === 'device'
-              ? 'Replace this device’s tierlist?'
-              : 'Replace your tierlist?'}
+            {target === 'device' ? 'Replace this device’s tierlist?' : 'Replace your tierlist?'}
           </AlertDialog.Title>
 
           <AlertDialog.Description className="mt-2 text-xs leading-relaxed text-muted-foreground">

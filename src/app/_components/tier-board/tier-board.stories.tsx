@@ -9,8 +9,7 @@ import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import type { TierImageMode, TierRank } from '@/app/_types/tierlist.types';
 import { TierBoard } from './tier-board';
 
-type StoryArgs = NonNullable<ComponentProps<typeof TierBoard>> &
-  Partial<Record<TierRank, boolean>>;
+type StoryArgs = NonNullable<ComponentProps<typeof TierBoard>> & Partial<Record<TierRank, boolean>>;
 
 const RankSandbox = ({
   ranks = [],
@@ -18,9 +17,7 @@ const RankSandbox = ({
   onImageModeChange,
   ...props
 }: NonNullable<ComponentProps<typeof TierBoard>>) => {
-  const [currentImageMode, setCurrentImageMode] = useState<TierImageMode>(
-    imageMode ?? 'natural',
-  );
+  const [currentImageMode, setCurrentImageMode] = useState<TierImageMode>(imageMode ?? 'natural');
 
   useEffect(() => {
     setCurrentImageMode(imageMode ?? 'natural');
@@ -46,11 +43,7 @@ const ControlledImageModeSandbox = () => {
 
   return (
     <TierBoardProvider>
-      <button
-        type="button"
-        className="min-h-11 underline"
-        onClick={() => setMode('natural')}
-      >
+      <button type="button" className="min-h-11 underline" onClick={() => setMode('natural')}>
         Change mode from parent
       </button>
 
@@ -64,10 +57,7 @@ const meta = {
   component: TierBoard,
   args: Object.fromEntries(tierRanks.map((rank) => [rank, true])),
   argTypes: Object.fromEntries(
-    tierRanks.map((rank) => [
-      rank,
-      { control: 'boolean', table: { category: 'Ranks' } },
-    ]),
+    tierRanks.map((rank) => [rank, { control: 'boolean', table: { category: 'Ranks' } }]),
   ),
   parameters: { controls: { include: [...tierRanks, 'imageMode', 'layout'] } },
   render: (args) => {
@@ -110,8 +100,7 @@ export const AllVariants: Story = {
   play: async ({ canvas }) => {
     const rows = canvas.getAllByRole('listitem');
     const colors = rows.map(
-      (row) =>
-        getComputedStyle(row.firstElementChild as HTMLElement).backgroundColor,
+      (row) => getComputedStyle(row.firstElementChild as HTMLElement).backgroundColor,
     );
 
     await expect(rows).toHaveLength(20);
@@ -125,16 +114,12 @@ export const KeyboardMovement: Story = {
 
     item.focus();
     await userEvent.keyboard('{ArrowDown}');
-    await expect(
-      canvas.findByRole('button', { name: 'Item 1 in S' }),
-    ).resolves.toHaveFocus();
-    await expect(
-      canvas.getByRole('button', { name: 'Item 1 in S' }),
-    ).toHaveStyle({ outlineStyle: 'solid' });
+    await expect(canvas.findByRole('button', { name: 'Item 1 in S' })).resolves.toHaveFocus();
+    await expect(canvas.getByRole('button', { name: 'Item 1 in S' })).toHaveStyle({
+      outlineStyle: 'solid',
+    });
     await userEvent.keyboard('{ArrowUp}');
-    await expect(
-      canvas.findByRole('button', { name: 'Item 1 in S+' }),
-    ).resolves.toHaveFocus();
+    await expect(canvas.findByRole('button', { name: 'Item 1 in S+' })).resolves.toHaveFocus();
   },
 };
 
@@ -152,19 +137,13 @@ export const KeyboardOrdering: Story = {
     await expect(first).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(canvas.getByText(/Keyboard mode/)).toBeVisible();
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 2'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 2')).toBeInTheDocument();
     await userEvent.keyboard('{ArrowLeft}');
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 1'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 1')).toBeInTheDocument();
     await expect(first).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(first).not.toHaveFocus();
-    await expect(
-      canvas.getByText('Drag to arrange · Right-click to edit'),
-    ).toBeVisible();
+    await expect(canvas.getByText('Drag to arrange · Right-click to edit')).toBeVisible();
     await expect(second).toBeVisible();
   },
 };
@@ -201,9 +180,7 @@ export const ReorderPopulatedRows: Story = {
       clientY: destination.bottom - 8,
     });
     await waitFor(() =>
-      expect(source.getBoundingClientRect().top).toBeGreaterThan(
-        destination.top - 20,
-      ),
+      expect(source.getBoundingClientRect().top).toBeGreaterThan(destination.top - 20),
     );
     fireEvent.pointerUp(window, {
       ...pointer,
@@ -211,28 +188,17 @@ export const ReorderPopulatedRows: Story = {
       clientY: destination.bottom - 8,
     });
     await waitFor(() => {
-      expect(canvas.getAllByRole('listitem')[0]).toHaveAttribute(
-        'data-tier-rank',
-        'S',
-      );
-      const rows = [
-        ...canvasElement.querySelectorAll<HTMLElement>('[data-tier-rank]'),
-      ];
-      const posters = [
-        ...canvasElement.querySelectorAll<HTMLElement>('[data-tier-item-id]'),
-      ];
+      expect(canvas.getAllByRole('listitem')[0]).toHaveAttribute('data-tier-rank', 'S');
+      const rows = [...canvasElement.querySelectorAll<HTMLElement>('[data-tier-rank]')];
+      const posters = [...canvasElement.querySelectorAll<HTMLElement>('[data-tier-item-id]')];
       expect(posters).toHaveLength(6);
       posters.forEach((poster) => {
         const rank = poster.getAttribute('aria-label')?.split(' in ').at(-1);
-        const cells = rows.find(
-          (row) => row.dataset.tierRank === rank,
-        )?.lastElementChild;
+        const cells = rows.find((row) => row.dataset.tierRank === rank)?.lastElementChild;
         expect(cells).toBeDefined();
         expect(
           Math.abs(
-            poster.getBoundingClientRect().top -
-              (cells?.getBoundingClientRect().top ?? 0) -
-              2,
+            poster.getBoundingClientRect().top - (cells?.getBoundingClientRect().top ?? 0) - 2,
           ),
         ).toBeLessThan(1);
       });
@@ -246,21 +212,13 @@ export const GamerKeys: Story = {
 
     item.focus();
     await userEvent.keyboard('d');
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 2'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 2')).toBeInTheDocument();
     await userEvent.keyboard('A');
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 1'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 1')).toBeInTheDocument();
     await userEvent.keyboard('s');
-    await expect(
-      canvas.getByRole('button', { name: 'Item 1 in S' }),
-    ).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: 'Item 1 in S' })).toHaveFocus();
     await userEvent.keyboard('W');
-    await expect(
-      canvas.getByRole('button', { name: 'Item 1 in S+' }),
-    ).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: 'Item 1 in S+' })).toHaveFocus();
   },
 };
 
@@ -287,12 +245,8 @@ export const Mobile344: Story = {
     ),
   ],
   play: async ({ canvas }) => {
-    await expect(
-      canvas.findByRole('button', { name: 'Item 10 in S+' }),
-    ).resolves.toBeVisible();
-    await expect(
-      canvas.getAllByRole('button', { name: /^Item / }),
-    ).toHaveLength(10);
+    await expect(canvas.findByRole('button', { name: 'Item 10 in S+' })).resolves.toBeVisible();
+    await expect(canvas.getAllByRole('button', { name: /^Item / })).toHaveLength(10);
   },
 };
 
@@ -320,9 +274,7 @@ export const MobileRectangles: Story = {
     layout: 'two-line',
   },
   play: async ({ canvas }) => {
-    await expect(
-      canvas.getAllByRole('button', { name: /^Item / }),
-    ).toHaveLength(12);
+    await expect(canvas.getAllByRole('button', { name: /^Item / })).toHaveLength(12);
   },
 };
 
@@ -335,13 +287,9 @@ export const CropEditing: Story = {
 
     item.focus();
     await userEvent.keyboard('{Shift>}[F10]{/Shift}');
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await expect(item).toHaveAttribute('data-crop-editing', 'true');
-    const preview = canvasElement.ownerDocument.querySelector(
-      '[data-crop-preview]',
-    );
+    const preview = canvasElement.ownerDocument.querySelector('[data-crop-preview]');
 
     await waitFor(() => {
       expect(preview).not.toBeNull();
@@ -350,9 +298,7 @@ export const CropEditing: Story = {
 
       expect(bounds?.width).toBeCloseTo(square.height * (16 / 9), 0);
       expect(bounds?.height).toBeCloseTo(square.height, 0);
-      expect(getComputedStyle(preview as Element).filter).toBe(
-        'brightness(0.4)',
-      );
+      expect(getComputedStyle(preview as Element).filter).toBe('brightness(0.4)');
     });
 
     await waitFor(() => expect(item).toHaveFocus());
@@ -365,23 +311,15 @@ export const CropEditing: Story = {
     await expect(center).toBeDisabled();
     item.focus();
     await userEvent.keyboard('{ArrowRight}{Enter}');
-    await waitFor(() =>
-      expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'),
-    );
+    await waitFor(() => expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'));
     await expect(item).not.toHaveAttribute('data-crop-editing');
-    await expect(
-      canvasElement.ownerDocument.querySelector('[data-crop-preview]'),
-    ).toBeNull();
+    await expect(canvasElement.ownerDocument.querySelector('[data-crop-preview]')).toBeNull();
     await expect(item).toHaveAccessibleName('Item 2 in S+');
     await userEvent.keyboard('{Shift>}[F10]{/Shift}');
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await waitFor(() => expect(item).toHaveFocus());
     await userEvent.keyboard('{ArrowLeft}{Escape}');
-    await waitFor(() =>
-      expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'),
-    );
+    await waitFor(() => expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'));
   },
 };
 
@@ -401,10 +339,7 @@ export const LandscapeHeightSlider: Story = {
     await expect(slider).toHaveValue('100');
     fireEvent.change(slider, { target: { value: '50' } });
     await waitFor(() => {
-      expect(item.getBoundingClientRect().width).toBeCloseTo(
-        (original.width * 2) / 3,
-        0,
-      );
+      expect(item.getBoundingClientRect().width).toBeCloseTo((original.width * 2) / 3, 0);
     });
     await expect(slider).toHaveValue('50');
     fireEvent.change(slider, { target: { value: '100' } });
@@ -416,10 +351,7 @@ export const LandscapeHeightSlider: Story = {
     });
     fireEvent.change(slider, { target: { value: '0' } });
     await waitFor(() =>
-      expect(item.getBoundingClientRect().width).toBeCloseTo(
-        original.width / 3,
-        0,
-      ),
+      expect(item.getBoundingClientRect().width).toBeCloseTo(original.width / 3, 0),
     );
     await userEvent.keyboard('{Escape}');
   },
@@ -431,13 +363,9 @@ export const PhysicalKeyboardNavigation: Story = {
 
     item.focus();
     fireEvent.keyDown(item, { key: 'д', code: 'KeyD' });
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 2'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 2')).toBeInTheDocument();
     fireEvent.keyDown(item, { key: 'а', code: 'KeyA' });
-    await expect(
-      canvas.getByText('Item 1 moved to S+, position 1'),
-    ).toBeInTheDocument();
+    await expect(canvas.getByText('Item 1 moved to S+, position 1')).toBeInTheDocument();
     fireEvent.keyDown(item, { key: 'с', code: 'KeyS' });
     await expect(item).toHaveAccessibleName('Item 1 in S');
     fireEvent.keyDown(item, { key: 'w', code: 'KeyQ' });
@@ -458,15 +386,11 @@ export const PhysicalKeyboardCrop: Story = {
 
     item.focus();
     await userEvent.keyboard('{Shift>}[F10]{/Shift}');
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await waitFor(() => expect(item).toHaveFocus());
     fireEvent.keyDown(item, { key: 'д', code: 'KeyD' });
     fireEvent.keyDown(item, { key: 'Enter', code: 'NumpadEnter' });
-    await waitFor(() =>
-      expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'),
-    );
+    await waitFor(() => expect(getComputedStyle(image).objectPosition).toBe('52.5% 50%'));
     await expect(item).not.toHaveAttribute('data-crop-editing');
     await expect(item).toHaveAccessibleName('Item 2 in S+');
   },
@@ -489,9 +413,7 @@ export const FullSlotHitArea: Story = {
 
       expect(bounds.height).toBeCloseTo(portraitBounds.height, 1);
       expect(hit?.closest('[data-tier-item]')).toBe(item);
-      expect(getComputedStyle(within(item).getByRole('img')).objectFit).toBe(
-        'contain',
-      );
+      expect(getComputedStyle(within(item).getByRole('img')).objectFit).toBe('contain');
     });
   },
 };
@@ -504,30 +426,22 @@ export const PortraitCropControls: Story = {
 
     item.focus();
     await userEvent.keyboard('{Shift>}[F10]{/Shift}');
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     const controls = await page.findByRole('group', {
       name: 'Crop controls for item 1',
     });
 
     const expectBelowImage = async () => {
       await waitFor(() => {
-        const preview = canvasElement.ownerDocument.querySelector(
-          '[data-crop-preview]',
-        );
+        const preview = canvasElement.ownerDocument.querySelector('[data-crop-preview]');
         const imageBounds = preview?.getBoundingClientRect();
         const controlsBounds = controls.getBoundingClientRect();
         const rem = Number.parseFloat(
-          getComputedStyle(canvasElement.ownerDocument.documentElement)
-            .fontSize,
+          getComputedStyle(canvasElement.ownerDocument.documentElement).fontSize,
         );
 
         expect(imageBounds).toBeDefined();
-        expect(controlsBounds.top - (imageBounds?.bottom ?? 0)).toBeCloseTo(
-          rem * 0.5,
-          0,
-        );
+        expect(controlsBounds.top - (imageBounds?.bottom ?? 0)).toBeCloseTo(rem * 0.5, 0);
       });
     };
 
@@ -556,9 +470,7 @@ export const FullHeightImageSlider: Story = {
     await expect(slider).toHaveValue('100');
     await expect(thumb).not.toBeNull();
     await userEvent.hover(thumb as HTMLElement);
-    await expect(await page.findByRole('tooltip')).toHaveTextContent(
-      'Full row height',
-    );
+    await expect(await page.findByRole('tooltip')).toHaveTextContent('Full row height');
     fireEvent.change(slider, { target: { value: '50' } });
     await expect(slider).toHaveValue('100');
     await userEvent.keyboard('{Escape}');
@@ -592,23 +504,18 @@ export const IndependentBoards: Story = {
     item.focus();
     await userEvent.keyboard('{Enter}');
     await expect(firstBoard.getByText(/^Keyboard mode/)).toBeInTheDocument();
-    await expect(
-      secondBoard.queryByText(/^Keyboard mode/),
-    ).not.toBeInTheDocument();
-    await userEvent.click(
-      firstBoard.getByRole('radio', { name: 'Square cells' }),
-    );
+    await expect(secondBoard.queryByText(/^Keyboard mode/)).not.toBeInTheDocument();
+    await userEvent.click(firstBoard.getByRole('radio', { name: 'Square cells' }));
     await expect(item).toHaveAttribute('data-image-mode', 'cover');
-    await expect(
-      secondBoard.getByRole('button', { name: 'Item 1 in S+' }),
-    ).toHaveAttribute('data-image-mode', 'natural');
+    await expect(secondBoard.getByRole('button', { name: 'Item 1 in S+' })).toHaveAttribute(
+      'data-image-mode',
+      'natural',
+    );
     await waitFor(() => {
       const fit = firstBoard.getByRole('radiogroup', {
         name: 'Square image fit',
       });
-      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe(
-        '1',
-      );
+      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe('1');
     });
   },
 };
@@ -619,22 +526,14 @@ export const ControlledImageMode: Story = {
     const item = canvas.getByRole('button', { name: 'Item 1 in S+' });
 
     await expect(item).toHaveAttribute('data-image-mode', 'cover');
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Change mode from parent' }),
-    );
-    await waitFor(() =>
-      expect(item).toHaveAttribute('data-image-mode', 'natural'),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Change mode from parent' }));
+    await waitFor(() => expect(item).toHaveAttribute('data-image-mode', 'natural'));
     await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     await userEvent.click(canvas.getByRole('radio', { name: 'Fit' }));
-    await waitFor(() =>
-      expect(item).toHaveAttribute('data-image-mode', 'contain'),
-    );
+    await waitFor(() => expect(item).toHaveAttribute('data-image-mode', 'contain'));
     await waitFor(() => {
       const fit = canvas.getByRole('radiogroup', { name: 'Square image fit' });
-      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe(
-        '1',
-      );
+      expect(getComputedStyle(fit.parentElement as HTMLElement).opacity).toBe('1');
     });
   },
 };
@@ -655,9 +554,10 @@ export const FixedImageMode: Story = {
       'aria-checked',
       'true',
     );
-    await expect(
-      canvas.getByRole('button', { name: 'Item 1 in S+' }),
-    ).toHaveAttribute('data-image-mode', 'contain');
+    await expect(canvas.getByRole('button', { name: 'Item 1 in S+' })).toHaveAttribute(
+      'data-image-mode',
+      'contain',
+    );
   },
 };
 
@@ -685,9 +585,7 @@ export const OriginalRatioCrop: Story = {
       name: 'Item Trim test in S+',
     });
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit trim' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit trim' }));
     const right = await page.findByRole('slider', { name: 'right crop edge' });
     [1, 2, 3, 4, 5].forEach(() => {
       fireEvent.keyDown(right, { code: 'ArrowLeft', shiftKey: true });
@@ -695,12 +593,7 @@ export const OriginalRatioCrop: Story = {
     await userEvent.click(page.getByRole('button', { name: 'Done' }));
     await waitFor(() =>
       expect(
-        Number(
-          item
-            .querySelector('svg[role="img"]')
-            ?.getAttribute('viewBox')
-            ?.split(' ')[2],
-        ),
+        Number(item.querySelector('svg[role="img"]')?.getAttribute('viewBox')?.split(' ')[2]),
       ).toBeCloseTo(800),
     );
     fireEvent.contextMenu(item);
@@ -711,10 +604,7 @@ export const OriginalRatioCrop: Story = {
     await expect(expansion).toBeDisabled();
     await userEvent.click(page.getByRole('menuitem', { name: 'Reset trim' }));
     await waitFor(() =>
-      expect(item.querySelector('svg[role="img"]')).toHaveAttribute(
-        'viewBox',
-        '0 0 1600 900',
-      ),
+      expect(item.querySelector('svg[role="img"]')).toHaveAttribute('viewBox', '0 0 1600 900'),
     );
   },
 };
@@ -748,9 +638,7 @@ export const CustomRatioPosition: Story = {
     const image = () => item.querySelector('svg[role="img"]');
 
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await expect(item).toHaveAttribute('data-trim-positioning', 'true');
     await expect(
       canvasElement.ownerDocument.querySelector('[data-crop-preview]'),
@@ -761,37 +649,25 @@ export const CustomRatioPosition: Story = {
     await waitFor(() => expect(item).toHaveFocus());
     await userEvent.keyboard('{ArrowRight}');
     await waitFor(() =>
-      expect(
-        Number(image()?.getAttribute('viewBox')?.split(' ')[0]),
-      ).toBeCloseTo(440),
+      expect(Number(image()?.getAttribute('viewBox')?.split(' ')[0])).toBeCloseTo(440),
     );
     await expect(item.getBoundingClientRect().width).toBeCloseTo(originalWidth);
     await userEvent.keyboard('{Escape}');
-    await waitFor(() =>
-      expect(image()).toHaveAttribute('viewBox', '400 90 800 720'),
-    );
+    await waitFor(() => expect(image()).toHaveAttribute('viewBox', '400 90 800 720'));
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await waitFor(() => expect(item).toHaveFocus());
     await userEvent.keyboard('w{Enter}');
     await waitFor(() =>
-      expect(
-        Number(image()?.getAttribute('viewBox')?.split(' ')[1]),
-      ).toBeCloseTo(67.5),
+      expect(Number(image()?.getAttribute('viewBox')?.split(' ')[1])).toBeCloseTo(67.5),
     );
     await expect(item).not.toHaveAttribute('data-trim-positioning');
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await userEvent.click(page.getByRole('button', { name: 'Center' }));
     await userEvent.click(page.getByRole('button', { name: 'Done' }));
     await waitFor(() =>
-      expect(
-        Number(image()?.getAttribute('viewBox')?.split(' ')[1]),
-      ).toBeCloseTo(90),
+      expect(Number(image()?.getAttribute('viewBox')?.split(' ')[1])).toBeCloseTo(90),
     );
   },
 };
@@ -821,20 +697,14 @@ export const TopRowCropOverflow: Story = {
       name: 'Item Top row in S+',
     });
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit crop' }));
     await waitFor(() => {
-      const overlay = canvasElement.ownerDocument.querySelector(
-        '[data-crop-overlay]',
-      );
+      const overlay = canvasElement.ownerDocument.querySelector('[data-crop-overlay]');
       const bounds = overlay?.getBoundingClientRect();
 
       expect(overlay?.parentElement).toBe(canvasElement.ownerDocument.body);
       expect(bounds?.top).toBeLessThan(item.getBoundingClientRect().top);
-      expect(bounds?.bottom).toBeGreaterThan(
-        item.getBoundingClientRect().bottom,
-      );
+      expect(bounds?.bottom).toBeGreaterThan(item.getBoundingClientRect().bottom);
     });
   },
 };
@@ -863,70 +733,45 @@ export const ItemText: Story = {
       name: 'Item Text test in S+',
     });
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Add text' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Add text' }));
     const text = await page.findByRole('textbox', { name: 'Title' });
     await userEvent.type(text, 'Heavenly{Enter}Delusion');
     const hex = page.getByRole('textbox', { name: 'Hex color' });
     await userEvent.clear(hex);
     await userEvent.type(hex, '#ff0');
-    await userEvent.selectOptions(
-      page.getByRole('combobox', { name: 'Position' }),
-      'top',
-    );
+    await userEvent.selectOptions(page.getByRole('combobox', { name: 'Position' }), 'top');
     await userEvent.click(page.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
-      expect(item.querySelector('[data-tier-title]')).toHaveTextContent(
-        'Heavenly Delusion',
-      ),
+      expect(item.querySelector('[data-tier-title]')).toHaveTextContent('Heavenly Delusion'),
     );
 
     const title = () => item.querySelector('[data-tier-title] > span > span');
 
     await expect(title()).toHaveClass('top-1');
-    await expect(getComputedStyle(title() as Element).color).toBe(
-      'rgb(255, 255, 0)',
-    );
+    await expect(getComputedStyle(title() as Element).color).toBe('rgb(255, 255, 0)');
     await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit text' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit text' }));
     await userEvent.clear(page.getByRole('textbox', { name: 'Title' }));
-    await userEvent.type(
-      page.getByRole('textbox', { name: 'Title' }),
-      'Cancelled',
-    );
+    await userEvent.type(page.getByRole('textbox', { name: 'Title' }), 'Cancelled');
     await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
-    await expect(item.querySelector('[data-tier-title]')).toHaveTextContent(
-      'Heavenly Delusion',
-    );
+    await expect(item.querySelector('[data-tier-title]')).toHaveTextContent('Heavenly Delusion');
     await userEvent.click(canvas.getByRole('radio', { name: 'Square cells' }));
     await userEvent.click(canvas.getByRole('radio', { name: 'Fit' }));
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit text' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit text' }));
     await userEvent.click(page.getByRole('checkbox', { name: 'Wrap text' }));
-    await userEvent.selectOptions(
-      page.getByRole('combobox', { name: 'Position' }),
-      'middle',
-    );
+    await userEvent.selectOptions(page.getByRole('combobox', { name: 'Position' }), 'middle');
     await userEvent.click(page.getByRole('button', { name: 'Save' }));
     await expect(title()).toHaveClass('top-1/2');
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit text' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit text' }));
     await userEvent.click(page.getByRole('button', { name: 'Remove text' }));
     await expect(item.querySelector('[data-tier-title]')).toBeNull();
     await waitFor(() => {
       expect(page.queryByLabelText('Item text')).not.toBeInTheDocument();
       expect(
-        canvasElement.ownerDocument.querySelector(
-          '[data-slot="context-menu-content"]',
-        ),
+        canvasElement.ownerDocument.querySelector('[data-slot="context-menu-content"]'),
       ).toBeNull();
     });
   },
@@ -943,9 +788,9 @@ export const DenseLibrary: Story = {
   },
   play: async ({ canvasElement }) => {
     await waitFor(() => {
-      const labels = [
-        ...canvasElement.querySelectorAll('[data-tier-rank] > div:first-child'),
-      ].map((label) => label.getBoundingClientRect().width);
+      const labels = [...canvasElement.querySelectorAll('[data-tier-rank] > div:first-child')].map(
+        (label) => label.getBoundingClientRect().width,
+      );
       const items = [...canvasElement.querySelectorAll('[data-tier-item]')].map(
         (item) => item.getBoundingClientRect().height,
       );
@@ -985,31 +830,27 @@ export const RenameAndFind: Story = {
       name: 'Item Unknown in S+',
     });
     fireEvent.contextMenu(item);
-    await userEvent.click(
-      await page.findByRole('menuitem', { name: 'Edit label: Unknown' }),
-    );
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Edit label: Unknown' }));
     const label = await page.findByRole('textbox', { name: 'Item label' });
     await userEvent.clear(label);
     await userEvent.type(label, 'Your Lie in April');
     await userEvent.keyboard('{Enter}');
     await userEvent.click(item);
-    await waitFor(() =>
-      expect(item).toHaveAccessibleName('Item Your Lie in April in S+'),
-    );
+    await waitFor(() => expect(item).toHaveAccessibleName('Item Your Lie in April in S+'));
     fireEvent.keyDown(window, { code: 'KeyF', ctrlKey: true });
     const find = await page.findByRole('textbox', {
       name: 'Find anime in tierlist',
     });
     await userEvent.type(find, 'your lie');
-    await expect(
-      canvas.getByRole('button', { name: 'Item Another anime in S' }),
-    ).toHaveClass('opacity-20');
+    await expect(canvas.getByRole('button', { name: 'Item Another anime in S' })).toHaveClass(
+      'opacity-20',
+    );
     await expect(page.getByText('1 found')).toBeVisible();
     fireEvent.keyDown(find, { code: 'Escape' });
     await waitFor(() =>
-      expect(
-        canvas.getByRole('button', { name: 'Item Another anime in S' }),
-      ).not.toHaveClass('opacity-20'),
+      expect(canvas.getByRole('button', { name: 'Item Another anime in S' })).not.toHaveClass(
+        'opacity-20',
+      ),
     );
   },
 };
@@ -1020,22 +861,18 @@ export const ScrollOverview: Story = {
       <div className="flex h-[calc(100dvh-2rem)] min-h-0 flex-col">
         <TierBoard
           ranks={tierRanks}
-          initialItems={curatedAnimeImages
-            .slice(0, 18)
-            .map((poster, index) => ({
-              id: poster.id,
-              label: poster.title,
-              image: poster.image,
-              rank: tierRanks[index % tierRanks.length],
-            }))}
+          initialItems={curatedAnimeImages.slice(0, 18).map((poster, index) => ({
+            id: poster.id,
+            label: poster.title,
+            image: poster.image,
+            rank: tierRanks[index % tierRanks.length],
+          }))}
         />
       </div>
     </TierBoardProvider>
   ),
   play: async ({ canvasElement }) => {
-    const viewport = canvasElement.querySelector<HTMLElement>(
-      '[data-tier-viewport]',
-    );
+    const viewport = canvasElement.querySelector<HTMLElement>('[data-tier-viewport]');
     if (!viewport) {
       throw new Error('Tierlist viewport is missing.');
     }
@@ -1082,9 +919,7 @@ export const ScrollOverview: Story = {
         });
         await waitFor(() =>
           expect(
-            Math.abs(
-              thumb.getBoundingClientRect().top + grabbedOffset - (y + offset),
-            ),
+            Math.abs(thumb.getBoundingClientRect().top + grabbedOffset - (y + offset)),
           ).toBeLessThan(2),
         );
       }

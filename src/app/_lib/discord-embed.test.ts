@@ -11,9 +11,7 @@ describe('homepage link preview', () => {
     const payload = JSON.parse(discordEmbedJson);
 
     expect(() => toComponentEmbedJson(fromPayload(payload))).not.toThrow();
-    expect(
-      new TextEncoder().encode(discordEmbedJson).length,
-    ).toBeLessThanOrEqual(3000);
+    expect(new TextEncoder().encode(discordEmbedJson).length).toBeLessThanOrEqual(3000);
     expect(discordEmbedJson).not.toContain('\u2014');
     expect(payload.component.accent_color).toBe(0xef596b);
     expect(payload.component.components[0].accessory).toMatchObject({
@@ -44,19 +42,11 @@ describe('homepage link preview', () => {
       type: 'link',
       provider_url: siteUrl.href,
     });
+    expect(getOembed(new Request('https://preview.test/api/oembed')).status).toBe(400);
     expect(
-      getOembed(new Request('https://preview.test/api/oembed')).status,
-    ).toBe(400);
-    expect(
-      getOembed(
-        new Request(
-          'https://preview.test/api/oembed?url=https://unrelated.example/',
-        ),
-      ).status,
-    ).toBe(404);
-    expect(
-      getOembed(new Request('https://preview.test/api/oembed?format=xml'))
+      getOembed(new Request('https://preview.test/api/oembed?url=https://unrelated.example/'))
         .status,
-    ).toBe(501);
+    ).toBe(404);
+    expect(getOembed(new Request('https://preview.test/api/oembed?format=xml')).status).toBe(501);
   });
 });

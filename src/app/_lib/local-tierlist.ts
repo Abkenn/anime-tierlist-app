@@ -52,12 +52,7 @@ export const localTierlistSchema = z.object({
   version: z.literal(1),
   seed: z.string().regex(/^[a-f0-9]{64}$/u),
   revision: z.number().int().nonnegative(),
-  updatedAt: z
-    .number()
-    .int()
-    .nonnegative()
-    .max(8_640_000_000_000_000)
-    .optional(),
+  updatedAt: z.number().int().nonnegative().max(8_640_000_000_000_000).optional(),
   accountOwnerId: z.uuid().optional(),
   items: z.array(item),
   ranks: z.array(rank).min(1).max(200),
@@ -92,7 +87,5 @@ export const createUserSeed = () => {
     return bytes.toHex();
   }
 
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
-    '',
-  );
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 };

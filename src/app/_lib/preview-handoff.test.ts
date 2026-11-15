@@ -37,9 +37,9 @@ it('reuses only the matching local profile revision without replacing original i
     ],
   };
   await savePreviewHandoff(document, 'local-seed', 4, 'a'.repeat(16));
-  expect(
-    readPreviewHandoff('local-seed', 4).get(document.items[0].image.src)?.src,
-  ).toBe('blob:test-preview');
+  expect(readPreviewHandoff('local-seed', 4).get(document.items[0].image.src)?.src).toBe(
+    'blob:test-preview',
+  );
   expect(readPreviewHandoff('other-seed', 4).size).toBe(0);
   expect(readPreviewHandoff('local-seed', 5).size).toBe(0);
   expect(document.items[0].image.src).toBe('https://example.com/original.jpg');

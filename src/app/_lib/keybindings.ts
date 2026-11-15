@@ -33,8 +33,7 @@ export const matchesKeyboardBehavior = (
   { codes, modifiers }: KeyboardBehavior,
 ) =>
   codes.some((code) => code === event.code) &&
-  (modifiers?.primary === undefined ||
-    (event.ctrlKey || event.metaKey) === modifiers.primary) &&
+  (modifiers?.primary === undefined || (event.ctrlKey || event.metaKey) === modifiers.primary) &&
   (modifiers?.alt === undefined || event.altKey === modifiers.alt) &&
   (modifiers?.shift === undefined || event.shiftKey === modifiers.shift);
 
@@ -45,9 +44,7 @@ type KeyboardBehaviorConfig = {
 };
 
 export const withKeyboardBehaviors = <
-  const Groups extends Partial<
-    Record<KeyboardBehaviorName, KeyboardBehaviorConfig>
-  >,
+  const Groups extends Partial<Record<KeyboardBehaviorName, KeyboardBehaviorConfig>>,
 >(
   groups: Groups & Record<Exclude<keyof Groups, KeyboardBehaviorName>, never>,
 ) =>

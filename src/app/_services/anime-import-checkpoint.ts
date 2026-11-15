@@ -9,10 +9,7 @@ const storage = createStore('anime-imports', 'checkpoints');
 
 const key = (seed: string, provider: ImportProvider) => `${seed}:${provider}`;
 
-export const readAnimeImportCheckpoint = async (
-  seed: string,
-  provider: ImportProvider,
-) => {
+export const readAnimeImportCheckpoint = async (seed: string, provider: ImportProvider) => {
   const parsed = animeImportCheckpointSchema.safeParse(
     await get<unknown>(key(seed, provider), storage),
   );
@@ -21,12 +18,8 @@ export const readAnimeImportCheckpoint = async (
     : undefined;
 };
 
-export const saveAnimeImportCheckpoint = (
-  seed: string,
-  checkpoint: AnimeImportCheckpoint,
-) => set(key(seed, checkpoint.provider), checkpoint, storage);
+export const saveAnimeImportCheckpoint = (seed: string, checkpoint: AnimeImportCheckpoint) =>
+  set(key(seed, checkpoint.provider), checkpoint, storage);
 
-export const clearAnimeImportCheckpoint = (
-  seed: string,
-  provider: ImportProvider,
-) => del(key(seed, provider), storage);
+export const clearAnimeImportCheckpoint = (seed: string, provider: ImportProvider) =>
+  del(key(seed, provider), storage);

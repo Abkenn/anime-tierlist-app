@@ -33,14 +33,10 @@ import { TierItemButton, type TierItemButtonProps } from './tier-item-button';
 import { TierItemMenu } from './tier-item-menu';
 
 const TierImageTrimEditor = dynamic(() =>
-  import('./tier-image-trim-editor').then(
-    (module) => module.TierImageTrimEditor,
-  ),
+  import('./tier-image-trim-editor').then((module) => module.TierImageTrimEditor),
 );
 const TierItemTitleEditor = dynamic(() =>
-  import('./tier-item-title-editor').then(
-    (module) => module.TierItemTitleEditor,
-  ),
+  import('./tier-item-title-editor').then((module) => module.TierItemTitleEditor),
 );
 
 export type TierItemProps = {
@@ -106,26 +102,18 @@ export const TierItem = ({
   const [localTrimEditing, setLocalTrimEditing] = useState(false);
   const [localPositioning, setLocalPositioning] = useState(false);
   const boardRef = providedBoardRef ?? actions?.boardRef ?? fallbackBoardRef;
-  const onStart =
-    providedOnStart ?? ((x: number, y: number) => actions?.start(id, x, y));
-  const onMove =
-    providedOnMove ?? ((x: number, y: number) => actions?.move(id, x, y));
-  const onDrop =
-    providedOnDrop ??
-    ((x: number, y: number) => actions?.drop(id, x, y) ?? null);
+  const onStart = providedOnStart ?? ((x: number, y: number) => actions?.start(id, x, y));
+  const onMove = providedOnMove ?? ((x: number, y: number) => actions?.move(id, x, y));
+  const onDrop = providedOnDrop ?? ((x: number, y: number) => actions?.drop(id, x, y) ?? null);
   const onCancel = providedOnCancel ?? (() => actions?.cancel());
   const onKeyboardMove =
-    providedOnKeyboardMove ??
-    ((move: TierKeyboardMove) => actions?.keyboardMove(id, move));
+    providedOnKeyboardMove ?? ((move: TierKeyboardMove) => actions?.keyboardMove(id, move));
   const onTitleChange =
-    providedOnTitleChange ??
-    ((title: ItemTitle | undefined) => actions?.updateItem(id, { title }));
+    providedOnTitleChange ?? ((title: ItemTitle | undefined) => actions?.updateItem(id, { title }));
   const onTrimChange =
-    providedOnTrimChange ??
-    ((trim: TierImageTrim) => actions?.updateItem(id, { trim }));
+    providedOnTrimChange ?? ((trim: TierImageTrim) => actions?.updateItem(id, { trim }));
   const onCropChange =
-    providedOnCropChange ??
-    ((crop: TierCrop) => actions?.updateItem(id, { crop }));
+    providedOnCropChange ?? ((crop: TierCrop) => actions?.updateItem(id, { crop }));
   const textEditing = titleDraft !== null && controlledEditing !== false;
   const imageMode = useAtomValue(imageModeAtom);
   const { setEditingItem, setKeyboardMode } = useTierBoardActions();
@@ -152,9 +140,7 @@ export const TierItem = ({
     onChange: onTrimChange,
   });
   const naturalEditing =
-    imageMode === 'natural' &&
-    !textEditing &&
-    (controlledEditing ?? localTrimEditing);
+    imageMode === 'natural' && !textEditing && (controlledEditing ?? localTrimEditing);
   const positioning = naturalEditing && localPositioning;
   const trimEditing = naturalEditing && !localPositioning;
   const keyboard = useTierItemKeyboard({
@@ -284,11 +270,7 @@ export const TierItem = ({
         dragging={drag.dragging}
         itemId={id}
         label={label}
-        onLabelChange={
-          actions
-            ? (next) => actions.updateItem(id, { label: next })
-            : undefined
-        }
+        onLabelChange={actions ? (next) => actions.updateItem(id, { label: next }) : undefined}
         finalFocus={itemRef}
         hasImage={Boolean(image)}
         squareImage={Boolean(image && image.width === image.height)}

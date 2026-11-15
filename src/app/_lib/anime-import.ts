@@ -124,16 +124,11 @@ export const groupImportSeries = (
       return 0;
     }
     const next = new Set([...visited, id]);
-    const prequels =
-      anime.get(id)?.prequels.filter((prequel) => anime.has(prequel)) ?? [];
+    const prequels = anime.get(id)?.prequels.filter((prequel) => anime.has(prequel)) ?? [];
 
-    return prequels.length
-      ? 1 + Math.max(...prequels.map((prequel) => depth(prequel, next)))
-      : 0;
+    return prequels.length ? 1 + Math.max(...prequels.map((prequel) => depth(prequel, next))) : 0;
   };
-  const unique = [
-    ...new Map(entries.map((entry) => [entry.id, entry])).values(),
-  ];
+  const unique = [...new Map(entries.map((entry) => [entry.id, entry])).values()];
   const groups = new Map<number, ImportListEntry[]>();
   unique.filter(eligibleImportEntry).forEach((entry) => {
     const metadata = anime.get(entry.id);
@@ -148,16 +143,9 @@ export const groupImportSeries = (
     .map(([id, seasons]) => {
       const representative =
         catalog
-          .filter(
-            (entry) =>
-              root(entry.id) === id &&
-              isImportSeries(entry.type, entry.episodes),
-          )
-          .sort((a, b) => depth(a.id) - depth(b.id) || a.id - b.id)[0] ??
-        anime.get(id);
-      const rated = seasons.filter(
-        (entry) => entry.completed && entry.score > 0,
-      );
+          .filter((entry) => root(entry.id) === id && isImportSeries(entry.type, entry.episodes))
+          .sort((a, b) => depth(a.id) - depth(b.id) || a.id - b.id)[0] ?? anime.get(id);
+      const rated = seasons.filter((entry) => entry.completed && entry.score > 0);
       const included = rated.length ? rated : seasons;
       const status: NonNullable<ImportSeries['status']> = seasons.some(
         (entry) => entry.status === 'watching',
@@ -166,15 +154,10 @@ export const groupImportSeries = (
         : 'dropped';
       const weighted = rated.map((entry) => ({
         entry,
-        episodes:
-          anime.get(entry.id)?.episodes ||
-          entry.episodes ||
-          entry.watchedEpisodes,
+        episodes: anime.get(entry.id)?.episodes || entry.episodes || entry.watchedEpisodes,
       }));
       if (weighted.some((entry) => entry.episodes <= 0)) {
-        throw new Error(
-          'An episode count is unavailable. Try generating again later.',
-        );
+        throw new Error('An episode count is unavailable. Try generating again later.');
       }
       const episodes = rated.length
         ? weighted.reduce((sum, entry) => sum + entry.episodes, 0)
@@ -190,10 +173,7 @@ export const groupImportSeries = (
         seasonIds: included.map((entry) => entry.id),
         ...(!rated.length ? { status } : {}),
         score: rated.length
-          ? weighted.reduce(
-              (sum, entry) => sum + entry.entry.score * entry.episodes,
-              0,
-            ) / episodes
+          ? weighted.reduce((sum, entry) => sum + entry.entry.score * entry.episodes, 0) / episodes
           : 0,
       };
     })
@@ -227,10 +207,7 @@ export const importSeriesDocument = (
       result.push(`${rank}+`);
     }
     result.push(rank);
-    if (
-      detailed &&
-      (rank === 'A' || rank === 'B' || rank === 'C' || rank === 'D')
-    ) {
+    if (detailed && (rank === 'A' || rank === 'B' || rank === 'C' || rank === 'D')) {
       result.push(`${rank}−`);
     }
     return result;
@@ -238,9 +215,7 @@ export const importSeriesDocument = (
   const rows = balanceImportRows(
     ranks.map((rank) => ({
       rank,
-      series: series.filter(
-        (entry) => importSeriesRank(entry, expanded, detailed) === rank,
-      ),
+      series: series.filter((entry) => importSeriesRank(entry, expanded, detailed) === rank),
     })),
   );
 
@@ -255,9 +230,7 @@ export const importSeriesDocument = (
         (entry): TierItemData => ({
           id: `${provider}-${entry.id}`,
           ...(entry.malId ? { malId: entry.malId } : {}),
-          label: entry.status
-            ? entry.title
-            : `${entry.title} (${entry.score.toFixed(2)}/10)`,
+          label: entry.status ? entry.title : `${entry.title} (${entry.score.toFixed(2)}/10)`,
           rank: row.rank,
           ...(entry.imageUrl
             ? {

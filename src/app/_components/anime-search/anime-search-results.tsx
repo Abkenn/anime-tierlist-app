@@ -2,20 +2,10 @@
 
 import { useAtomValue } from 'jotai';
 import { motion, useReducedMotion } from 'motion/react';
-import {
-  type Ref,
-  useActionState,
-  useDeferredValue,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type Ref, useActionState, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { preconnect } from 'react-dom';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
-import {
-  animeSearchConfigAtom,
-  searchDestinationAtom,
-} from '@/app/_atoms/tierlist/search.atoms';
+import { animeSearchConfigAtom, searchDestinationAtom } from '@/app/_atoms/tierlist/search.atoms';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
 import { ScrollArea } from '@/app/_components/ui/scroll-area';
 import { Skeleton } from '@/app/_components/ui/skeleton';
@@ -39,10 +29,7 @@ type AnimeSearchResultsProps = {
   inputRef?: Ref<HTMLInputElement>;
 };
 
-export const AnimeSearchResults = ({
-  inline = false,
-  inputRef,
-}: AnimeSearchResultsProps = {}) => {
+export const AnimeSearchResults = ({ inline = false, inputRef }: AnimeSearchResultsProps = {}) => {
   const {
     curatedImages,
     initialQuery = '',
@@ -53,8 +40,10 @@ export const AnimeSearchResults = ({
   const destination = useAtomValue(searchDestinationAtom);
   const [input, setInput] = useState(initialQuery);
   const [dimensions, setDimensions] = useState<ImageDimensions>({});
-  const { search, sentinel, query, url, urlError, waiting, submitQuery } =
-    useAnimeSearch(input, { initialQuery, initialPage });
+  const { search, sentinel, query, url, urlError, waiting, submitQuery } = useAnimeSearch(input, {
+    initialQuery,
+    initialPage,
+  });
   const [submission, searchAction, submitting] = useActionState(
     async (_previous: { input: string; error: string }, data: FormData) => {
       const value = String(data.get('query') ?? '');
@@ -130,9 +119,7 @@ export const AnimeSearchResults = ({
   ).length;
   const loadingImages = pendingImages > 0;
   const mostlyLoading = loadingImages && pendingImages >= rendered.length / 2;
-  const failedImages = rendered.filter(
-    ({ result }) => dimensions[result.id] === null,
-  );
+  const failedImages = rendered.filter(({ result }) => dimensions[result.id] === null);
   const recoveryScope = url ?? query;
   const imageAttempts = useSearchImageRecovery({
     scope: recoveryScope,
@@ -159,9 +146,7 @@ export const AnimeSearchResults = ({
     }
 
     previousQuery.current = query;
-    const viewport = displacement.gridRef.current?.closest(
-      '[data-slot="scroll-area-viewport"]',
-    );
+    const viewport = displacement.gridRef.current?.closest('[data-slot="scroll-area-viewport"]');
     if (viewport) {
       viewport.scrollTop = 0;
     }
@@ -174,8 +159,7 @@ export const AnimeSearchResults = ({
   );
   const curatedIds = new Set(curated.map((item) => item.id));
 
-  const pageFor = (id: string) =>
-    curatedIds.has(id) ? 'curated' : (pagesById.get(id) ?? '-1');
+  const pageFor = (id: string) => (curatedIds.has(id) ? 'curated' : (pagesById.get(id) ?? '-1'));
 
   const loaded = (id: string, image: TierImage | null) =>
     setDimensions((current) =>
@@ -225,15 +209,11 @@ export const AnimeSearchResults = ({
   const message = statusMessage();
 
   return (
-    <div
-      className={`flex min-h-0 min-w-0 flex-1 flex-col${inline ? ' gap-3' : ''}`}
-    >
+    <div className={`flex min-h-0 min-w-0 flex-1 flex-col${inline ? ' gap-3' : ''}`}>
       <search className="shrink-0">
         <form action={searchAction} aria-busy={submitting}>
           <label className="block text-xs text-muted-foreground">
-            <span className={inline ? 'sr-only' : undefined}>
-              Find anime or paste an image URL
-            </span>
+            <span className={inline ? 'sr-only' : undefined}>Find anime or paste an image URL</span>
             <input
               ref={inputRef}
               type="search"
@@ -248,11 +228,7 @@ export const AnimeSearchResults = ({
         </form>
       </search>
 
-      <p
-        className={
-          inline ? 'sr-only' : 'my-2 shrink-0 text-xs text-muted-foreground'
-        }
-      >
+      <p className={inline ? 'sr-only' : 'my-2 shrink-0 text-xs text-muted-foreground'}>
         Drag to a rank · Click to add to {destination.label}
       </p>
 
@@ -269,8 +245,7 @@ export const AnimeSearchResults = ({
           ref={displacement.gridRef}
           className={`relative grid shrink-0 grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] lg:grid-cols-3 ${inline ? 'gap-2' : 'gap-0.5'}`}
           style={{
-            height:
-              waiting || urlError ? 0 : Math.max(0, rows * rowHeight - gap),
+            height: waiting || urlError ? 0 : Math.max(0, rows * rowHeight - gap),
           }}
         >
           {!waiting &&
@@ -299,9 +274,7 @@ export const AnimeSearchResults = ({
                       }
                 }
               >
-                {mostlyLoading && (
-                  <Skeleton className="absolute h-24 w-16 rounded-none" />
-                )}
+                {mostlyLoading && <Skeleton className="absolute h-24 w-16 rounded-none" />}
                 <AnimeSearchResultCard
                   key={`${recoveryScope}:${result.id}:${result.imageUrl}:${imageAttempts[`${recoveryScope}:${result.id}`] ?? 0}`}
                   result={result}
@@ -323,19 +296,16 @@ export const AnimeSearchResults = ({
           <TerminalText text={message} />
         </p>
 
-        {!inline &&
-          !hasResults &&
-          (waiting || search.isFetching || loadingImages) &&
-          !urlError && <AnimeSearchSkeleton />}
+        {!inline && !hasResults && (waiting || search.isFetching || loadingImages) && !urlError && (
+          <AnimeSearchSkeleton />
+        )}
 
         {!waiting && !url && search.isError && (
           <button
             type="button"
             className="min-h-11 text-xs underline underline-offset-4"
             onClick={() =>
-              search.hasNextPage
-                ? void search.fetchNextPage()
-                : void search.refetch()
+              search.hasNextPage ? void search.fetchNextPage() : void search.refetch()
             }
           >
             Try again

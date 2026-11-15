@@ -11,20 +11,14 @@ type SearchImageRecoveryInput = {
   onRetry: (ids: string[]) => void;
 };
 
-export const useSearchImageRecovery = ({
-  scope,
-  failedIds,
-  onRetry,
-}: SearchImageRecoveryInput) => {
+export const useSearchImageRecovery = ({ scope, failedIds, onRetry }: SearchImageRecoveryInput) => {
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const retry = useEffectEvent(onRetry);
   const candidates = JSON.stringify(failedIds);
 
   useEffect(() => {
     const failed: string[] = JSON.parse(candidates);
-    const ids = failed.filter(
-      (id) => (attempts[`${scope}:${id}`] ?? 0) < MAX_IMAGE_RETRIES,
-    );
+    const ids = failed.filter((id) => (attempts[`${scope}:${id}`] ?? 0) < MAX_IMAGE_RETRIES);
 
     if (ids.length === 0) {
       return;

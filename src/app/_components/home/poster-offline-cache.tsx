@@ -8,13 +8,7 @@ import { cacheTierlistPosters } from '@/app/_services/poster-cache';
 
 const posterUrlsAtom = atom((get) =>
   JSON.stringify(
-    [
-      ...new Set(
-        get(tierItemsAtom).flatMap((item) =>
-          item.image ? [item.image.src] : [],
-        ),
-      ),
-    ].sort(),
+    [...new Set(get(tierItemsAtom).flatMap((item) => (item.image ? [item.image.src] : [])))].sort(),
   ),
 );
 

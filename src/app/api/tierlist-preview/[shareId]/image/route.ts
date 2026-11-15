@@ -18,9 +18,7 @@ export const GET = async (
         headers: {
           'Content-Type': 'image/png',
           'Cache-Control': 'public, max-age=60',
-          'Content-Disposition': new URL(request.url).searchParams.has(
-            'download',
-          )
+          'Content-Disposition': new URL(request.url).searchParams.has('download')
             ? 'attachment; filename="tierlist.png"'
             : 'inline',
         },

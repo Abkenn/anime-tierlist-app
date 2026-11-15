@@ -38,9 +38,7 @@ export const TierImageTrimEditor = ({
   const [hoveredEdges, setHoveredEdges] = useState<readonly TierTrimEdge[]>([]);
   const editor = useTierImageTrim({ trim });
   const { draft } = editor;
-  const highlightedEdges = editor.activeEdges.length
-    ? editor.activeEdges
-    : hoveredEdges;
+  const highlightedEdges = editor.activeEdges.length ? editor.activeEdges : hoveredEdges;
   const handles = [
     ...edges.map((edge) => {
       const horizontal = edge === 'left' || edge === 'right';
@@ -86,9 +84,7 @@ export const TierImageTrimEditor = ({
           side="bottom"
           align="start"
           sideOffset={() =>
-            Number.parseFloat(
-              getComputedStyle(document.documentElement).fontSize,
-            ) * 0.5
+            Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5
           }
           collisionPadding={16}
           positionMethod="fixed"
@@ -113,9 +109,7 @@ export const TierImageTrimEditor = ({
               }
             }}
           >
-            <p className="mb-3">
-              Drag edges or corners · Enter saves · Esc cancels
-            </p>
+            <p className="mb-3">Drag edges or corners · Enter saves · Esc cancels</p>
 
             <fieldset aria-label="Image crop edges">
               <svg
@@ -158,12 +152,7 @@ export const TierImageTrimEditor = ({
                     preserveAspectRatio="none"
                   />
 
-                  <rect
-                    width="1"
-                    height="1"
-                    mask={`url(#${maskId})`}
-                    className="fill-black/65"
-                  />
+                  <rect width="1" height="1" mask={`url(#${maskId})`} className="fill-black/65" />
 
                   <rect
                     x={draft.left}
@@ -188,9 +177,7 @@ export const TierImageTrimEditor = ({
                         y2={vertical ? draft.bottom : draft[edge]}
                         className={cn(
                           'pointer-events-none stroke-white',
-                          highlightedEdges.includes(edge)
-                            ? 'opacity-100'
-                            : 'opacity-0',
+                          highlightedEdges.includes(edge) ? 'opacity-100' : 'opacity-0',
                         )}
                         strokeWidth="0.014"
                       />
@@ -199,9 +186,7 @@ export const TierImageTrimEditor = ({
                 </svg>
 
                 {handles.map((handle) => {
-                  const handleProps: HTMLAttributes<
-                    SVGRectElement | HTMLButtonElement
-                  > & {
+                  const handleProps: HTMLAttributes<SVGRectElement | HTMLButtonElement> & {
                     'data-trim-handle': string;
                   } = {
                     'data-trim-handle': '',
@@ -221,26 +206,19 @@ export const TierImageTrimEditor = ({
                     onPointerCancel: editor.cancel,
                     onLostPointerCapture: editor.cancel,
                     onKeyDown: (event) => {
-                      const direction = Object.entries(keyboardBehaviors).find(
-                        ([, behavior]) =>
-                          behavior.codes.some((code) => code === event.code),
+                      const direction = Object.entries(keyboardBehaviors).find(([, behavior]) =>
+                        behavior.codes.some((code) => code === event.code),
                       )?.[0];
-                      const horizontal =
-                        direction === 'left' || direction === 'right';
+                      const horizontal = direction === 'left' || direction === 'right';
                       const edge = handle.edges.find(
                         (candidate) =>
-                          horizontal ===
-                          (candidate === 'left' || candidate === 'right'),
+                          horizontal === (candidate === 'left' || candidate === 'right'),
                       );
 
                       if (direction && edge) {
                         event.preventDefault();
-                        const sign =
-                          direction === 'left' || direction === 'up' ? -1 : 1;
-                        editor.nudge(
-                          edge,
-                          sign * (event.shiftKey ? 0.1 : 0.01),
-                        );
+                        const sign = direction === 'left' || direction === 'up' ? -1 : 1;
+                        editor.nudge(edge, sign * (event.shiftKey ? 0.1 : 0.01));
                       }
                     },
                   };
@@ -271,9 +249,7 @@ export const TierImageTrimEditor = ({
                       aria-valuemin={0}
                       aria-valuemax={100}
                       aria-valuenow={Math.round(draft[handle.edges[0]] * 100)}
-                      aria-orientation={
-                        handle.horizontal ? 'horizontal' : 'vertical'
-                      }
+                      aria-orientation={handle.horizontal ? 'horizontal' : 'vertical'}
                     />
                   );
                 })}
@@ -281,19 +257,11 @@ export const TierImageTrimEditor = ({
             </fieldset>
 
             <div className="mt-2 flex justify-center gap-2">
-              <button
-                type="button"
-                className={actionClassName}
-                onClick={() => onSave(draft)}
-              >
+              <button type="button" className={actionClassName} onClick={() => onSave(draft)}>
                 Done
               </button>
 
-              <button
-                type="button"
-                className={actionClassName}
-                onClick={onCancel}
-              >
+              <button type="button" className={actionClassName} onClick={onCancel}>
                 Cancel
               </button>
 

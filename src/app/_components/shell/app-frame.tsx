@@ -5,10 +5,7 @@ import type { PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import { useProjectDrop } from '@/app/_hooks/use-project-drop';
 
-export const AppFrame = ({
-  children,
-  className,
-}: PropsWithChildren<{ className: string }>) => {
+export const AppFrame = ({ children, className }: PropsWithChildren<{ className: string }>) => {
   const draggingFile = useProjectDrop();
   const reducedMotion = useReducedMotion();
 

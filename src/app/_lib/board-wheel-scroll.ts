@@ -11,11 +11,7 @@ type BoardWheelInput = {
   geometry?: BoardWheelGeometry;
 };
 
-export const scrollBoardWheel = ({
-  viewport,
-  event,
-  geometry = viewport,
-}: BoardWheelInput) => {
+export const scrollBoardWheel = ({ viewport, event, geometry = viewport }: BoardWheelInput) => {
   if (
     event.defaultPrevented ||
     event.ctrlKey ||

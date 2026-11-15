@@ -78,9 +78,7 @@ export const PreviewDisplacement = ({
     if (!current) {
       return;
     }
-    pending.current = new Set(
-      buildPreviewSprites(rows, current, width).map((box) => box.id),
-    );
+    pending.current = new Set(buildPreviewSprites(rows, current, width).map((box) => box.id));
     active.current = { ...current, returning: true };
     setDrag(active.current);
   };
@@ -89,21 +87,15 @@ export const PreviewDisplacement = ({
       active.current = undefined;
     }
     setDrag((current) =>
-      current?.origin.token === token && current.returning
-        ? undefined
-        : current,
+      current?.origin.token === token && current.returning ? undefined : current,
     );
   };
   const remind = () =>
-    window.dispatchEvent(
-      new CustomEvent(previewDragEndedEvent, { detail: id.split('.')[0] }),
-    );
+    window.dispatchEvent(new CustomEvent(previewDragEndedEvent, { detail: id.split('.')[0] }));
   const sprites = buildPreviewSprites(rows, drag, width);
   const maskPadding = drag?.origin.kind === 'poster' ? 1 : 0;
   const heldId =
-    drag?.origin.kind === 'poster'
-      ? drag.origin.poster.item.id
-      : drag?.origin.row.rank;
+    drag?.origin.kind === 'poster' ? drag.origin.poster.item.id : drag?.origin.row.rank;
 
   return (
     <div
@@ -141,10 +133,7 @@ export const PreviewDisplacement = ({
         const x = at.x - origin.x;
         const y = at.y - origin.y;
         const bounds = root.current?.getBoundingClientRect();
-        if (
-          !drag &&
-          Math.hypot(x, y) * (bounds ? bounds.width / width : 1) < 6
-        ) {
+        if (!drag && Math.hypot(x, y) * (bounds ? bounds.width / width : 1) < 6) {
           return;
         }
         const slot =
@@ -156,18 +145,13 @@ export const PreviewDisplacement = ({
           x,
           y:
             origin.kind === 'row'
-              ? Math.max(
-                  -origin.row.y,
-                  Math.min(height - exportPosterSize - origin.row.y, y),
-                )
+              ? Math.max(-origin.row.y, Math.min(height - exportPosterSize - origin.row.y, y))
               : y,
           slot,
           visitedRanks: [
             ...new Set([
               ...(active.current?.visitedRanks ?? []),
-              origin.kind === 'poster'
-                ? origin.poster.item.rank
-                : origin.row.rank,
+              origin.kind === 'poster' ? origin.poster.item.rank : origin.row.rank,
               slot.rank,
             ]),
           ],
@@ -223,9 +207,7 @@ export const PreviewDisplacement = ({
         />
       ))}
 
-      {!drag && (
-        <PreviewPosterLinks posters={visible} width={width} height={height} />
-      )}
+      {!drag && <PreviewPosterLinks posters={visible} width={width} height={height} />}
 
       {!drag &&
         rows.map((row) => (
@@ -274,12 +256,7 @@ const buildPreviewSprites = (
   }
   const origin = drag.origin;
   if (origin.kind === 'poster') {
-    return previewPosterSprites(
-      rows,
-      origin.poster,
-      drag.slot,
-      drag.visitedRanks,
-    ).map((box) =>
+    return previewPosterSprites(rows, origin.poster, drag.slot, drag.visitedRanks).map((box) =>
       box.id === origin.poster.item.id
         ? { ...box, targetX: box.x + drag.x, targetY: box.y + drag.y }
         : box,
@@ -302,8 +279,6 @@ const buildPreviewSprites = (
     width,
     height: exportPosterSize,
     targetX: 0,
-    targetY:
-      row.y +
-      (row.rank === origin.row.rank ? drag.y : (offsets.get(row.rank) ?? 0)),
+    targetY: row.y + (row.rank === origin.row.rank ? drag.y : (offsets.get(row.rank) ?? 0)),
   }));
 };

@@ -1,20 +1,14 @@
 'use client';
 
 import { type RefObject, useLayoutEffect, useState } from 'react';
-import {
-  type BoardWheelGeometry,
-  scrollBoardWheel,
-} from '@/app/_lib/board-wheel-scroll';
+import { type BoardWheelGeometry, scrollBoardWheel } from '@/app/_lib/board-wheel-scroll';
 
 type TierViewportInput = {
   viewport: HTMLElement | null;
   containerRef: RefObject<HTMLDivElement | null>;
 };
 
-export const useTierViewport = ({
-  viewport,
-  containerRef,
-}: TierViewportInput) => {
+export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) => {
   const [size, setSize] = useState<{
     height?: number;
     availableHeight?: number;
@@ -26,9 +20,7 @@ export const useTierViewport = ({
     if (!viewport || !container || !canvas) {
       return;
     }
-    const desktop = window.matchMedia(
-      '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
-    );
+    const desktop = window.matchMedia('(min-width: 64rem) and (hover: hover) and (pointer: fine)');
     let geometry: BoardWheelGeometry | undefined;
     let listening = false;
     const wheel = (event: WheelEvent) => {
@@ -59,8 +51,7 @@ export const useTierViewport = ({
       const content = Math.ceil(canvas.getBoundingClientRect().height) + gutter;
       if (available > 0 && content > 0) {
         setSize((current) =>
-          current.height === Math.min(available, content) &&
-          current.availableHeight === available
+          current.height === Math.min(available, content) && current.availableHeight === available
             ? current
             : {
                 height: Math.min(available, content),

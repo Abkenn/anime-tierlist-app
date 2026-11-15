@@ -32,13 +32,8 @@ export const createTenraiPacer = () => {
       const seconds = Number(retryAfter);
       const parsedDate = retryAfter ? Date.parse(retryAfter) : NaN;
       const until =
-        Number.isFinite(seconds) && seconds > 0
-          ? Date.now() + seconds * 1000
-          : parsedDate;
-      cooldownUntil = Math.max(
-        cooldownUntil,
-        Number.isFinite(until) ? until : Date.now() + 60_000,
-      );
+        Number.isFinite(seconds) && seconds > 0 ? Date.now() + seconds * 1000 : parsedDate;
+      cooldownUntil = Math.max(cooldownUntil, Number.isFinite(until) ? until : Date.now() + 60_000);
     },
   };
 };

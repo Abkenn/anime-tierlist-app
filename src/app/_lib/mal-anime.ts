@@ -15,8 +15,7 @@ export const normalizeMalTitle = (value: string) =>
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
-const seasonPattern =
-  /\b(?:season\s*(\d+)|(\d+)(?:st|nd|rd|th)\s+season|s0?(\d+))\b/u;
+const seasonPattern = /\b(?:season\s*(\d+)|(\d+)(?:st|nd|rd|th)\s+season|s0?(\d+))\b/u;
 const romanSeasons: Record<string, number> = { ii: 2, iii: 3, iv: 4, v: 5 };
 export const malSeason = (title: string) => {
   const normalized = normalizeMalTitle(title);
@@ -31,16 +30,10 @@ export const malSeason = (title: string) => {
 };
 const baseTitle = (value: string) => {
   const normalized = normalizeMalTitle(value).replace(seasonPattern, '').trim();
-  return malSeason(value)
-    ? normalized.replace(/\s(ii|iii|iv|v|[1-9])$/u, '').trim()
-    : normalized;
+  return malSeason(value) ? normalized.replace(/\s(ii|iii|iv|v|[1-9])$/u, '').trim() : normalized;
 };
-const curatedById = new Map(
-  curatedAnimeImages.map((anime) => [anime.id, anime]),
-);
-const curatedByImage = new Map(
-  curatedAnimeImages.map((anime) => [anime.imageUrl, anime]),
-);
+const curatedById = new Map(curatedAnimeImages.map((anime) => [anime.id, anime]));
+const curatedByImage = new Map(curatedAnimeImages.map((anime) => [anime.imageUrl, anime]));
 
 const curatedByAlias = new Map<string, number | null>();
 for (const anime of curatedAnimeImages) {
@@ -65,8 +58,7 @@ export const knownMalId = (item: TierItemData) => {
   if (legacy && Number.isSafeInteger(Number(legacy)) && Number(legacy) > 0) {
     return Number(legacy);
   }
-  const curated =
-    curatedById.get(item.id) ?? curatedByImage.get(item.image?.src ?? '');
+  const curated = curatedById.get(item.id) ?? curatedByImage.get(item.image?.src ?? '');
   if (curated?.malId) {
     return curated.malId;
   }
@@ -83,21 +75,15 @@ export const knownMalId = (item: TierItemData) => {
   return undefined;
 };
 
-export const malLookupQueries = (
-  item: Pick<TierItemData, 'label' | 'title'>,
-) => {
+export const malLookupQueries = (item: Pick<TierItemData, 'label' | 'title'>) => {
   const label = item.label.trim().slice(0, 300);
-  const text =
-    item.title?.text.trim().replace(/\s+/gu, ' ').slice(0, 280) ?? '';
+  const text = item.title?.text.trim().replace(/\s+/gu, ' ').slice(0, 280) ?? '';
   const season = malSeason(label);
-  const fallback =
-    text && season && !malSeason(text) ? `${text} Season ${season}` : text;
+  const fallback = text && season && !malSeason(text) ? `${text} Season ${season}` : text;
   return [...new Set([label, fallback])].filter(
     (query) =>
       query.length >= 2 &&
-      !['unknown', 'untitled', 'image', 'poster', 'anime'].includes(
-        normalizeMalTitle(query),
-      ) &&
+      !['unknown', 'untitled', 'image', 'poster', 'anime'].includes(normalizeMalTitle(query)) &&
       baseTitle(query).length >= 2,
   );
 };
@@ -135,10 +121,7 @@ const almostEqual = (left: string, right: string) => {
   return differences + Number(i < left.length || j < right.length) <= 1;
 };
 
-export const selectMalCandidate = (
-  query: string,
-  candidates: MalCandidate[],
-) => {
+export const selectMalCandidate = (query: string, candidates: MalCandidate[]) => {
   const requestedSeason = malSeason(query) ?? 1;
   const wanted = baseTitle(query);
   const matches = candidates
@@ -157,9 +140,7 @@ export const selectMalCandidate = (
           .map((entry) => entry.title),
       ];
       const season =
-        primary.map(malSeason).find(Boolean) ??
-        aliases.map(malSeason).find(Boolean) ??
-        1;
+        primary.map(malSeason).find(Boolean) ?? aliases.map(malSeason).find(Boolean) ?? 1;
       if (season !== requestedSeason) {
         return [];
       }
@@ -167,28 +148,16 @@ export const selectMalCandidate = (
       const specialized = /\b(recap|special|pvs?|movie|picture drama)\b/u.test(
         primary.map(normalizeMalTitle).join(' '),
       );
-      const extendedTitle = primary.some((title) =>
-        baseTitle(title).startsWith(`${wanted} `),
-      );
+      const extendedTitle = primary.some((title) => baseTitle(title).startsWith(`${wanted} `));
       const aliasExact =
-        !specialized &&
-        !extendedTitle &&
-        aliases.some((title) => baseTitle(title) === wanted);
-      const near = primary.some((title) =>
-        almostEqual(wanted, baseTitle(title)),
-      );
-      const score = Math.max(
-        primaryExact ? 3 : 0,
-        aliasExact ? 2 : 0,
-        near ? 1 : 0,
-      );
+        !specialized && !extendedTitle && aliases.some((title) => baseTitle(title) === wanted);
+      const near = primary.some((title) => almostEqual(wanted, baseTitle(title)));
+      const score = Math.max(primaryExact ? 3 : 0, aliasExact ? 2 : 0, near ? 1 : 0);
       return score ? [{ id: candidate.mal_id, score }] : [];
     })
     .sort((a, b) => b.score - a.score);
   const winners = new Set(
-    matches
-      .filter((match) => match.score === matches[0]?.score)
-      .map((match) => match.id),
+    matches.filter((match) => match.score === matches[0]?.score).map((match) => match.id),
   );
   return winners.size === 1 ? [...winners][0] : null;
 };

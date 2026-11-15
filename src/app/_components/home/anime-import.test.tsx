@@ -3,9 +3,7 @@ import { expect, it, vi } from 'vitest';
 import { AnimeImport } from './anime-import';
 
 const generate = vi.hoisted(() => vi.fn());
-const metric = vi.hoisted(() =>
-  vi.fn(async (_input: unknown) => ({ ok: true })),
-);
+const metric = vi.hoisted(() => vi.fn(async (_input: unknown) => ({ ok: true })));
 
 vi.mock('@/app/_services/anime-import-queue.actions', () => ({
   pollAnimeImportQueue: metric,
@@ -41,10 +39,9 @@ it('reviews generated results before applying and requires explicit replacement 
       onApplied={onApplied}
     />,
   );
-  fireEvent.change(
-    screen.getByRole('textbox', { name: 'Public MAL username' }),
-    { target: { value: 'Abkenn' } },
-  );
+  fireEvent.change(screen.getByRole('textbox', { name: 'Public MAL username' }), {
+    target: { value: 'Abkenn' },
+  });
   fireEvent.click(screen.getByRole('button', { name: 'Generate tierlist' }));
   const apply = await screen.findByRole('button', {
     name: 'Use generated tierlist',
@@ -52,9 +49,7 @@ it('reviews generated results before applying and requires explicit replacement 
   expect(onApply).not.toHaveBeenCalled();
   expect(metric).not.toHaveBeenCalled();
   expect(apply).toBeDisabled();
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: /Replace my current tierlist/u }),
-  );
+  fireEvent.click(screen.getByRole('checkbox', { name: /Replace my current tierlist/u }));
   fireEvent.click(apply);
   await waitFor(() => expect(onApplied).toHaveBeenCalledOnce());
   expect(onApply).toHaveBeenCalledWith(document, {
@@ -67,13 +62,9 @@ it('reviews generated results before applying and requires explicit replacement 
     provider: 'mal',
     event: 'applied',
   });
+  expect(screen.getByRole('textbox', { name: 'Public MAL username' })).toHaveValue('Abkenn');
   expect(
-    screen.getByRole('textbox', { name: 'Public MAL username' }),
-  ).toHaveValue('Abkenn');
-  expect(
-    screen.queryByText(
-      /episode-weighted|Equal scores sort|Oversized rows|excluded/u,
-    ),
+    screen.queryByText(/episode-weighted|Equal scores sort|Oversized rows|excluded/u),
   ).not.toBeInTheDocument();
 });
 
@@ -85,9 +76,7 @@ it('switches providers, retains separate usernames and locks the selector during
   const pending =
     Promise.withResolvers<
       Awaited<
-        ReturnType<
-          typeof import('@/app/_services/generate-anime-tierlist').generateAnimeTierlist
-        >
+        ReturnType<typeof import('@/app/_services/generate-anime-tierlist').generateAnimeTierlist>
       >
     >();
   generate.mockImplementationOnce(() => pending.promise);
@@ -101,15 +90,13 @@ it('switches providers, retains separate usernames and locks the selector during
       onApplied={() => {}}
     />,
   );
-  fireEvent.change(
-    screen.getByRole('textbox', { name: 'Public MAL username' }),
-    { target: { value: 'MalName' } },
-  );
+  fireEvent.change(screen.getByRole('textbox', { name: 'Public MAL username' }), {
+    target: { value: 'MalName' },
+  });
   fireEvent.click(screen.getByRole('radio', { name: 'AniList' }));
-  fireEvent.change(
-    screen.getByRole('textbox', { name: 'Public AniList username' }),
-    { target: { value: 'AnilistName' } },
-  );
+  fireEvent.change(screen.getByRole('textbox', { name: 'Public AniList username' }), {
+    target: { value: 'AnilistName' },
+  });
   fireEvent.click(screen.getByRole('radio', { name: 'MAL' }));
   expect(screen.getByRole('textbox')).toHaveValue('MalName');
   fireEvent.click(screen.getByRole('radio', { name: 'AniList' }));
@@ -156,9 +143,9 @@ it('restores provider and both usernames from the current profile after remounti
     );
   const first = mount();
   await waitFor(() =>
-    expect(
-      screen.getByRole('textbox', { name: 'Public AniList username' }),
-    ).toHaveValue('AniAccount'),
+    expect(screen.getByRole('textbox', { name: 'Public AniList username' })).toHaveValue(
+      'AniAccount',
+    ),
   );
   expect(screen.getByRole('radio', { name: 'AniList' })).toBeChecked();
   fireEvent.click(screen.getByRole('radio', { name: 'MAL' }));
@@ -166,9 +153,9 @@ it('restores provider and both usernames from the current profile after remounti
   first.unmount();
   mount();
   await waitFor(() =>
-    expect(
-      screen.getByRole('textbox', { name: 'Public AniList username' }),
-    ).toHaveValue('AniAccount'),
+    expect(screen.getByRole('textbox', { name: 'Public AniList username' })).toHaveValue(
+      'AniAccount',
+    ),
   );
   expect(readProfile).toHaveBeenCalledWith('b'.repeat(64));
   readProfile.mockResolvedValue({});

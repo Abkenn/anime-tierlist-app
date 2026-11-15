@@ -5,14 +5,10 @@ declare const self: ServiceWorkerGlobalScope;
 const CACHE_PREFIX = 'tierlist-home-';
 const CACHE_NAME = `${CACHE_PREFIX}__OFFLINE_BUILD__`;
 
-const buildAsset = (
-  value: string,
-  base = self.location.origin,
-): string | null => {
+const buildAsset = (value: string, base = self.location.origin): string | null => {
   const url = new URL(value, base);
 
-  return url.origin === self.location.origin &&
-    url.pathname.startsWith('/_next/static/')
+  return url.origin === self.location.origin && url.pathname.startsWith('/_next/static/')
     ? url.href
     : null;
 };
@@ -24,10 +20,7 @@ const cacheOfflineHomepage = async () => {
     redirect: 'error',
   });
 
-  if (
-    !homepage.ok ||
-    !homepage.headers.get('Content-Type')?.includes('text/html')
-  ) {
+  if (!homepage.ok || !homepage.headers.get('Content-Type')?.includes('text/html')) {
     throw new Error('The public offline homepage could not be downloaded.');
   }
 
@@ -47,14 +40,10 @@ const cacheOfflineHomepage = async () => {
   }
 
   await cache.addAll(
-    [...assets].map(
-      (url) => new Request(url, { cache: 'force-cache', priority: 'low' }),
-    ),
+    [...assets].map((url) => new Request(url, { cache: 'force-cache', priority: 'low' })),
   );
 
-  let scripts = [...assets].filter((asset) =>
-    new URL(asset).pathname.endsWith('.js'),
-  );
+  let scripts = [...assets].filter((asset) => new URL(asset).pathname.endsWith('.js'));
 
   while (scripts.length) {
     const sources = await Promise.all(
@@ -73,9 +62,7 @@ const cacheOfflineHomepage = async () => {
       for (const match of source.matchAll(
         /["']((?:\/_next\/)?static\/(?:immutable\/)?(?:chunks|media)\/[^"'\s<>]+\.(?:js|css|woff2))["']/g,
       )) {
-        const asset = buildAsset(
-          match[1].startsWith('/_next/') ? match[1] : `/_next/${match[1]}`,
-        );
+        const asset = buildAsset(match[1].startsWith('/_next/') ? match[1] : `/_next/${match[1]}`);
 
         if (asset && !assets.has(asset)) {
           assets.add(asset);
@@ -85,13 +72,9 @@ const cacheOfflineHomepage = async () => {
     });
 
     await cache.addAll(
-      [...discovered].map(
-        (url) => new Request(url, { cache: 'force-cache', priority: 'low' }),
-      ),
+      [...discovered].map((url) => new Request(url, { cache: 'force-cache', priority: 'low' })),
     );
-    scripts = [...discovered].filter((asset) =>
-      new URL(asset).pathname.endsWith('.js'),
-    );
+    scripts = [...discovered].filter((asset) => new URL(asset).pathname.endsWith('.js'));
   }
 
   const fonts = new Set<string>();
@@ -107,9 +90,7 @@ const cacheOfflineHomepage = async () => {
       throw new Error('Offline stylesheet was not saved.');
     }
 
-    for (const match of (await response.text()).matchAll(
-      /url\(\s*['"]?([^'"\s)]+)['"]?\s*\)/g,
-    )) {
+    for (const match of (await response.text()).matchAll(/url\(\s*['"]?([^'"\s)]+)['"]?\s*\)/g)) {
       const font = buildAsset(match[1], asset);
 
       if (font) {
@@ -151,9 +132,7 @@ self.addEventListener('activate', (event) => {
 
       await Promise.all(
         names
-          .filter(
-            (name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME,
-          )
+          .filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
           .slice(0, -1)
           .map((name) => caches.delete(name)),
       );
@@ -168,10 +147,7 @@ const offlineNavigation = async (request: Request) => {
   if (!url.searchParams.has('offline')) {
     url.searchParams.set('offline', '');
 
-    return Response.redirect(
-      url.href.replace(/([?&])offline=(?=&|#|$)/, '$1offline'),
-      302,
-    );
+    return Response.redirect(url.href.replace(/([?&])offline=(?=&|#|$)/, '$1offline'), 302);
   }
 
   return savedHomepage();
@@ -182,10 +158,10 @@ const savedHomepage = async () => {
 
   return (
     (await cache.match('/offline')) ??
-    new Response(
-      'The offline homepage is not saved on this device. Reconnect and reload.',
-      { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
-    )
+    new Response('The offline homepage is not saved on this device. Reconnect and reload.', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
   );
 };
 
@@ -241,19 +217,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (
-    request.mode === 'navigate' &&
-    (url.pathname === '/' || url.pathname === '/offline')
-  ) {
+  if (request.mode === 'navigate' && (url.pathname === '/' || url.pathname === '/offline')) {
     event.respondWith(homeNavigation(request));
 
     return;
   }
 
-  if (
-    url.pathname.startsWith('/_next/static/') ||
-    url.pathname === '/icon.svg'
-  ) {
+  if (url.pathname.startsWith('/_next/static/') || url.pathname === '/icon.svg') {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);

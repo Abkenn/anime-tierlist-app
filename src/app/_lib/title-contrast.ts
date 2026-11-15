@@ -1,8 +1,4 @@
-import type {
-  HexColor,
-  TierImageMode,
-  TierItemData,
-} from '@/app/_types/tierlist.types';
+import type { HexColor, TierImageMode, TierItemData } from '@/app/_types/tierlist.types';
 import { rankTextColor } from './rank-text-color';
 import { fullImageTrim } from './tier-image-trim';
 
@@ -14,10 +10,7 @@ export const contrastingTitleColor = (
   mode: TierImageMode,
 ): HexColor => {
   const image = item.image;
-  const area =
-    mode === 'natural'
-      ? { ...(item.trim ?? fullImageTrim) }
-      : { ...fullImageTrim };
+  const area = mode === 'natural' ? { ...(item.trim ?? fullImageTrim) } : { ...fullImageTrim };
   if (mode === 'cover' && image) {
     const ratio = image.width / image.height;
     const crop = item.crop ?? { x: 0.5, y: 0.5 };
@@ -38,22 +31,20 @@ export const contrastingTitleColor = (
   const top = positions[item.title?.position ?? 'bottom'];
   const channels = [0, 0, 0];
   let count = 0;
-  Array.from(
-    { length: titleSampleSize * titleSampleSize },
-    (_, index) => index,
-  ).forEach((index) => {
-    const x = ((index % titleSampleSize) + 0.5) / titleSampleSize;
-    const y = (Math.floor(index / titleSampleSize) + 0.5) / titleSampleSize;
-    if (x < area.left || x > area.right || y < top || y > top + band) {
-      return;
-    }
-    const alpha = (pixels[index * 4 + 3] ?? 255) / 255;
-    channels.forEach((_, channel) => {
-      channels[channel] +=
-        (pixels[index * 4 + channel] ?? 28) * alpha + 28 * (1 - alpha);
-    });
-    count += 1;
-  });
+  Array.from({ length: titleSampleSize * titleSampleSize }, (_, index) => index).forEach(
+    (index) => {
+      const x = ((index % titleSampleSize) + 0.5) / titleSampleSize;
+      const y = (Math.floor(index / titleSampleSize) + 0.5) / titleSampleSize;
+      if (x < area.left || x > area.right || y < top || y > top + band) {
+        return;
+      }
+      const alpha = (pixels[index * 4 + 3] ?? 255) / 255;
+      channels.forEach((_, channel) => {
+        channels[channel] += (pixels[index * 4 + channel] ?? 28) * alpha + 28 * (1 - alpha);
+      });
+      count += 1;
+    },
+  );
   if (!count) {
     return '#ededeb';
   }

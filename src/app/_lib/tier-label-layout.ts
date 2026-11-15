@@ -13,16 +13,12 @@ export const getTierLabelLayout = ({
   fontSize: maximum,
   measure = (word) =>
     Array.from(word).reduce(
-      (sum, character) =>
-        sum + ((character.codePointAt(0) ?? 0) > 255 ? 1 : 0.62),
+      (sum, character) => sum + ((character.codePointAt(0) ?? 0) > 255 ? 1 : 0.62),
       0,
     ),
 }: TierLabelInput) => {
   const words = text.trim().split(/\s+/u);
-  let fontSize = Math.max(
-    1,
-    Math.min(maximum, width / Math.max(1, ...words.map(measure))),
-  );
+  let fontSize = Math.max(1, Math.min(maximum, width / Math.max(1, ...words.map(measure))));
   const wrap = () => {
     const lines: string[] = [];
     let line = '';

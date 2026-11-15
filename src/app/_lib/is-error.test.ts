@@ -6,9 +6,7 @@ describe('error detection', () => {
   it('recognizes cross-realm errors and rejects error-shaped objects', () => {
     expect(isError(runInNewContext('new Error("Different realm")'))).toBe(true);
     expect(isError(new TypeError('Network failed'))).toBe(true);
-    expect(
-      isError({ message: 'Fake error', [Symbol.toStringTag]: 'Error' }),
-    ).toBe(false);
+    expect(isError({ message: 'Fake error', [Symbol.toStringTag]: 'Error' })).toBe(false);
     expect(isError(null)).toBe(false);
   });
 

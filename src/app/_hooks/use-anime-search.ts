@@ -6,10 +6,7 @@ import { createQueries } from 'orpc-stack/client';
 import { kyTransport } from 'orpc-stack/ky';
 import { useEffect, useRef, useState } from 'react';
 import { animeSearchConfigAtom } from '@/app/_atoms/tierlist/search.atoms';
-import {
-  classifySearchInput,
-  normalizeAnimeQuery,
-} from '@/app/_lib/anime-search';
+import { classifySearchInput, normalizeAnimeQuery } from '@/app/_lib/anime-search';
 import { animeSearchEndpoint } from '@/app/_lib/anime-search-contract';
 import type { AnimeSearchSeed } from '@/app/_types/anime-search.types';
 
@@ -28,8 +25,7 @@ export const useAnimeSearch = (
   const settledInput = activeInput ? debounced : '';
   const classification = classifySearchInput(settledInput);
   const url = classification.kind === 'image' ? classification.url : null;
-  const urlError =
-    classification.kind === 'invalid' ? classification.message : null;
+  const urlError = classification.kind === 'invalid' ? classification.message : null;
   const query = normalizeAnimeQuery(settledInput);
   const search = useInfiniteQuery(
     animeSearchQueries.searchAnime.infiniteOptions({

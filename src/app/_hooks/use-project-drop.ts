@@ -35,9 +35,7 @@ export const useProjectDrop = () => {
     }
 
     try {
-      const { readTierlistProject } = await import(
-        '@/app/_services/tierlist-download'
-      );
+      const { readTierlistProject } = await import('@/app/_services/tierlist-download');
       const seed = await readTierlistProject(files[0]);
       if (tab) {
         clearProjectSession(tab.sessionStorage);

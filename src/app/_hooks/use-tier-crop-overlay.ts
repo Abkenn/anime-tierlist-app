@@ -1,10 +1,6 @@
 import { type RefObject, useLayoutEffect, useState } from 'react';
 import { getTierTrimFrame } from '@/app/_lib/tier-image-trim';
-import type {
-  TierCrop,
-  TierImage,
-  TierImageTrim,
-} from '@/app/_types/tierlist.types';
+import type { TierCrop, TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 
 type OverlayInput = {
   anchor?: RefObject<HTMLElement | null>;
@@ -13,15 +9,8 @@ type OverlayInput = {
   trim?: TierImageTrim;
 };
 
-export const useTierCropOverlay = ({
-  anchor,
-  image,
-  crop,
-  trim,
-}: OverlayInput) => {
-  const [frame, setFrame] = useState<ReturnType<
-    typeof getTierTrimFrame
-  > | null>(null);
+export const useTierCropOverlay = ({ anchor, image, crop, trim }: OverlayInput) => {
+  const [frame, setFrame] = useState<ReturnType<typeof getTierTrimFrame> | null>(null);
   const ratio = image.width / image.height;
   const cropWidth = 1 / Math.max(1, ratio);
   const cropHeight = 1 / Math.max(1, 1 / ratio);

@@ -1,32 +1,18 @@
 'use client';
 
 import { useActionState, useRef } from 'react';
-import {
-  pendingProjectKey,
-  projectDropEvent,
-} from '@/app/_lib/project-session';
+import { pendingProjectKey, projectDropEvent } from '@/app/_lib/project-session';
 
-export const ProjectFileImport = ({
-  busy,
-  onOpened,
-}: {
-  busy: boolean;
-  onOpened: () => void;
-}) => {
+export const ProjectFileImport = ({ busy, onOpened }: { busy: boolean; onOpened: () => void }) => {
   const projectInput = useRef<HTMLInputElement>(null);
   const [fileError, openProject, openingProject] = useActionState(
     async (_previous: string, form: FormData) => {
       try {
         const file = form.get('project');
-        if (
-          !(file instanceof File) ||
-          !file.name.toLowerCase().endsWith('.anime')
-        ) {
+        if (!(file instanceof File) || !file.name.toLowerCase().endsWith('.anime')) {
           return 'Choose an .anime project file.';
         }
-        const { readTierlistProject } = await import(
-          '@/app/_services/tierlist-download'
-        );
+        const { readTierlistProject } = await import('@/app/_services/tierlist-download');
         const seed = await readTierlistProject(file);
         sessionStorage.setItem(pendingProjectKey, seed);
         window.dispatchEvent(new Event(projectDropEvent));
@@ -63,9 +49,7 @@ export const ProjectFileImport = ({
       >
         {openingProject ? 'Opening project...' : 'Open project file'}
       </button>
-      <p className="mt-2 text-muted-foreground">
-        Or drop an .anime file anywhere.
-      </p>
+      <p className="mt-2 text-muted-foreground">Or drop an .anime file anywhere.</p>
       {fileError && (
         <p role="status" className="mt-2">
           {fileError}

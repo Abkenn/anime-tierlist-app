@@ -22,18 +22,10 @@ type PreviewImageProps = {
   mode: TierImageMode;
 };
 
-export const PreviewImage = ({
-  id,
-  width,
-  height,
-  rows,
-  mode,
-}: PreviewImageProps) => {
+export const PreviewImage = ({ id, width, height, rows, mode }: PreviewImageProps) => {
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
-  const [settledSources, setSettledSources] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [settledSources, setSettledSources] = useState<ReadonlySet<string>>(() => new Set());
   const deferredQuery = useDeferredValue(query);
   const posters = useMemo(() => rows.flatMap((row) => row.posters), [rows]);
   const visible = usePreviewPosters(root, posters, width, height);
@@ -58,12 +50,9 @@ export const PreviewImage = ({
     (poster) => poster.item.image && !settledSources.has(poster.item.image.src),
   );
   const pendingIds = new Set(pendingPosters.map((poster) => poster.item.id));
-  const matches = posters.filter((poster) =>
-    matchesTierItemLabel(poster.item, deferredQuery),
-  );
+  const matches = posters.filter((poster) => matchesTierItemLabel(poster.item, deferredQuery));
   const matchingIds = new Set(matches.map((poster) => poster.item.id));
-  const priorityPosters =
-    rows.find((row) => row.posters.length)?.posters.slice(0, 3) ?? [];
+  const priorityPosters = rows.find((row) => row.posters.length)?.posters.slice(0, 3) ?? [];
   const priorityIds = new Set(priorityPosters.map((poster) => poster.item.id));
   for (const poster of priorityPosters) {
     if (poster.item.image) {
@@ -80,11 +69,7 @@ export const PreviewImage = ({
   }, []);
 
   return (
-    <div
-      ref={root}
-      className="relative"
-      style={{ minWidth: Math.max(640, width / 2) }}
-    >
+    <div ref={root} className="relative" style={{ minWidth: Math.max(640, width / 2) }}>
       <PreviewBoardSurface
         rows={displayRows}
         width={width}
@@ -114,11 +99,7 @@ export const PreviewImage = ({
         rows={displayRows}
       />
 
-      <TierlistFind
-        query={query}
-        onQueryChange={setQuery}
-        count={matches.length}
-      />
+      <TierlistFind query={query} onQueryChange={setQuery} count={matches.length} />
 
       {deferredQuery.trim() && (
         <svg
@@ -137,9 +118,7 @@ export const PreviewImage = ({
               fillOpacity={matchingIds.has(poster.item.id) ? 0 : 0.78}
               stroke={matchingIds.has(poster.item.id) ? '#ffffff' : 'none'}
               strokeWidth={2}
-              data-preview-match={
-                matchingIds.has(poster.item.id) ? 'true' : 'false'
-              }
+              data-preview-match={matchingIds.has(poster.item.id) ? 'true' : 'false'}
             />
           ))}
         </svg>

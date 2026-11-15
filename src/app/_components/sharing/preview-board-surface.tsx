@@ -41,9 +41,7 @@ export const PreviewBoardSurface = ({
       aria-label={visibleIds ? 'Tierlist board' : 'Shared anime tierlist'}
       role="img"
       viewBox={
-        frame
-          ? `${frame.x} ${frame.y} ${frame.width} ${frame.height}`
-          : `0 0 ${width} ${height}`
+        frame ? `${frame.x} ${frame.y} ${frame.width} ${frame.height}` : `0 0 ${width} ${height}`
       }
       width={frame?.width ?? width}
       height={frame?.height ?? height}
@@ -75,9 +73,7 @@ export const PreviewBoardSurface = ({
                 y={
                   row.y +
                   exportPosterSize / 2 +
-                  (index - (lines.length - 1) / 2) *
-                    row.labelLayout.fontSize *
-                    1.25 +
+                  (index - (lines.length - 1) / 2) * row.labelLayout.fontSize * 1.25 +
                   row.labelLayout.fontSize * 0.35
                 }
               >
@@ -99,22 +95,11 @@ export const PreviewBoardSurface = ({
               <g key={box.item.id}>
                 <title>{box.item.label}</title>
                 {visibleIds && (
-                  <rect
-                    x={box.x}
-                    y={box.y}
-                    width={box.width}
-                    height={box.height}
-                    fill="#242424"
-                  />
+                  <rect x={box.x} y={box.y} width={box.width} height={box.height} fill="#242424" />
                 )}
                 <defs>
                   <clipPath id={clip}>
-                    <rect
-                      x={box.x}
-                      y={box.y}
-                      width={box.width}
-                      height={box.height}
-                    />
+                    <rect x={box.x} y={box.y} width={box.width} height={box.height} />
                   </clipPath>
                 </defs>
                 <g clipPath={`url(#${clip})`}>
@@ -129,35 +114,22 @@ export const PreviewBoardSurface = ({
                       <title>{box.item.label || box.item.image.alt}</title>
                       <image
                         href={
-                          visibleIds
-                            ? posterDisplaySource(box.item.image.src)
-                            : box.item.image.src
+                          visibleIds ? posterDisplaySource(box.item.image.src) : box.item.image.src
                         }
                         crossOrigin={posterCrossOrigin(box.item.image.src)}
-                        {...(priorityIds?.has(box.item.id)
-                          ? { fetchPriority: 'high' }
-                          : {})}
+                        {...(priorityIds?.has(box.item.id) ? { fetchPriority: 'high' } : {})}
                         onLoad={
-                          onPosterSettled && source
-                            ? () => onPosterSettled(source)
-                            : undefined
+                          onPosterSettled && source ? () => onPosterSettled(source) : undefined
                         }
                         onError={
-                          onPosterSettled && source
-                            ? () => onPosterSettled(source)
-                            : undefined
+                          onPosterSettled && source ? () => onPosterSettled(source) : undefined
                         }
                         width={box.item.image.width}
                         height={box.item.image.height}
                       />
                     </svg>
                   ) : (
-                    <text
-                      x={box.x + 4}
-                      y={box.y + 20}
-                      fill="#ededeb"
-                      fontSize={14}
-                    >
+                    <text x={box.x + 4} y={box.y + 20} fill="#ededeb" fontSize={14}>
                       {box.item.label}
                     </text>
                   )}
@@ -178,11 +150,7 @@ export const PreviewBoardSurface = ({
                         <tspan
                           key={`${box.item.title?.text.slice(0, lineIndex)}:${line}`}
                           x={title.x}
-                          y={
-                            title.y +
-                            title.fontSize +
-                            lineIndex * title.fontSize * 1.25
-                          }
+                          y={title.y + title.fontSize + lineIndex * title.fontSize * 1.25}
                         >
                           {line}
                         </tspan>

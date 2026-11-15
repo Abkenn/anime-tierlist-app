@@ -3,18 +3,12 @@ import { useRef } from 'react';
 import { expect, fn, waitFor, within } from 'storybook/test';
 import { TierCropControls } from './tier-crop-controls';
 
-const Sandbox = (
-  props: Omit<React.ComponentProps<typeof TierCropControls>, 'anchor'>,
-) => {
+const Sandbox = (props: Omit<React.ComponentProps<typeof TierCropControls>, 'anchor'>) => {
   const anchor = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="p-4">
-      <button
-        ref={anchor}
-        type="button"
-        className="size-16 border border-foreground bg-gray"
-      >
+      <button ref={anchor} type="button" className="size-16 border border-foreground bg-gray">
         1
       </button>
 

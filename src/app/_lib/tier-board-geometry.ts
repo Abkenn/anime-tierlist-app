@@ -26,16 +26,10 @@ export const readTierRowTranslation = (row: HTMLElement) => {
 export const getVisibleRank = (item: TierItemData, ranks: TierRank[]) =>
   ranks.includes(item.rank) ? item.rank : ranks[0];
 
-export const measureTierRows = (
-  board: HTMLElement,
-  wrapItems: boolean,
-  rem: number,
-): TierRow[] => {
+export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: number): TierRow[] => {
   const bounds = board.getBoundingClientRect();
 
-  return Array.from(
-    board.querySelectorAll<HTMLElement>('[data-tier-rank]'),
-  ).map((row) => {
+  return Array.from(board.querySelectorAll<HTMLElement>('[data-tier-rank]')).map((row) => {
     const cells = row.lastElementChild?.getBoundingClientRect();
     const rect = row.getBoundingClientRect();
     const translation = readTierRowTranslation(row);
@@ -45,34 +39,24 @@ export const measureTierRows = (
       x: (cells?.left ?? rect.left) - bounds.left - translation.x,
       y: (cells?.top ?? rect.top) - bounds.top - translation.y,
       size: wrapItems
-        ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect()
-            .height ?? rem * 4.125)
+        ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect().height ?? rem * 4.125)
         : Math.max(0, (cells?.height ?? rect.height) - rem * itemGapRem * 2),
     };
   });
 };
 
-export const isOutsideTierBoard = (
-  board: HTMLElement | null,
-  x: number,
-  y: number,
-) => {
+export const isOutsideTierBoard = (board: HTMLElement | null, x: number, y: number) => {
   const viewport = board?.closest<HTMLElement>('[data-tier-viewport]');
   const rectangles = [board, viewport].flatMap((element) =>
     element ? [element.getBoundingClientRect()] : [],
   );
 
   return rectangles.some(
-    (rect) =>
-      x < rect.left || x > rect.right || y < rect.top || y > rect.bottom,
+    (rect) => x < rect.left || x > rect.right || y < rect.top || y > rect.bottom,
   );
 };
 
-export const isInDiscardZone = (
-  board: HTMLElement | null,
-  x: number,
-  y: number,
-) => {
+export const isInDiscardZone = (board: HTMLElement | null, x: number, y: number) => {
   const scope = board?.closest('main') ?? document;
   const zone = scope.querySelector<HTMLElement>('[data-tier-discard]');
   const bounds = zone?.getBoundingClientRect();
@@ -115,9 +99,7 @@ export const findTierDropSlot = ({
   items,
   boxesFor,
 }: DropSlotInput): TierDropSlot | null => {
-  const candidates = Array.from(
-    board?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? [],
-  );
+  const candidates = Array.from(board?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? []);
   const first = candidates[0];
   const last = candidates.at(-1);
 
@@ -138,16 +120,14 @@ export const findTierDropSlot = ({
     return null;
   }
 
-  const x =
-    clientX - board.getBoundingClientRect().left - row.x - rem * itemGapRem;
+  const x = clientX - board.getBoundingClientRect().left - row.x - rem * itemGapRem;
   const line = wrapItems
     ? Math.max(
         0,
         Math.min(
           1,
           Math.floor(
-            (clientY - board.getBoundingClientRect().top - row.y) /
-              (row.size + rem * itemGapRem),
+            (clientY - board.getBoundingClientRect().top - row.y) / (row.size + rem * itemGapRem),
           ),
         ),
       )

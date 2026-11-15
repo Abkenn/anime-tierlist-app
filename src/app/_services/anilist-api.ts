@@ -1,10 +1,5 @@
 import 'server-only';
-import {
-  type AnyVariables,
-  createClient,
-  fetchExchange,
-  type TypedDocumentNode,
-} from '@urql/core';
+import { type AnyVariables, createClient, fetchExchange, type TypedDocumentNode } from '@urql/core';
 import ky, { isTimeoutError } from 'ky';
 
 export const anilistApi = ky.create({
@@ -47,9 +42,7 @@ export const queryAnilist = async <Data, Variables extends AnyVariables>(
       return response;
     },
   });
-  const result = await client
-    .query<Data, Variables>(query, variables)
-    .toPromise();
+  const result = await client.query<Data, Variables>(query, variables).toPromise();
   if (!response) {
     throw new Error(
       isTimeoutError(result.error?.networkError)
@@ -61,8 +54,7 @@ export const queryAnilist = async <Data, Variables extends AnyVariables>(
     const seconds = Number(response.headers.get('retry-after'));
     nextRequest = Math.max(
       nextRequest,
-      Date.now() +
-        (Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 60_000),
+      Date.now() + (Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 60_000),
     );
     throw new Error('AniList rate limit reached. Try again in a minute.');
   }
@@ -70,9 +62,7 @@ export const queryAnilist = async <Data, Variables extends AnyVariables>(
     throw new Error('AniList is temporarily unavailable. Try again shortly.');
   }
   if (!response.ok) {
-    throw new Error(
-      'AniList profile is unavailable or private. Check the username and try again.',
-    );
+    throw new Error('AniList profile is unavailable or private. Check the username and try again.');
   }
   return {
     data: result.data,

@@ -17,10 +17,7 @@ const meta = {
     const [, updateArgs] = useArgs();
 
     return (
-      <TierBoardToolbar
-        {...args}
-        onImageModeChange={(imageMode) => updateArgs({ imageMode })}
-      />
+      <TierBoardToolbar {...args} onImageModeChange={(imageMode) => updateArgs({ imageMode })} />
     );
   },
 } satisfies Meta<typeof TierBoardToolbar>;

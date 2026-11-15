@@ -129,9 +129,7 @@ export const useSearchItemDrag = (item: TierItemData) => {
     }
 
     const tick = ({ delta }: { delta: number }) => {
-      const board = document.querySelector<HTMLElement>(
-        '[aria-label="Anime tierlist"]',
-      );
+      const board = document.querySelector<HTMLElement>('[aria-label="Anime tierlist"]');
 
       if (active.current && board) {
         const scrolled = scrollTierDrag({

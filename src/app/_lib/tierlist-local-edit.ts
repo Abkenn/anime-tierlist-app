@@ -5,8 +5,7 @@ export type LocalTierlistContent = Pick<
   'items' | 'ranks' | 'rankDetails' | 'imageMode' | 'posterSize' | 'updatedAt'
 >;
 
-const same = (first: unknown, second: unknown) =>
-  JSON.stringify(first) === JSON.stringify(second);
+const same = (first: unknown, second: unknown) => JSON.stringify(first) === JSON.stringify(second);
 
 // Rebase only this tab's edits onto the shared draft, never a remote-device conflict.
 export const applyLocalTierlistEdit = (
@@ -35,9 +34,7 @@ export const applyLocalTierlistEdit = (
     } else if (latest) {
       const changed = Object.fromEntries(
         Array.from(new Set([...Object.keys(original), ...Object.keys(item)]))
-          .filter(
-            (key) => !same(Reflect.get(original, key), Reflect.get(item, key)),
-          )
+          .filter((key) => !same(Reflect.get(original, key), Reflect.get(item, key)))
           .map((key) => [key, Reflect.get(item, key)]),
       );
       items.set(id, { ...latest, ...changed });
@@ -65,13 +62,7 @@ export const applyLocalTierlistEdit = (
       ? current.rankDetails
       : after.rankDetails,
     ranks: same(before.ranks, after.ranks) ? current.ranks : after.ranks,
-    posterSize:
-      before.posterSize === after.posterSize
-        ? current.posterSize
-        : after.posterSize,
-    imageMode:
-      before.imageMode === after.imageMode
-        ? current.imageMode
-        : after.imageMode,
+    posterSize: before.posterSize === after.posterSize ? current.posterSize : after.posterSize,
+    imageMode: before.imageMode === after.imageMode ? current.imageMode : after.imageMode,
   };
 };

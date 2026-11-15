@@ -6,10 +6,7 @@ export const HomeShell = ({ children }: PropsWithChildren) => (
       Tierlist
     </h1>
 
-    <section
-      aria-labelledby="home-title"
-      className="flex min-h-0 w-full flex-1 flex-col"
-    >
+    <section aria-labelledby="home-title" className="flex min-h-0 w-full flex-1 flex-col">
       {children}
     </section>
   </main>

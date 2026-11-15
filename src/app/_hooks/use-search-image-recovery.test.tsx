@@ -28,8 +28,7 @@ it('cancels pending recovery when results are hidden or the search changes', () 
   vi.useFakeTimers();
   const onRetry = vi.fn();
   const { rerender } = renderHook(
-    ({ scope, failedIds }) =>
-      useSearchImageRecovery({ scope, failedIds, onRetry }),
+    ({ scope, failedIds }) => useSearchImageRecovery({ scope, failedIds, onRetry }),
     { initialProps: { scope: 'old search', failedIds: ['broken'] } },
   );
 

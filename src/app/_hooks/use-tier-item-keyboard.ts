@@ -1,10 +1,4 @@
-import {
-  type FocusEvent,
-  type KeyboardEvent,
-  type RefObject,
-  useRef,
-  useState,
-} from 'react';
+import { type FocusEvent, type KeyboardEvent, type RefObject, useRef, useState } from 'react';
 import { withKeyboardBehaviors } from '@/app/_lib/keybindings';
 import type { TierCrop, TierKeyboardMove } from '@/app/_types/tierlist.types';
 
@@ -65,10 +59,7 @@ export const useTierItemKeyboard = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (
-      event.code === 'ContextMenu' ||
-      (event.shiftKey && event.code === 'F10')
-    ) {
+    if (event.code === 'ContextMenu' || (event.shiftKey && event.code === 'F10')) {
       event.preventDefault();
 
       const bounds = event.currentTarget.getBoundingClientRect();
@@ -137,10 +128,7 @@ export const useTierItemKeyboard = ({
   };
 
   const handleFocus = (event: FocusEvent<HTMLButtonElement>) => {
-    if (
-      !pointerOrigin.current &&
-      event.currentTarget.matches(':focus-visible')
-    ) {
+    if (!pointerOrigin.current && event.currentTarget.matches(':focus-visible')) {
       onKeyboardModeChange(true);
     }
   };

@@ -86,10 +86,7 @@ export const TierItemImage = ({
     };
   }, [image.src, mode, source, priority]);
 
-  const placeholderClass = cn(
-    'relative block size-full',
-    loading && showPlaceholder && 'bg-muted',
-  );
+  const placeholderClass = cn('relative block size-full', loading && showPlaceholder && 'bg-muted');
 
   const loaded = () => {
     setLoadedSource(image.src);
@@ -149,8 +146,7 @@ export const TierItemImage = ({
           loading && 'invisible',
         )}
         style={{
-          objectPosition:
-            mode === 'cover' ? `${crop.x * 100}% ${crop.y * 100}%` : '50% 50%',
+          objectPosition: mode === 'cover' ? `${crop.x * 100}% ${crop.y * 100}%` : '50% 50%',
         }}
         onError={failed}
         onLoad={loaded}

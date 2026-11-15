@@ -14,14 +14,8 @@ type SynchronizeTierlistInput = {
   account: boolean;
   isCurrent: () => boolean;
   storage: {
-    replaceRemote: (
-      remote: RemoteTierlist,
-      expectedRevision: number,
-    ) => Promise<void>;
-    updateSync: (
-      remote: RemoteTierlist,
-      localRevision: number,
-    ) => Promise<void>;
+    replaceRemote: (remote: RemoteTierlist, expectedRevision: number) => Promise<void>;
+    updateSync: (remote: RemoteTierlist, localRevision: number) => Promise<void>;
   };
 };
 
@@ -53,9 +47,7 @@ export const synchronizeTierlist = async ({
     cachedRemote ??
     readResult(
       await connectTierlist(
-        account
-          ? { account: true }
-          : { seed: local.seed, document: getTierlistDocument(local) },
+        account ? { account: true } : { seed: local.seed, document: getTierlistDocument(local) },
       ),
     );
   if (!isCurrent()) {

@@ -1,9 +1,5 @@
-export const transferBoardScroll = (
-  workspace: HTMLElement,
-  board: HTMLElement,
-) => {
-  const remaining =
-    workspace.scrollHeight - workspace.clientHeight - workspace.scrollTop;
+export const transferBoardScroll = (workspace: HTMLElement, board: HTMLElement) => {
+  const remaining = workspace.scrollHeight - workspace.clientHeight - workspace.scrollTop;
 
   // Fractional device pixels can leave an unconsumable gap at the scroll limit.
   if (remaining <= 1 || board.scrollTop <= 0) {
@@ -25,11 +21,8 @@ export const getTouchScrollState = (
     ? viewport.closest<HTMLElement>('[data-tier-workspace-scroll]')
     : null,
 ) => {
-  const revealHeight = workspace
-    ? Math.max(0, workspace.scrollHeight - workspace.clientHeight)
-    : 0;
-  const max =
-    revealHeight + Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+  const revealHeight = workspace ? Math.max(0, workspace.scrollHeight - workspace.clientHeight) : 0;
+  const max = revealHeight + Math.max(0, viewport.scrollHeight - viewport.clientHeight);
 
   return {
     position: (workspace?.scrollTop ?? 0) + viewport.scrollTop,

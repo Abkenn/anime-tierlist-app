@@ -24,14 +24,11 @@ export const getTierlistAccountStatus = ({
 }: AccountStatusInput) => {
   const visibleError = sync.status === 'outdated' ? '' : error;
   const displayName = googleName || (googleConnected ? hintName : '');
-  const googleLabel = displayName
-    ? `${displayName} (Google)`
-    : 'Google account';
+  const googleLabel = displayName ? `${displayName} (Google)` : 'Google account';
   const cachedAccount = Boolean(
     googleConnected &&
       storage.status === 'saved' &&
-      storage.snapshot?.sync?.syncedLocalRevision ===
-        storage.snapshot?.revision,
+      storage.snapshot?.sync?.syncedLocalRevision === storage.snapshot?.revision,
   );
   const restoringAccount =
     !busy &&
@@ -51,8 +48,7 @@ export const getTierlistAccountStatus = ({
     offline: 'Saved on this device. Backup paused.',
     conflict: 'Choose which saved version to keep.',
     outdated: 'Saved on this device.',
-    unauthorized:
-      'Online saving requires sign-in. Your local changes are kept.',
+    unauthorized: 'Online saving requires sign-in. Your local changes are kept.',
   };
   const messages = {
     loading: 'Restoring tierlist...',
@@ -68,30 +64,21 @@ export const getTierlistAccountStatus = ({
   const settledMessage = restoringAccount ? restoredMessage : saveMessage;
   const verifyingIdentity = !identityReady && !busy;
   const visibleMessage =
-    verifyingIdentity && !restoringAccount && storage.status !== 'error'
-      ? ''
-      : settledMessage;
+    verifyingIdentity && !restoringAccount && storage.status !== 'error' ? '' : settledMessage;
   const message = busy ? 'Opening tierlist...' : visibleMessage;
-  const controlsBusy =
-    busy || !identityReady || storage.status === 'loading' || !storage.seed;
+  const controlsBusy = busy || !identityReady || storage.status === 'loading' || !storage.seed;
   const showIdentity = Boolean(
     restoringAccount || (backedUp && storage.seed && !busy && identityReady),
   );
   const restoredName = displayName || hintName;
-  const restoredLabel = restoredName
-    ? `${restoredName} (Google)`
-    : 'Google account';
+  const restoredLabel = restoredName ? `${restoredName} (Google)` : 'Google account';
   const verifiedLabel = googleConnected ? googleLabel : anonymousLabel;
   const identityLabel = restoringAccount ? restoredLabel : verifiedLabel;
   const identitySeparator = backedUp || restoringAccount ? '' : ' · ';
-  const statusText =
-    message + (showIdentity ? identitySeparator + identityLabel : '');
-  const backupMessage =
-    'message' in sync ? sync.message : 'Couldn’t reach your saved tierlist.';
-  const needsReconnect =
-    sync.status === 'offline' || sync.status === 'outdated';
-  const reconnectLabel =
-    sync.status === 'outdated' ? 'Try again' : 'Try saving again';
+  const statusText = message + (showIdentity ? identitySeparator + identityLabel : '');
+  const backupMessage = 'message' in sync ? sync.message : 'Couldn’t reach your saved tierlist.';
+  const needsReconnect = sync.status === 'offline' || sync.status === 'outdated';
+  const reconnectLabel = sync.status === 'outdated' ? 'Try again' : 'Try saving again';
 
   return {
     visibleError,

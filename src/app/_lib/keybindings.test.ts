@@ -1,9 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import {
-  keyboardBehaviors,
-  matchesKeyboardBehavior,
-  withKeyboardBehaviors,
-} from './keybindings';
+import { keyboardBehaviors, matchesKeyboardBehavior, withKeyboardBehaviors } from './keybindings';
 
 describe('keyboard behavior composition', () => {
   it('matches Find with Ctrl or Meta, but not a bare key or Alt shortcut', () => {
@@ -16,23 +12,10 @@ describe('keyboard behavior composition', () => {
     };
 
     expect(matchesKeyboardBehavior(event, keyboardBehaviors.find)).toBe(false);
+    expect(matchesKeyboardBehavior({ ...event, ctrlKey: true }, keyboardBehaviors.find)).toBe(true);
+    expect(matchesKeyboardBehavior({ ...event, metaKey: true }, keyboardBehaviors.find)).toBe(true);
     expect(
-      matchesKeyboardBehavior(
-        { ...event, ctrlKey: true },
-        keyboardBehaviors.find,
-      ),
-    ).toBe(true);
-    expect(
-      matchesKeyboardBehavior(
-        { ...event, metaKey: true },
-        keyboardBehaviors.find,
-      ),
-    ).toBe(true);
-    expect(
-      matchesKeyboardBehavior(
-        { ...event, ctrlKey: true, altKey: true },
-        keyboardBehaviors.find,
-      ),
+      matchesKeyboardBehavior({ ...event, ctrlKey: true, altKey: true }, keyboardBehaviors.find),
     ).toBe(false);
   });
 

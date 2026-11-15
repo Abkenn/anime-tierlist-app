@@ -8,10 +8,7 @@ import {
   exportTitle,
   layoutExportBoard,
 } from '@/app/_lib/tierlist-export-layout';
-import {
-  type TierlistDocument,
-  userSeedSchema,
-} from '@/app/_lib/tierlist-sync';
+import { type TierlistDocument, userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { posterCacheName } from './poster-cache';
 import { resolvePosterTitleColor } from './poster-title-color';
 
@@ -48,10 +45,7 @@ export const downloadTierlistProject = (seed: string) => {
     version: 1,
     seed,
   });
-  downloadBlob(
-    new Blob([JSON.stringify(project)], { type: 'application/json' }),
-    'tierlist.anime',
-  );
+  downloadBlob(new Blob([JSON.stringify(project)], { type: 'application/json' }), 'tierlist.anime');
 };
 
 const loadExportImage = async (source: string) => {
@@ -70,8 +64,7 @@ const loadExportImage = async (source: string) => {
   }
   const image = new Image();
   image.crossOrigin = 'anonymous';
-  const { promise, resolve, reject } =
-    Promise.withResolvers<HTMLImageElement>();
+  const { promise, resolve, reject } = Promise.withResolvers<HTMLImageElement>();
   const timer = setTimeout(() => {
     image.src = '';
     reject(new Error('Poster timed out.'));
@@ -161,17 +154,11 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
       } else {
         context.fillStyle = '#ededeb';
         context.font = '14px monospace';
-        exportTextLines(
-          box.item.label || 'Unavailable',
-          box.width - 8,
-          14,
-        ).forEach((line, index) => {
-          context.fillText(
-            line,
-            box.x + box.width / 2,
-            box.y + 20 + index * 18,
-          );
-        });
+        exportTextLines(box.item.label || 'Unavailable', box.width - 8, 14).forEach(
+          (line, index) => {
+            context.fillText(line, box.x + box.width / 2, box.y + 20 + index * 18);
+          },
+        );
       }
       const title = exportTitle(box, data.imageMode);
       if (title) {
@@ -196,17 +183,13 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
   };
 
   try {
-    await Promise.all(
-      Array.from({ length: Math.min(6, posters.length) }, worker),
-    );
+    await Promise.all(Array.from({ length: Math.min(6, posters.length) }, worker));
     const { promise, resolve, reject } = Promise.withResolvers<Blob>();
     canvas.toBlob(
       (blob) =>
         blob
           ? resolve(blob)
-          : reject(
-              new Error('This tierlist is too large to export on this device.'),
-            ),
+          : reject(new Error('This tierlist is too large to export on this device.')),
       'image/png',
     );
     downloadBlob(await promise, 'tierlist.png');

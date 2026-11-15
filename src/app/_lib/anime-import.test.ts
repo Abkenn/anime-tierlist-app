@@ -38,9 +38,7 @@ describe('large import ranks', () => {
       'Watching',
     ]);
     expect(
-      scores.map(
-        (_, id) => document.items.find((item) => item.id === `mal-${id}`)?.rank,
-      ),
+      scores.map((_, id) => document.items.find((item) => item.id === `mal-${id}`)?.rank),
     ).toEqual(['A', 'A−', 'B', 'B−', 'C', 'C−', 'D', 'D−']);
     expect(document.items).toHaveLength(1001);
   });
@@ -70,30 +68,20 @@ describe('large import ranks', () => {
       'Watching',
     ]);
     expect(large.items.filter((item) => item.rank === 'C+')).toHaveLength(99);
-    expect(large.items.find((item) => item.id === 'mal-100')?.rank).toBe(
-      'Dropped',
-    );
-    expect(large.items.find((item) => item.id === 'mal-101')?.rank).toBe(
-      'Watching',
-    );
+    expect(large.items.find((item) => item.id === 'mal-100')?.rank).toBe('Dropped');
+    expect(large.items.find((item) => item.id === 'mal-101')?.rank).toBe('Watching');
   });
 
   it('splits lower score ranges without rounding or losing items for either provider', () => {
     for (const provider of ['mal', 'anilist'] as const) {
       const scores = [7, 6.999, 6.5, 6.499, 6, 5.999, 5.5, 5.499, 5, 4.999];
       const entries = scores.map((score, id) => series(id, score));
-      entries.push(
-        ...Array.from({ length: 91 }, (_, id) => series(id + 10, 10)),
-      );
+      entries.push(...Array.from({ length: 91 }, (_, id) => series(id + 10, 10)));
       const document = importSeriesDocument(entries, provider);
       expect(document.items).toHaveLength(101);
       expect(new Set(document.items.map((item) => item.id)).size).toBe(101);
       expect(
-        scores.map(
-          (_, id) =>
-            document.items.find((item) => item.id === `${provider}-${id}`)
-              ?.rank,
-        ),
+        scores.map((_, id) => document.items.find((item) => item.id === `${provider}-${id}`)?.rank),
       ).toEqual(['B', 'C+', 'C+', 'C', 'C', 'D+', 'D+', 'D', 'D', 'F']);
     }
   });

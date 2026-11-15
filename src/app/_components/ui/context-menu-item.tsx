@@ -3,10 +3,7 @@
 import { ContextMenu as Primitive } from '@base-ui/react/context-menu';
 import { cn } from 'cn';
 
-export const ContextMenuItem = ({
-  className,
-  ...props
-}: Primitive.Item.Props) => (
+export const ContextMenuItem = ({ className, ...props }: Primitive.Item.Props) => (
   <Primitive.Item
     data-slot="context-menu-item"
     className={cn(

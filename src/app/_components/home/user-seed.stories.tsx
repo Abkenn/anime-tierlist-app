@@ -11,8 +11,7 @@ const AccountControls = () => {
   return (
     <div className="flex min-h-96 items-start flex-wrap gap-4 p-4 text-xs">
       <p>
-        Changes saved in{' '}
-        <span className="font-medium text-foreground">Example (Google)</span>
+        Changes saved in <span className="font-medium text-foreground">Example (Google)</span>
       </p>
       <UserSeed
         seed=""
@@ -46,16 +45,13 @@ export const DesktopAndMobile: StoryObj<typeof meta> = {
     expect(getComputedStyle(account).textDecorationLine).toBe('underline');
 
     await userEvent.click(account);
-    const popup = await within(
-      canvasElement.ownerDocument.body,
-    ).findByLabelText('Save and import tierlist');
+    const popup = await within(canvasElement.ownerDocument.body).findByLabelText(
+      'Save and import tierlist',
+    );
     await waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
     await waitFor(() =>
       expect(
-        Math.abs(
-          popup.getBoundingClientRect().left -
-            account.getBoundingClientRect().left,
-        ),
+        Math.abs(popup.getBoundingClientRect().left - account.getBoundingClientRect().left),
       ).toBeLessThanOrEqual(2),
     );
     await userEvent.keyboard('{Escape}');

@@ -1,8 +1,4 @@
-import type {
-  HexColor,
-  TierColor,
-  TierItemData,
-} from '@/app/_types/tierlist.types';
+import type { HexColor, TierColor, TierItemData } from '@/app/_types/tierlist.types';
 import { rankTextColor } from './rank-text-color';
 import { tierColors } from './tier-colors';
 import { fullImageTrim } from './tier-image-trim';
@@ -37,9 +33,7 @@ const palette: Record<TierColor, HexColor> = {
 };
 
 export const layoutExportBoard = (document: TierlistDocument) => {
-  const grouped = new Map(
-    document.ranks.map((rank) => [rank, [] as TierItemData[]]),
-  );
+  const grouped = new Map(document.ranks.map((rank) => [rank, [] as TierItemData[]]));
   document.items.forEach((item) => {
     grouped.get(item.rank)?.push(item);
   });
@@ -61,10 +55,7 @@ export const layoutExportBoard = (document: TierlistDocument) => {
 
       return box;
     });
-    const color =
-      document.rankDetails?.[rank]?.color ??
-      palette[tierColors[rank]] ??
-      '#aaaaaa';
+    const color = document.rankDetails?.[rank]?.color ?? palette[tierColors[rank]] ?? '#aaaaaa';
 
     const label = document.rankDetails?.[rank]?.label ?? rank;
     return {
@@ -89,10 +80,7 @@ export const layoutExportBoard = (document: TierlistDocument) => {
     : exportPosterSize;
 
   return {
-    width: Math.ceil(
-      Math.max(exportPosterSize + 2, ...rows.map((row) => row.end)) +
-        averageWidth,
-    ),
+    width: Math.ceil(Math.max(exportPosterSize + 2, ...rows.map((row) => row.end)) + averageWidth),
     height: rows.length * exportPosterSize,
     rows,
   };
@@ -100,20 +88,14 @@ export const layoutExportBoard = (document: TierlistDocument) => {
 
 export type ExportRow = ReturnType<typeof layoutExportBoard>['rows'][number];
 
-export type ExportPoster = ReturnType<
-  typeof layoutExportBoard
->['rows'][number]['posters'][number];
+export type ExportPoster = ReturnType<typeof layoutExportBoard>['rows'][number]['posters'][number];
 
-export const exportImageFrame = (
-  box: ExportPoster,
-  mode: TierlistDocument['imageMode'],
-) => {
+export const exportImageFrame = (box: ExportPoster, mode: TierlistDocument['imageMode']) => {
   const image = box.item.image;
   if (!image) {
     return null;
   }
-  const trim =
-    mode === 'natural' ? (box.item.trim ?? fullImageTrim) : fullImageTrim;
+  const trim = mode === 'natural' ? (box.item.trim ?? fullImageTrim) : fullImageTrim;
   const source = {
     x: trim.left * image.width,
     y: trim.top * image.height,
@@ -126,10 +108,7 @@ export const exportImageFrame = (
   );
   const width = source.width * scale;
   const height = source.height * scale;
-  const crop =
-    mode === 'cover'
-      ? (box.item.crop ?? { x: 0.5, y: 0.5 })
-      : { x: 0.5, y: 0.5 };
+  const crop = mode === 'cover' ? (box.item.crop ?? { x: 0.5, y: 0.5 }) : { x: 0.5, y: 0.5 };
 
   return {
     source,
@@ -140,12 +119,7 @@ export const exportImageFrame = (
   };
 };
 
-export const exportTextLines = (
-  text: string,
-  width: number,
-  fontSize: number,
-  wrap = true,
-) => {
+export const exportTextLines = (text: string, width: number, fontSize: number, wrap = true) => {
   const capacity = Math.max(1, Math.floor(width / (fontSize * 0.62)));
 
   return text
@@ -170,21 +144,14 @@ export const exportTextLines = (
     .slice(0, 4);
 };
 
-export const exportTitle = (
-  box: ExportPoster,
-  mode: TierlistDocument['imageMode'],
-) => {
+export const exportTitle = (box: ExportPoster, mode: TierlistDocument['imageMode']) => {
   const title = box.item.title;
   if (!title?.text) {
     return null;
   }
   const image = exportImageFrame(box, mode);
   const frame = mode === 'contain' && image ? image : box;
-  const { fontSize, lines } = getTierTitleLayout(
-    title,
-    frame.width,
-    frame.height,
-  );
+  const { fontSize, lines } = getTierTitleLayout(title, frame.width, frame.height);
   const height = lines.length * fontSize * 1.25;
   const y = {
     top: frame.y + 6,

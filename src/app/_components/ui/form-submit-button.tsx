@@ -16,12 +16,7 @@ export const FormSubmitButton = ({
   const { pending } = useFormStatus();
 
   return (
-    <button
-      {...props}
-      type="submit"
-      disabled={disabled || pending}
-      aria-busy={pending}
-    >
+    <button {...props} type="submit" disabled={disabled || pending} aria-busy={pending}>
       {pending && pendingLabel ? pendingLabel : children}
     </button>
   );

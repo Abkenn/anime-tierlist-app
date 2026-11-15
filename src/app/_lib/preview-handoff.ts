@@ -59,6 +59,4 @@ export const readPreviewHandoff = (
   seed: string,
   revision: number,
 ): ReadonlyMap<string, PosterPreview> =>
-  current?.seed === seed && current.revision === revision
-    ? current.previews
-    : new Map();
+  current?.seed === seed && current.revision === revision ? current.previews : new Map();

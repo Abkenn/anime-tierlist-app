@@ -18,15 +18,11 @@ export const pollAnimeImportQueue = async (input: unknown) =>
           ticket: z.uuid(),
           provider: z.enum(['mal', 'anilist']),
           release: z.boolean().optional(),
-          event: z
-            .enum(['generated', 'applied', 'cancelled', 'failed'])
-            .optional(),
+          event: z.enum(['generated', 'applied', 'cancelled', 'failed']).optional(),
         })
         .parse(input);
       const account = await getGoogleIdentity();
-      const ownerKey = hashTierlistSecret(
-        account ? `account:${account.ownerId}` : `seed:${seed}`,
-      );
+      const ownerKey = hashTierlistSecret(account ? `account:${account.ownerId}` : `seed:${seed}`);
       if (
         !release &&
         !(await consumeTierlistRateLimit({
@@ -55,7 +51,6 @@ export const pollAnimeImportQueue = async (input: unknown) =>
     },
     onError: () => ({
       ok: false as const,
-      message:
-        'Unable to check the import queue. Your progress is saved; try again shortly.',
+      message: 'Unable to check the import queue. Your progress is saved; try again shortly.',
     }),
   });

@@ -13,19 +13,10 @@ import {
 } from '@/app/_atoms/tierlist/settings.atoms';
 import { isError } from '@/app/_lib/is-error';
 import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
-import {
-  previewHandoffEvent,
-  readPreviewHandoff,
-} from '@/app/_lib/preview-handoff';
+import { previewHandoffEvent, readPreviewHandoff } from '@/app/_lib/preview-handoff';
 import { createSaveQueue } from '@/app/_lib/save-queue';
-import type {
-  RemoteTierlist,
-  TierlistDocument,
-} from '@/app/_lib/tierlist-sync';
-import {
-  getTierlistDocument,
-  sameTierlistDocument,
-} from '@/app/_lib/tierlist-sync';
+import type { RemoteTierlist, TierlistDocument } from '@/app/_lib/tierlist-sync';
+import { getTierlistDocument, sameTierlistDocument } from '@/app/_lib/tierlist-sync';
 import { subscribeTierlistTabs } from '@/app/_lib/tierlist-tabs';
 import {
   activateAccountTierlist,
@@ -74,10 +65,7 @@ export const useLocalTierlist = () => {
     try {
       const current = await controller.current?.refresh();
       if (current) {
-        store.set(
-          posterPreviewsAtom,
-          readPreviewHandoff(current.seed, current.revision),
-        );
+        store.set(posterPreviewsAtom, readPreviewHandoff(current.seed, current.revision));
       }
     } catch {
       /* The original posters still load if the profile changed during navigation. */
@@ -102,14 +90,8 @@ export const useLocalTierlist = () => {
     setProfileSeed(seed);
   };
 
-  const importProfile = (
-    seed: string,
-    remote: RemoteTierlist,
-    temporary = false,
-  ) =>
-    changeProfile(seed, () =>
-      activateImportedTierlist(seed, remote, temporary),
-    );
+  const importProfile = (seed: string, remote: RemoteTierlist, temporary = false) =>
+    changeProfile(seed, () => activateImportedTierlist(seed, remote, temporary));
 
   const selectProfile = (seed: string) =>
     changeProfile(seed, async () => {
@@ -117,12 +99,9 @@ export const useLocalTierlist = () => {
     });
 
   const importAccountProfile = (profileKey: string, remote: RemoteTierlist) =>
-    changeProfile(profileKey, () =>
-      activateAccountTierlist(profileKey, remote),
-    );
+    changeProfile(profileKey, () => activateAccountTierlist(profileKey, remote));
 
-  const restoreDeviceProfile = () =>
-    changeProfile(deviceSeed, activateDeviceTierlist);
+  const restoreDeviceProfile = () => changeProfile(deviceSeed, activateDeviceTierlist);
 
   const replaceDeviceProfile = async () => {
     const source = await controller.current?.refresh();
@@ -142,10 +121,7 @@ export const useLocalTierlist = () => {
     await controller.current?.metadata(remote, localRevision);
   };
 
-  const replaceRemote = async (
-    remote: RemoteTierlist,
-    expectedRevision?: number,
-  ) => {
+  const replaceRemote = async (remote: RemoteTierlist, expectedRevision?: number) => {
     await controller.current?.replace(remote, expectedRevision);
   };
 
@@ -188,10 +164,7 @@ export const useLocalTierlist = () => {
 
         const hydrate = (clearEditing = true) => {
           if (clearEditing) {
-            store.set(
-              posterPreviewsAtom,
-              readPreviewHandoff(current.seed, current.revision),
-            );
+            store.set(posterPreviewsAtom, readPreviewHandoff(current.seed, current.revision));
             store.set(clearEditingItemAtom);
           }
           store.set(tierItemsAtom, current.items);
@@ -219,11 +192,7 @@ export const useLocalTierlist = () => {
             }
           },
           onSettled: (pending) => {
-            if (
-              !pending &&
-              !disposed &&
-              !sameTierlistDocument(observed, current)
-            ) {
+            if (!pending && !disposed && !sameTierlistDocument(observed, current)) {
               unsubscribe();
               hydrate(false);
               unsubscribe = subscribe();
@@ -258,22 +227,13 @@ export const useLocalTierlist = () => {
           };
           const before = observed;
           const next = { ...observed, ...document };
-          if (
-            sameTierlistDocument(
-              getTierlistDocument(before),
-              getTierlistDocument(next),
-            )
-          ) {
+          if (sameTierlistDocument(getTierlistDocument(before), getTierlistDocument(next))) {
             return;
           }
           observed = next;
           try {
             await queue.enqueue(async () => {
-              current = await saveLocalTierlistEdit(
-                current.seed,
-                before,
-                document,
-              );
+              current = await saveLocalTierlistEdit(current.seed, before, document);
             });
           } catch {
             // The queue reports failures; atom subscriptions have no promise consumer.
@@ -356,20 +316,13 @@ export const useLocalTierlist = () => {
             }
 
             return queue.enqueue(async () => {
-              current = await saveLocalSyncMetadata(
-                current.seed,
-                remote,
-                localRevision,
-              );
+              current = await saveLocalSyncMetadata(current.seed, remote, localRevision);
             });
           },
           replace: (remote, expectedRevision) =>
             queue.enqueue(async () => {
               current = await readLocalTierlist(current.seed);
-              if (
-                expectedRevision !== undefined &&
-                current.revision !== expectedRevision
-              ) {
+              if (expectedRevision !== undefined && current.revision !== expectedRevision) {
                 return;
               }
 

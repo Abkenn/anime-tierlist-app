@@ -81,10 +81,7 @@ export const SequentialMessages: Story = {
         </p>
 
         <p>
-          <TerminalText
-            text="Your tierlist still works on this device."
-            line={1}
-          />
+          <TerminalText text="Your tierlist still works on this device." line={1} />
         </p>
 
         <button type="button" className="underline underline-offset-4">

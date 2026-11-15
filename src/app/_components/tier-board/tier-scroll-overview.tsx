@@ -19,22 +19,13 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
     (overview.visible || hovered || focused || dragging);
   const previewHeight = Math.min(360, overview.viewportHeight * 0.75);
   const scale = previewHeight / overview.canvasHeight;
-  const previewWidth = Math.max(
-    48,
-    Math.min(120, overview.canvasWidth * scale),
-  );
-  const scrollRange = Math.max(
-    1,
-    overview.canvasHeight - overview.viewportHeight,
-  );
+  const previewWidth = Math.max(48, Math.min(120, overview.canvasWidth * scale));
+  const scrollRange = Math.max(1, overview.canvasHeight - overview.viewportHeight);
   const progress = Math.min(
     1,
     Math.max(0, ((overview.top / 100) * overview.canvasHeight) / scrollRange),
   );
-  const thumbHeight = Math.min(
-    previewHeight,
-    Math.max(24, overview.viewportHeight * scale),
-  );
+  const thumbHeight = Math.min(previewHeight, Math.max(24, overview.viewportHeight * scale));
   const dragScale = (overview.viewportHeight - thumbHeight) / scrollRange;
   const frame = {
     left: 24,
@@ -119,13 +110,8 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             aria-controls={overview.viewportId}
             aria-orientation="vertical"
             aria-valuemin={0}
-            aria-valuemax={Math.max(
-              0,
-              overview.canvasHeight - overview.viewportHeight,
-            )}
-            aria-valuenow={Math.round(
-              (overview.top / 100) * overview.canvasHeight,
-            )}
+            aria-valuemax={Math.max(0, overview.canvasHeight - overview.viewportHeight)}
+            aria-valuenow={Math.round((overview.top / 100) * overview.canvasHeight)}
             data-tier-overview-window=""
             onPointerDown={(event) => event.preventDefault()}
             onPanStart={() => {
@@ -134,9 +120,7 @@ export const TierScrollOverview = ({ overview }: TierScrollOverviewProps) => {
             }}
             onPan={(_, info) => {
               if (dragScale > 0) {
-                overview.scrollToOffset(
-                  dragTop.current + info.offset.y / dragScale,
-                );
+                overview.scrollToOffset(dragTop.current + info.offset.y / dragScale);
               }
             }}
             onPanEnd={() => {

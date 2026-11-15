@@ -6,10 +6,7 @@ import { defaultTierRanks } from '@/app/_lib/tier-ranks';
 import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { getGooglePrincipal } from './google-session';
 import { connectAccountTierlist } from './tierlist';
-import {
-  hashTierlistSecret,
-  readAnonymousTierlistOwner,
-} from './tierlist-identity';
+import { hashTierlistSecret, readAnonymousTierlistOwner } from './tierlist-identity';
 
 export const readGoogleTierlist = async () => {
   const principal = await getGooglePrincipal();

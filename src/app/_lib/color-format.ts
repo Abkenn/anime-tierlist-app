@@ -8,9 +8,7 @@ export const formatColor = (color: HexColor, format: ColorFormat) => {
   if (format === 'hex') {
     return color.toUpperCase();
   }
-  const channels = [1, 3, 5].map((start) =>
-    Number.parseInt(color.slice(start, start + 2), 16),
-  );
+  const channels = [1, 3, 5].map((start) => Number.parseInt(color.slice(start, start + 2), 16));
   if (format === 'rgb') {
     return `rgb(${channels.join(', ')})`;
   }
@@ -43,19 +41,14 @@ export const parseColor = (text: string): HexColor | null => {
   if (/^(?:[a-f\d]{3}|[a-f\d]{6})$/i.test(hex)) {
     return `#${hex.length === 3 ? Array.from(hex, (char) => char + char).join('') : hex}`.toUpperCase() as HexColor;
   }
-  const rgb = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i.exec(
-    value,
-  );
+  const rgb = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i.exec(value);
   if (rgb) {
     const channels = rgb.slice(1).map(Number);
-    return channels.every((channel) => channel <= 255)
-      ? rgbToHex(channels)
-      : null;
+    return channels.every((channel) => channel <= 255) ? rgbToHex(channels) : null;
   }
-  const hsl =
-    /^hsl\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*\)$/i.exec(
-      value,
-    );
+  const hsl = /^hsl\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*\)$/i.exec(
+    value,
+  );
   if (!hsl) {
     return null;
   }
@@ -77,7 +70,5 @@ export const parseColor = (text: string): HexColor | null => {
     [chroma, 0, x],
   ];
 
-  return rgbToHex(
-    sectors[Math.floor((h % 360) / 60)].map((channel) => (channel + m) * 255),
-  );
+  return rgbToHex(sectors[Math.floor((h % 360) / 60)].map((channel) => (channel + m) * 255));
 };

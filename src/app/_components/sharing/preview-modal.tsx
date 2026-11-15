@@ -101,9 +101,7 @@ export const PreviewModal = ({
                 layout={!reducedMotion}
                 initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                 animate={
-                  leaving
-                    ? { opacity: 0, scale: 0.92, y: 12 }
-                    : { opacity: 1, scale: 1, y: 0 }
+                  leaving ? { opacity: 0, scale: 0.92, y: 12 } : { opacity: 1, scale: 1, y: 0 }
                 }
                 transition={{
                   duration: reducedMotion ? 0 : 0.2,
@@ -130,9 +128,7 @@ export const PreviewModal = ({
             )}
           >
             <div className="mb-3 flex shrink-0 items-center justify-between gap-4">
-              <Dialog.Title className="text-sm font-medium">
-                Tierlist preview
-              </Dialog.Title>
+              <Dialog.Title className="text-sm font-medium">Tierlist preview</Dialog.Title>
 
               <div className="flex items-center gap-1">
                 {!expanded && (
@@ -170,9 +166,7 @@ export const PreviewModal = ({
               Read-only preview. Close to return to Share.
             </Dialog.Description>
 
-            <div className="min-h-0 overflow-y-auto overscroll-contain">
-              {children}
-            </div>
+            <div className="min-h-0 overflow-y-auto overscroll-contain">{children}</div>
           </Dialog.Popup>
         </Dialog.Portal>
       )}

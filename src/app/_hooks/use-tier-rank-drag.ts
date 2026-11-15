@@ -1,27 +1,14 @@
 'use client';
 
 import { useAtomValue, useSetAtom, useStore } from 'jotai';
-import {
-  animate,
-  cancelFrame,
-  frame,
-  type HTMLMotionProps,
-  useReducedMotion,
-} from 'motion/react';
+import { animate, cancelFrame, frame, type HTMLMotionProps, useReducedMotion } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import {
-  draggedRankAtom,
-  rankOffsetsAtom,
-} from '@/app/_atoms/tierlist/layout.atoms';
+import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { moveRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
 import { readTierRowTranslation } from '@/app/_lib/tier-board-geometry';
-import {
-  getRankOffset,
-  projectRankDrag,
-  type RankDragRow,
-} from '@/app/_lib/tier-rank-drag';
+import { getRankOffset, projectRankDrag, type RankDragRow } from '@/app/_lib/tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
 type RankDrag = {
@@ -123,14 +110,8 @@ export const useTierRankDrag = (rank: TierRank) => {
   };
 
   const tickDrag = useEffectEvent(({ delta }: { delta: number }) => {
-    const board = handle.current?.closest<HTMLElement>(
-      '[aria-label="Anime tierlist"]',
-    );
-    if (
-      board &&
-      drag.current &&
-      scrollTierDrag({ board, ...point.current, delta })
-    ) {
+    const board = handle.current?.closest<HTMLElement>('[aria-label="Anime tierlist"]');
+    if (board && drag.current && scrollTierDrag({ board, ...point.current, delta })) {
       project();
     }
   });
@@ -138,10 +119,7 @@ export const useTierRankDrag = (rank: TierRank) => {
   const rankKey = ranks.join();
 
   useEffect(() => {
-    if (
-      drag.current &&
-      drag.current.rows.map((row) => row.rank).join() !== rankKey
-    ) {
+    if (drag.current && drag.current.rows.map((row) => row.rank).join() !== rankKey) {
       cancel();
     }
   }, [rankKey]);
@@ -186,9 +164,7 @@ export const useTierRankDrag = (rank: TierRank) => {
       }
 
       const rows = [
-        ...(handle.current
-          ?.closest('ol')
-          ?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? []),
+        ...(handle.current?.closest('ol')?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? []),
       ].map((row) => {
         const bounds = row.getBoundingClientRect();
         const translation = readTierRowTranslation(row);
@@ -200,9 +176,7 @@ export const useTierRankDrag = (rank: TierRank) => {
         };
       });
       const viewport =
-        handle.current?.closest<HTMLElement>(
-          '[data-slot="scroll-area-viewport"]',
-        ) ?? null;
+        handle.current?.closest<HTMLElement>('[data-slot="scroll-area-viewport"]') ?? null;
       drag.current = {
         rows,
         startY: info.point.y - info.offset.y,
@@ -223,8 +197,7 @@ export const useTierRankDrag = (rank: TierRank) => {
     onPanEnd: (event) => void settle(event.type !== 'pointercancel'),
     onPointerCancel: () => void settle(false),
     onKeyDown: (event) => {
-      const offset =
-        Number(event.key === 'ArrowDown') - Number(event.key === 'ArrowUp');
+      const offset = Number(event.key === 'ArrowDown') - Number(event.key === 'ArrowUp');
       const target = ranks[ranks.indexOf(rank) + offset];
       if (offset && target && !drag.current) {
         event.preventDefault();

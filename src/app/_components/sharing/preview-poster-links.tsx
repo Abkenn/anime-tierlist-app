@@ -9,11 +9,7 @@ type PreviewPosterLinksProps = {
   height: number;
 };
 
-export const PreviewPosterLinks = ({
-  posters,
-  width,
-  height,
-}: PreviewPosterLinksProps) => (
+export const PreviewPosterLinks = ({ posters, width, height }: PreviewPosterLinksProps) => (
   <div className="pointer-events-none absolute inset-0">
     {posters.map((poster) => (
       <PreviewMalLink

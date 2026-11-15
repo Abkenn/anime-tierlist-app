@@ -5,24 +5,12 @@ import { Share2, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useEffectEvent,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useEffectEvent, useState } from 'react';
 import { TerminalPending } from '@/app/_components/shell/terminal-pending';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { isError } from '@/app/_lib/is-error';
-import {
-  keyboardBehaviors,
-  matchesKeyboardBehavior,
-} from '@/app/_lib/keybindings';
-import {
-  copyPendingPreviewLink,
-  copyPreviewLink,
-} from '@/app/_lib/preview-clipboard';
+import { keyboardBehaviors, matchesKeyboardBehavior } from '@/app/_lib/keybindings';
+import { copyPendingPreviewLink, copyPreviewLink } from '@/app/_lib/preview-clipboard';
 import { createSharingCache } from '@/app/_lib/sharing-cache';
 import { previewLeaveEvent } from '@/app/_lib/tierlist-share-id';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -57,10 +45,7 @@ export const SharePanel = ({
       mode: 'find' | 'generate',
     ) => {
       try {
-        const url =
-          mode === 'find'
-            ? await cache.find(input)
-            : await cache.preview(input);
+        const url = mode === 'find' ? await cache.find(input) : await cache.preview(input);
         return { url: url ?? '', error: '', revision };
       } catch (error) {
         return {
@@ -120,9 +105,7 @@ export const SharePanel = ({
 
   const [download, downloadAction, downloading] = useActionState(async () => {
     try {
-      const { downloadTierlistPng } = await import(
-        '@/app/_services/tierlist-download'
-      );
+      const { downloadTierlistPng } = await import('@/app/_services/tierlist-download');
       if (!document) {
         throw new Error('Wait for your tierlist to load.');
       }
@@ -174,9 +157,7 @@ export const SharePanel = ({
               transition={{ duration: 0.16 }}
             >
               <div className="mb-4 flex items-center justify-between gap-4">
-                <Dialog.Title className="text-sm font-medium">
-                  Share tierlist
-                </Dialog.Title>
+                <Dialog.Title className="text-sm font-medium">Share tierlist</Dialog.Title>
 
                 <Dialog.Close
                   disabled={downloading}
@@ -191,9 +172,7 @@ export const SharePanel = ({
                 Share a read-only preview or PNG.
               </Dialog.Description>
 
-              {current && prepared.error && (
-                <p role="status">{prepared.error}</p>
-              )}
+              {current && prepared.error && <p role="status">{prepared.error}</p>}
 
               <div className="mt-4 border-t border-divider pt-3">
                 {publishedUrl && phase === 'idle' ? (
@@ -205,12 +184,7 @@ export const SharePanel = ({
                       setPhase('idle');
                       void copyPreviewLink(
                         publishedUrl,
-                        !(
-                          event.ctrlKey ||
-                          event.metaKey ||
-                          event.shiftKey ||
-                          event.altKey
-                        ),
+                        !(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey),
                       );
                     }}
                     onAuxClick={(event) => {
@@ -231,11 +205,7 @@ export const SharePanel = ({
                   >
                     {phase !== 'idle' ? (
                       <TerminalPending
-                        text={
-                          phase === 'opening'
-                            ? 'Opening preview'
-                            : 'Generating preview'
-                        }
+                        text={phase === 'opening' ? 'Opening preview' : 'Generating preview'}
                       />
                     ) : (
                       'Open Preview'

@@ -5,36 +5,31 @@ import { __unstable__loadDesignSystem } from 'tailwindcss';
 
 const require = createRequire(import.meta.url);
 const stylesheet = path.resolve('src/app/_styles/globals.css');
-const design = await __unstable__loadDesignSystem(
-  await readFile(stylesheet, 'utf8'),
-  {
-    base: path.dirname(stylesheet),
-    loadStylesheet: async (id, base) => {
-      let resolved: string;
+const design = await __unstable__loadDesignSystem(await readFile(stylesheet, 'utf8'), {
+  base: path.dirname(stylesheet),
+  loadStylesheet: async (id, base) => {
+    let resolved: string;
 
-      if (id.startsWith('.')) {
-        resolved = path.resolve(base, id);
-      } else if (id === 'tailwindcss') {
-        resolved = require.resolve('tailwindcss/index.css');
-      } else if (id === 'tw-animate-css') {
-        const packageRoot = path.resolve('node_modules', id);
-        const manifest = JSON.parse(
-          await readFile(path.join(packageRoot, 'package.json'), 'utf8'),
-        );
+    if (id.startsWith('.')) {
+      resolved = path.resolve(base, id);
+    } else if (id === 'tailwindcss') {
+      resolved = require.resolve('tailwindcss/index.css');
+    } else if (id === 'tw-animate-css') {
+      const packageRoot = path.resolve('node_modules', id);
+      const manifest = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8'));
 
-        resolved = path.resolve(packageRoot, manifest.exports['.'].style);
-      } else {
-        resolved = require.resolve(id, { paths: [base] });
-      }
+      resolved = path.resolve(packageRoot, manifest.exports['.'].style);
+    } else {
+      resolved = require.resolve(id, { paths: [base] });
+    }
 
-      return {
-        path: resolved,
-        base: path.dirname(resolved),
-        content: await readFile(resolved, 'utf8'),
-      };
-    },
+    return {
+      path: resolved,
+      base: path.dirname(resolved),
+      content: await readFile(resolved, 'utf8'),
+    };
   },
-);
+});
 let warnings = 0;
 
 const scan = async (directory: string): Promise<void> => {

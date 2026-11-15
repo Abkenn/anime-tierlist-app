@@ -1,10 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-export const usePromiseValue = <T>(
-  source: Promise<T> | undefined,
-  fallback: T,
-) => {
+export const usePromiseValue = <T>(source: Promise<T> | undefined, fallback: T) => {
   const [resolved, setResolved] = useState<{ source: Promise<T>; value: T }>();
 
   useEffect(() => {

@@ -11,10 +11,7 @@ import {
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 
-const fontPath = join(
-  process.cwd(),
-  'src/app/_assets/fonts/NotoSansCJKjp-Regular.otf',
-);
+const fontPath = join(process.cwd(), 'src/app/_assets/fonts/NotoSansCJKjp-Regular.otf');
 let loadedFont: Promise<Font> | undefined;
 const readExportFont = async () => {
   const data = await readFile(fontPath);
@@ -41,10 +38,7 @@ type TextLine = {
 const linePaths = (font: Font, line: TextLine) => {
   const run = font.layout(line.text);
   const scale = line.size / font.unitsPerEm;
-  const width = run.positions.reduce(
-    (sum, position) => sum + position.xAdvance,
-    0,
-  );
+  const width = run.positions.reduce((sum, position) => sum + position.xAdvance, 0);
   const scaleX = scale * Math.min(1, line.width / Math.max(1, width * scale));
   let x = line.x - (width * scaleX) / 2;
 
@@ -85,11 +79,7 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
           const title = exportTitle(box, document.imageMode);
           const fallback = box.item.image?.src
             ? ''
-            : exportTextLines(
-                box.item.label || 'Unavailable',
-                box.width - 8,
-                14,
-              )
+            : exportTextLines(box.item.label || 'Unavailable', box.width - 8, 14)
                 .map((text, line) =>
                   linePaths(font, {
                     text,

@@ -30,10 +30,7 @@ it('preserves the SSR bootstrap but remounts without inert-script warnings', () 
         <Toggle />
       </ThemeProvider>,
     );
-    expect(first.container.querySelector('script')).toHaveAttribute(
-      'type',
-      'application/json',
-    );
+    expect(first.container.querySelector('script')).toHaveAttribute('type', 'application/json');
     first.unmount();
     render(
       <ThemeProvider>
@@ -42,9 +39,7 @@ it('preserves the SSR bootstrap but remounts without inert-script warnings', () 
     );
     fireEvent.click(screen.getByRole('button', { name: 'Light' }));
     expect(document.documentElement).toHaveClass('light');
-    expect(error.mock.calls.flat().join(' ')).not.toContain(
-      'Encountered a script tag',
-    );
+    expect(error.mock.calls.flat().join(' ')).not.toContain('Encountered a script tag');
   } finally {
     error.mockRestore();
     vi.unstubAllGlobals();

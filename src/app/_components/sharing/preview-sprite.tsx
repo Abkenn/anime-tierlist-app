@@ -99,9 +99,7 @@ export const PreviewSprite = ({
         />
       ) : (
         <PreviewBoardSurface
-          rows={rows.filter(
-            (row) => row.y < box.y + box.height && row.y + 160 > box.y,
-          )}
+          rows={rows.filter((row) => row.y < box.y + box.height && row.y + 160 > box.y)}
           width={width}
           height={height}
           mode={mode}

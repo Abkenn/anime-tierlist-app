@@ -8,10 +8,7 @@ import { usePromiseValue } from '@/app/_hooks/use-promise-value';
 import { useTierlistSync } from '@/app/_hooks/use-tierlist-sync';
 import { authClient } from '@/app/_lib/auth-client';
 import { getTierlistAccountStatus } from '@/app/_lib/tierlist-account-status';
-import {
-  isOutdatedTierlistClient,
-  tierlistErrorMessage,
-} from '@/app/_lib/tierlist-error';
+import { isOutdatedTierlistClient, tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { readGoogleTierlist } from '@/app/_services/google-auth.actions';
 import {
@@ -35,9 +32,7 @@ import type { AccountSnapshot } from '@/app/_types/account-snapshot';
 
 const unavailableAccount: AccountSnapshot = { status: 'unavailable' };
 
-export const useTierlistAccount = (
-  initialAccount?: Promise<AccountSnapshot>,
-) => {
+export const useTierlistAccount = (initialAccount?: Promise<AccountSnapshot>) => {
   const initial = usePromiseValue(initialAccount, unavailableAccount);
   const initialReady = !initialAccount || initial !== null;
   const storage = useLocalTierlist();
@@ -61,12 +56,10 @@ export const useTierlistAccount = (
       ? initial.userId
       : (session.data?.user.id ?? null);
   const sessionReady = !session.isPending || initial?.status === 'ready';
-  const identityReady =
-    initialReady && sessionReady && resolvedUserId === sessionUserId;
+  const identityReady = initialReady && sessionReady && resolvedUserId === sessionUserId;
   const [accountOpen, setAccountOpen] = useState(false);
   const googleConnected = Boolean(
-    storage.snapshot?.accountOwnerId ||
-      (googleProfileKey && googleProfileKey === storage.seed),
+    storage.snapshot?.accountOwnerId || (googleProfileKey && googleProfileKey === storage.seed),
   );
   const projectImport = useProjectImport({
     storage,
@@ -79,9 +72,7 @@ export const useTierlistAccount = (
       projectImport.opening ||
       !identityReady ||
       (googleConnected &&
-        (!accountVerified ||
-          !sessionUserId ||
-          googleProfileKey !== storage.seed)),
+        (!accountVerified || !sessionUserId || googleProfileKey !== storage.seed)),
     googleConnected,
   );
   const status = getTierlistAccountStatus({
@@ -113,10 +104,7 @@ export const useTierlistAccount = (
 
       setAccountOpen(true);
       setError(
-        tierlistErrorMessage(
-          failure,
-          'Couldn’t connect. Your current tierlist is unchanged.',
-        ),
+        tierlistErrorMessage(failure, 'Couldn’t connect. Your current tierlist is unchanged.'),
       );
 
       return false;
@@ -141,9 +129,7 @@ export const useTierlistAccount = (
         await storage.flush();
         const snapshot = storage.snapshot;
         if (!snapshot?.sync || !status.backedUp) {
-          throw new Error(
-            'Wait for your changes to save before replacing this tierlist.',
-          );
+          throw new Error('Wait for your changes to save before replacing this tierlist.');
         }
 
         const result = await replaceAccountFromSeed({
@@ -176,10 +162,7 @@ export const useTierlistAccount = (
     await storage.flush();
     await sync.saveNow();
     const snapshot = await storage.refresh();
-    if (
-      !snapshot?.sync ||
-      snapshot.sync.syncedLocalRevision !== snapshot.revision
-    ) {
+    if (!snapshot?.sync || snapshot.sync.syncedLocalRevision !== snapshot.revision) {
       throw new Error('Wait for your changes to save online before sharing.');
     }
 
@@ -233,10 +216,7 @@ export const useTierlistAccount = (
 
   const findSharingPreview = async () => {
     const snapshot = storage.snapshot;
-    if (
-      !snapshot?.sync ||
-      snapshot.sync.syncedLocalRevision !== snapshot.revision
-    ) {
+    if (!snapshot?.sync || snapshot.sync.syncedLocalRevision !== snapshot.revision) {
       return null;
     }
     const result = await findExistingPreview({
@@ -247,10 +227,7 @@ export const useTierlistAccount = (
       return null;
     }
 
-    return new URL(
-      `/${result.value.id}.${result.value.version}`,
-      window.location.origin,
-    ).href;
+    return new URL(`/${result.value.id}.${result.value.version}`, window.location.origin).href;
   };
 
   const publishSharing = async () => {
@@ -263,10 +240,7 @@ export const useTierlistAccount = (
       throw new Error(result.message);
     }
 
-    return new URL(
-      `/${result.value.id}.${result.value.version}`,
-      window.location.origin,
-    ).href;
+    return new URL(`/${result.value.id}.${result.value.version}`, window.location.origin).href;
   };
 
   const restoreDevice = () =>
@@ -274,9 +248,7 @@ export const useTierlistAccount = (
       if (sessionUserId) {
         const result = await authClient.signOut();
         if (result.error) {
-          throw new Error(
-            'Unable to sign out. Check your connection and try again.',
-          );
+          throw new Error('Unable to sign out. Check your connection and try again.');
         }
       }
 
@@ -302,15 +274,11 @@ export const useTierlistAccount = (
       });
       if (result.error) {
         if (result.error.status === 429) {
-          throw new Error(
-            'Too many sign-in attempts. Wait a moment and try again.',
-          );
+          throw new Error('Too many sign-in attempts. Wait a moment and try again.');
         }
 
         if (result.error.code === 'INVALID_ORIGIN') {
-          throw new Error(
-            'Google sign-in is unavailable at this site address.',
-          );
+          throw new Error('Google sign-in is unavailable at this site address.');
         }
 
         throw new Error(
@@ -357,19 +325,12 @@ export const useTierlistAccount = (
       if (project.returnAccount) {
         const account = await readGoogleTierlist();
         if (!account || account.profileKey !== project.returnSeed) {
-          throw new Error(
-            'Sign in to the original Google account before replacing its tierlist.',
-          );
+          throw new Error('Sign in to the original Google account before replacing its tierlist.');
         }
         const original = await readLocalTierlist(project.returnSeed);
         const source = await storage.refresh();
-        if (
-          !source?.sync ||
-          source.sync.syncedLocalRevision !== source.revision
-        ) {
-          throw new Error(
-            'Wait for this project to finish saving before replacing your tierlist.',
-          );
+        if (!source?.sync || source.sync.syncedLocalRevision !== source.revision) {
+          throw new Error('Wait for this project to finish saving before replacing your tierlist.');
         }
         const result = await replaceAccountFromSeed({
           seed: source.seed,
@@ -424,19 +385,15 @@ export const useTierlistAccount = (
 
     if (result === 'failed') {
       setAccountOpen(true);
-      setError(
-        'Google sign-in was cancelled or could not be completed. Please try again.',
-      );
+      setError('Google sign-in was cancelled or could not be completed. Please try again.');
       setResolvedUserId(userId);
 
       return;
     }
 
     try {
-      const localProfile =
-        new URL(window.location.href).searchParams.get('profile') === 'local';
-      const fromServer =
-        initial?.status === 'ready' && initial.userId === userId;
+      const localProfile = new URL(window.location.href).searchParams.get('profile') === 'local';
+      const fromServer = initial?.status === 'ready' && initial.userId === userId;
       if (session.error && !fromServer && !localProfile) {
         throw new Error('Unable to check your account right now.');
       }
@@ -454,16 +411,9 @@ export const useTierlistAccount = (
         accountHint.clear();
       }
 
-      if (
-        account &&
-        account.profileKey !== storage.seed &&
-        !projectImport.project
-      ) {
+      if (account && account.profileKey !== storage.seed && !projectImport.project) {
         await perform(async () => {
-          await storage.importAccountProfile(
-            account.profileKey,
-            account.remote,
-          );
+          await storage.importAccountProfile(account.profileKey, account.remote);
         });
       } else if (!account && storage.snapshot?.accountOwnerId) {
         await storage.restoreDeviceProfile();
@@ -524,9 +474,7 @@ export const useTierlistAccount = (
       !busy &&
       (resolvedUserId !== sessionUserId ||
         (accountAttempt > 0 && !accountVerified) ||
-        (!sessionUserId &&
-          !session.error &&
-          Boolean(storage.snapshot?.accountOwnerId)))
+        (!sessionUserId && !session.error && Boolean(storage.snapshot?.accountOwnerId)))
     ) {
       void completeGoogleSignIn(sessionUserId);
     }
@@ -571,10 +519,7 @@ export const useTierlistAccount = (
     googleConnected,
     project: projectImport.project,
     accountUnavailable: Boolean(
-      storage.snapshot?.accountOwnerId &&
-        sessionReady &&
-        !session.error &&
-        !sessionUserId,
+      storage.snapshot?.accountOwnerId && sessionReady && !session.error && !sessionUserId,
     ),
     status,
     actions: {

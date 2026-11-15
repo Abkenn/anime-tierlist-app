@@ -21,13 +21,7 @@ type TierItemTitleProps = {
   crop?: TierCrop;
 };
 
-export const TierItemTitle = ({
-  title,
-  image,
-  mode,
-  trim,
-  crop,
-}: TierItemTitleProps) => {
+export const TierItemTitle = ({ title, image, mode, trim, crop }: TierItemTitleProps) => {
   const { ref, frame, width, height } = useTierTitleFrame({
     image,
     mode,
@@ -48,10 +42,7 @@ export const TierItemTitle = ({
       data-tier-title=""
       className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
     >
-      <span
-        style={frame}
-        className="@container-size relative block overflow-hidden"
-      >
+      <span style={frame} className="@container-size relative block overflow-hidden">
         <span
           style={{
             color,
@@ -68,9 +59,7 @@ export const TierItemTitle = ({
             },
           )}
         >
-          <span className={cn('line-clamp-4 whitespace-pre')}>
-            {layout.lines.join('\n')}
-          </span>
+          <span className={cn('line-clamp-4 whitespace-pre')}>{layout.lines.join('\n')}</span>
         </span>
       </span>
     </span>

@@ -30,9 +30,7 @@ export const auth = betterAuth({
     log: (level, message, ...args: unknown[]) => {
       const details = [message, ...args].map(String).join(' ');
       if (
-        /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|connection timeout/iu.test(
-          details,
-        )
+        /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|connection timeout/iu.test(details)
       ) {
         console.warn(
           'Account database is temporarily unreachable. Local editing remains available.',

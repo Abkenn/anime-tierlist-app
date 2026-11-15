@@ -36,18 +36,12 @@ export type AnilistMedia = z.infer<typeof anilistMediaSchema>;
 export const normalizeAnilistAnime = (media: AnilistMedia): ImportAnime => ({
   id: media.id,
   ...(media.idMal ? { malId: media.idMal } : {}),
-  title:
-    media.title.english ||
-    media.title.romaji ||
-    media.title.native ||
-    `AniList ${media.id}`,
+  title: media.title.english || media.title.romaji || media.title.native || `AniList ${media.id}`,
   type: media.format === 'TV_SHORT' ? 'TV' : (media.format ?? 'UNKNOWN'),
   episodes: media.episodes,
   imageUrl: media.coverImage.extraLarge ?? media.coverImage.large ?? undefined,
   prequels: media.relations.edges
-    .filter(
-      (edge) => edge.relationType === 'PREQUEL' && edge.node.type === 'ANIME',
-    )
+    .filter((edge) => edge.relationType === 'PREQUEL' && edge.node.type === 'ANIME')
     .map((edge) => edge.node.id),
 });
 

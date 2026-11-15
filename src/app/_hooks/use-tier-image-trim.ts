@@ -23,9 +23,7 @@ export const useTierImageTrim = ({ trim }: TrimInput) => {
       return;
     }
 
-    const bounds = event.currentTarget
-      .closest('[data-trim-viewport]')
-      ?.getBoundingClientRect();
+    const bounds = event.currentTarget.closest('[data-trim-viewport]')?.getBoundingClientRect();
 
     if (!bounds?.width || !bounds.height) {
       return;
@@ -46,16 +44,9 @@ export const useTierImageTrim = ({ trim }: TrimInput) => {
 
   const move = (event: PointerEvent<SVGRectElement | HTMLButtonElement>) => {
     const active = session.current;
-    const bounds = event.currentTarget
-      .closest('[data-trim-viewport]')
-      ?.getBoundingClientRect();
+    const bounds = event.currentTarget.closest('[data-trim-viewport]')?.getBoundingClientRect();
 
-    if (
-      !active ||
-      active.pointerId !== event.pointerId ||
-      !bounds?.width ||
-      !bounds.height
-    ) {
+    if (!active || active.pointerId !== event.pointerId || !bounds?.width || !bounds.height) {
       return;
     }
 
@@ -67,8 +58,7 @@ export const useTierImageTrim = ({ trim }: TrimInput) => {
           resizeTierTrim(
             next,
             edge,
-            active.initial[edge] +
-              (edge === 'left' || edge === 'right' ? dx : dy),
+            active.initial[edge] + (edge === 'left' || edge === 'right' ? dx : dy),
           ),
         active.initial,
       ),

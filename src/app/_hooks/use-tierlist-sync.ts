@@ -13,14 +13,8 @@ import {
 } from '@/app/_lib/tierlist-sync';
 import { withTierlistSyncLock } from '@/app/_lib/tierlist-tabs';
 import { backupRemoteTierlist } from '@/app/_services/local-tierlist';
-import {
-  markOffline,
-  OFFLINE_RECOVERED_EVENT,
-} from '@/app/_services/offline-mode';
-import {
-  synchronizeTierlist,
-  TierlistSyncError,
-} from '@/app/_services/synchronize-tierlist';
+import { markOffline, OFFLINE_RECOVERED_EVENT } from '@/app/_services/offline-mode';
+import { synchronizeTierlist, TierlistSyncError } from '@/app/_services/synchronize-tierlist';
 import { connectTierlist } from '@/app/_services/tierlist.actions';
 import type { useLocalTierlist } from './use-local-tierlist';
 
@@ -47,10 +41,7 @@ const getSyncFailureState = (
     return { status: 'outdated', message: tierlistUpdateMessage };
   }
 
-  const message = tierlistErrorMessage(
-    error,
-    'Couldn’t reach your saved tierlist right now.',
-  );
+  const message = tierlistErrorMessage(error, 'Couldn’t reach your saved tierlist right now.');
 
   return unauthorized
     ? { status: 'unauthorized', message }
@@ -96,9 +87,7 @@ export const useTierlistSync = (
   const saveNow = async () => {
     const active = scope.current;
     if (!active || paused || state.status === 'conflict') {
-      throw new Error(
-        'Finish connecting or resolve the conflict before sharing.',
-      );
+      throw new Error('Finish connecting or resolve the conflict before sharing.');
     }
 
     await withTierlistSyncLock(async () => {
@@ -130,10 +119,7 @@ export const useTierlistSync = (
     }
 
     await backupRemoteTierlist(local.seed, state.conflict);
-    await storage.updateSync(
-      state.conflict,
-      local.sync?.syncedLocalRevision ?? 0,
-    );
+    await storage.updateSync(state.conflict, local.sync?.syncedLocalRevision ?? 0);
     if (scope.current) {
       scope.current.remote = state.conflict;
     }
@@ -147,9 +133,7 @@ export const useTierlistSync = (
       return;
     }
 
-    const result = await connectTierlist(
-      account ? { account: true } : { seed: local.seed },
-    );
+    const result = await connectTierlist(account ? { account: true } : { seed: local.seed });
 
     if (!result.ok) {
       throw new Error(result.message);
@@ -183,11 +167,7 @@ export const useTierlistSync = (
 
   useEffect(() => {
     const reconnect = () => {
-      if (
-        scope.current?.running ||
-        scope.current?.outdated ||
-        scope.current?.unauthorized
-      ) {
+      if (scope.current?.running || scope.current?.outdated || scope.current?.unauthorized) {
         return;
       }
 
@@ -281,32 +261,21 @@ export const useTierlistSync = (
       try {
         await withTierlistSyncLock(async () => {
           const latest = await storage.refresh();
-          if (
-            !latest ||
-            scope.current !== active ||
-            latest.seed !== active.seed
-          ) {
+          if (!latest || scope.current !== active || latest.seed !== active.seed) {
             return;
           }
 
           const local = latest;
-          if (
-            active.remote &&
-            local.sync &&
-            local.sync.serverRevision > active.remote.revision
-          ) {
+          if (active.remote && local.sync && local.sync.serverRevision > active.remote.revision) {
             active.remote = undefined;
           }
 
           if (!navigator.onLine) {
-            throw new Error(
-              'Saved on this device. Online saving will resume when connected.',
-            );
+            throw new Error('Saved on this device. Online saving will resume when connected.');
           }
 
           const checkingSavedChanges =
-            state.status === 'saved' &&
-            local.sync?.syncedLocalRevision === local.revision;
+            state.status === 'saved' && local.sync?.syncedLocalRevision === local.revision;
 
           if (!checkingSavedChanges) {
             setState({ status: active.remote ? 'saving' : 'connecting' });
@@ -320,8 +289,7 @@ export const useTierlistSync = (
               replaceRemote: storage.replaceRemote,
               updateSync: storage.updateSync,
             },
-            isCurrent: () =>
-              scope.current === active && active.attempt === attempt,
+            isCurrent: () => scope.current === active && active.attempt === attempt,
           });
           if (!result || scope.current !== active) {
             return;
@@ -338,8 +306,7 @@ export const useTierlistSync = (
         });
       } catch (error) {
         active.failed = true;
-        active.unauthorized ||=
-          error instanceof TierlistSyncError && error.code === 'unauthorized';
+        active.unauthorized ||= error instanceof TierlistSyncError && error.code === 'unauthorized';
         active.outdated ||= isOutdatedTierlistClient(error);
         if (!active.outdated && !active.unauthorized) {
           markOffline();

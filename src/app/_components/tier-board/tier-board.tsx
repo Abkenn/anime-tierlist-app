@@ -14,11 +14,7 @@ import { TierBoardToolbar } from '@/app/_components/tier-settings/tier-board-too
 import { useTierImageMode } from '@/app/_hooks/use-tier-image-mode';
 import { useTierItems } from '@/app/_hooks/use-tier-items';
 import { TierlistRestorationContext } from '@/app/_lib/tierlist-restoration-context';
-import type {
-  TierImageMode,
-  TierItemData,
-  TierRank,
-} from '@/app/_types/tierlist.types';
+import type { TierImageMode, TierItemData, TierRank } from '@/app/_types/tierlist.types';
 import { TierBoardFind } from './tier-board-find';
 import { TierViewport } from './tier-viewport';
 
@@ -43,9 +39,7 @@ export const TierBoard = ({
   imageMode: controlledImageMode,
   onImageModeChange,
 }: TierBoardProps = {}) => {
-  useHydrateAtoms(
-    new Map(initialRanks ? [[enabledTierRanksAtom, initialRanks]] : []),
-  );
+  useHydrateAtoms(new Map(initialRanks ? [[enabledTierRanksAtom, initialRanks]] : []));
 
   const restoring = useContext(TierlistRestorationContext);
   const ranks = useAtomValue(enabledTierRanksAtom);
@@ -64,16 +58,10 @@ export const TierBoard = ({
     imageMode,
   });
 
-  const scrollable =
-    layout === 'two-line' ||
-    initialItemCount === 0 ||
-    initialItems !== undefined;
+  const scrollable = layout === 'two-line' || initialItemCount === 0 || initialItems !== undefined;
 
   return (
-    <section
-      aria-label="Anime tierlist"
-      className="flex min-h-0 min-w-0 flex-1 flex-col"
-    >
+    <section aria-label="Anime tierlist" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <TierBoardFind />
 
       <TierBoardToolbar

@@ -12,23 +12,17 @@ describe('tierlist error messages', () => {
     );
 
     expect(isOutdatedTierlistClient(error)).toBe(true);
-    expect(tierlistErrorMessage(error, 'Try again.')).toBe(
-      tierlistUpdateMessage,
-    );
-    expect(tierlistErrorMessage(error, 'Try again.')).not.toContain(
-      'old-action-id',
-    );
+    expect(tierlistErrorMessage(error, 'Try again.')).toBe(tierlistUpdateMessage);
+    expect(tierlistErrorMessage(error, 'Try again.')).not.toContain('old-action-id');
   });
 
   it('keeps connection failures separate from updates and preserves user validation messages', () => {
     const network = new TypeError('Failed to fetch');
 
     expect(isOutdatedTierlistClient(network)).toBe(false);
-    expect(tierlistErrorMessage(network, 'Couldn’t connect.')).toBe(
-      'Couldn’t connect.',
+    expect(tierlistErrorMessage(network, 'Couldn’t connect.')).toBe('Couldn’t connect.');
+    expect(tierlistErrorMessage(new Error('Enter a valid seed.'), 'Try again.')).toBe(
+      'Enter a valid seed.',
     );
-    expect(
-      tierlistErrorMessage(new Error('Enter a valid seed.'), 'Try again.'),
-    ).toBe('Enter a valid seed.');
   });
 });

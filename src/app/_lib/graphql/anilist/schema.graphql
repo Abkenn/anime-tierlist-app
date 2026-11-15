@@ -2858,14 +2858,12 @@ type User {
   """
   The user's statistics
   """
-  stats: UserStats
-    @deprecated(reason: "Deprecated. Replaced with statistics field.")
+  stats: UserStats @deprecated(reason: "Deprecated. Replaced with statistics field.")
 
   """
   If the user is a moderator or data moderator
   """
-  moderatorStatus: String
-    @deprecated(reason: "Deprecated. Replaced with moderatorRoles field.")
+  moderatorStatus: String @deprecated(reason: "Deprecated. Replaced with moderatorRoles field.")
 
   """
   The user's previously used names.
@@ -5499,8 +5497,7 @@ A media's statistics
 type MediaStats {
   scoreDistribution: [ScoreDistribution]
   statusDistribution: [StatusDistribution]
-  airingProgression: [AiringProgression]
-    @deprecated(reason: "Replaced by MediaTrends")
+  airingProgression: [AiringProgression] @deprecated(reason: "Replaced by MediaTrends")
 }
 
 """
@@ -5642,10 +5639,7 @@ type UserStatistics {
   statuses(limit: Int, sort: [UserStatisticsSort]): [UserStatusStatistic]
   scores(limit: Int, sort: [UserStatisticsSort]): [UserScoreStatistic]
   lengths(limit: Int, sort: [UserStatisticsSort]): [UserLengthStatistic]
-  releaseYears(
-    limit: Int
-    sort: [UserStatisticsSort]
-  ): [UserReleaseYearStatistic]
+  releaseYears(limit: Int, sort: [UserStatisticsSort]): [UserReleaseYearStatistic]
   startYears(limit: Int, sort: [UserStatisticsSort]): [UserStartYearStatistic]
   genres(limit: Int, sort: [UserStatisticsSort]): [UserGenreStatistic]
   tags(limit: Int, sort: [UserStatisticsSort]): [UserTagStatistic]

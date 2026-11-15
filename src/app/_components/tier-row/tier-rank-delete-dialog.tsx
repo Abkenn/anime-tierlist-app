@@ -23,9 +23,7 @@ export const TierRankDeleteDialog = ({
         <AlertDialog.Title>Delete {label}?</AlertDialog.Title>
 
         <AlertDialog.Description className="my-3 text-xs text-muted-foreground">
-          {rankCount === 1
-            ? 'Keep at least one tier.'
-            : 'Its posters move to the adjacent tier.'}
+          {rankCount === 1 ? 'Keep at least one tier.' : 'Its posters move to the adjacent tier.'}
         </AlertDialog.Description>
 
         <div className="flex gap-5">
@@ -38,9 +36,7 @@ export const TierRankDeleteDialog = ({
             Delete tier
           </button>
 
-          <AlertDialog.Close className="cursor-pointer underline">
-            Cancel
-          </AlertDialog.Close>
+          <AlertDialog.Close className="cursor-pointer underline">Cancel</AlertDialog.Close>
         </div>
       </AlertDialog.Popup>
     </AlertDialog.Portal>

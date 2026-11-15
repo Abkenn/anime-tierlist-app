@@ -6,9 +6,7 @@ const base = { id: 'custom', label: 'Unknown', rank: 'S' as const };
 it('keeps API metadata, legacy MAL IDs and curated season-one links usable on existing boards', () => {
   expect(knownMalId({ ...base, malId: 52991 })).toBe(52991);
   expect(knownMalId({ ...base, id: 'mal-52991' })).toBe(52991);
-  expect(
-    knownMalId({ ...base, id: 'curated-frieren-beyond-journey-s-end' }),
-  ).toBe(52991);
+  expect(knownMalId({ ...base, id: 'curated-frieren-beyond-journey-s-end' })).toBe(52991);
   expect(knownMalId({ ...base, label: 'Frieren' })).toBe(52991);
   expect(knownMalId({ ...base, label: 'Frieren Season 2' })).toBeUndefined();
   expect(
@@ -29,9 +27,9 @@ it('uses custom text after an unknown or insufficient label without losing a req
     color: '#ffffff' as const,
   };
   expect(malLookupQueries({ ...base, title })).toEqual(['Oshi no Ko']);
-  expect(
-    malLookupQueries({ ...base, label: 'Oshi no Ko Season 2', title }),
-  ).toEqual(['Oshi no Ko Season 2']);
+  expect(malLookupQueries({ ...base, label: 'Oshi no Ko Season 2', title })).toEqual([
+    'Oshi no Ko Season 2',
+  ]);
   expect(malLookupQueries(base)).toEqual([]);
 });
 
@@ -47,16 +45,12 @@ it('selects the requested season, tolerates one small typo and refuses loose or 
     title_english: '[Oshi No Ko] Season 2',
     title_synonyms: ['Oshi no Ko'],
   };
-  expect(selectMalCandidate('Oshi no Ko Season 2', [first, second])).toBe(
-    57635,
-  );
+  expect(selectMalCandidate('Oshi no Ko Season 2', [first, second])).toBe(57635);
   expect(selectMalCandidate('Oshi no Ko', [second, first])).toBe(52034);
   expect(selectMalCandidate('Oshi no Lo', [second, first])).toBe(52034);
   expect(selectMalCandidate('Oshi', [first])).toBeNull();
   expect(selectMalCandidate('Oshi no Ko Season 3', [first, second])).toBeNull();
-  expect(
-    selectMalCandidate('Oshi no Ko', [first, { ...first, mal_id: 999 }]),
-  ).toBeNull();
+  expect(selectMalCandidate('Oshi no Ko', [first, { ...first, mal_id: 999 }])).toBeNull();
   expect(
     selectMalCandidate('Oshi no Ko', [
       {

@@ -36,9 +36,7 @@ export const prepareShare = async (input: unknown) =>
 export const publishShare = async (input: unknown) =>
   handleShare(() => publishTierlist(inputSchema.parse(input)));
 export const copyShareSeed = async (id: unknown) =>
-  handleShare(() =>
-    copyPublicTierlistSeed(z.string().regex(tierlistShareIdPattern).parse(id)),
-  );
+  handleShare(() => copyPublicTierlistSeed(z.string().regex(tierlistShareIdPattern).parse(id)));
 
 export const findExistingPreview = async (input: unknown) =>
   handleShare(() => readExistingTierlistPreview(inputSchema.parse(input)));

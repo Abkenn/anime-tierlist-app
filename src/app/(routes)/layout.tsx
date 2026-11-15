@@ -22,8 +22,7 @@ export const metadata: Metadata = {
   metadataBase: siteUrl,
   applicationName: 'Anime Tierlist',
   title: 'Anime Tierlist',
-  description:
-    'A home for your favorite anime. Create your own anime rankings.',
+  description: 'A home for your favorite anime. Create your own anime rankings.',
 };
 
 const RootLayout = ({ children, preview }: RootLayoutProps) => (
@@ -38,10 +37,7 @@ const RootLayout = ({ children, preview }: RootLayoutProps) => (
           <header className="flex w-full shrink-0 items-center justify-between px-4 py-2 sm:px-8 lg:px-6">
             <Suspense
               fallback={
-                <Link
-                  href="/"
-                  className="text-xl tracking-tight text-foreground"
-                >
+                <Link href="/" className="text-xl tracking-tight text-foreground">
                   Anime Tierlist
                 </Link>
               }

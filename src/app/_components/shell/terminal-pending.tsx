@@ -13,19 +13,10 @@ export const TerminalPending = ({ text }: { text: string }) => {
     if (reducedMotion) {
       return;
     }
-    const timer = window.setInterval(
-      () => setStep((value) => (value + 1) % dots.length),
-      650,
-    );
+    const timer = window.setInterval(() => setStep((value) => (value + 1) % dots.length), 650);
 
     return () => window.clearInterval(timer);
   }, [reducedMotion]);
 
-  return (
-    <TerminalText
-      text={`${text}${reducedMotion ? '...' : dots[step]}`}
-      pending
-      replaceTail
-    />
-  );
+  return <TerminalText text={`${text}${reducedMotion ? '...' : dots[step]}`} pending replaceTail />;
 };

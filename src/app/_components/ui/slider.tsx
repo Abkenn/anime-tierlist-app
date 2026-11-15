@@ -20,10 +20,7 @@ export const Slider = ({
   const [hoveredThumb, setHoveredThumb] = useState<number | null>(null);
   const currentValue = value ?? defaultValue ?? min;
   const values = Array.isArray(currentValue) ? currentValue : [currentValue];
-  const thumbs = Array.from(
-    { length: values.length },
-    (_, index) => `thumb-${index}`,
-  );
+  const thumbs = Array.from({ length: values.length }, (_, index) => `thumb-${index}`);
 
   return (
     <SliderPrimitive.Root
@@ -73,15 +70,12 @@ export const Slider = ({
                     role="tooltip"
                     className={cn(
                       'pointer-events-none absolute bottom-full z-10 mb-2 w-max group-focus-within/thumb:block border border-divider bg-popover px-2 py-1 text-xs text-popover-foreground shadow-sm',
-                      state.dragging || hoveredThumb === index
-                        ? 'block'
-                        : 'hidden',
+                      state.dragging || hoveredThumb === index ? 'block' : 'hidden',
                       {
                         'left-0': state.values[index] === min,
                         'right-0': state.values[index] === max,
                         'left-1/2 -translate-x-1/2':
-                          state.values[index] !== min &&
-                          state.values[index] !== max,
+                          state.values[index] !== min && state.values[index] !== max,
                       },
                     )}
                   >

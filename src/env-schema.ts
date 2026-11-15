@@ -12,9 +12,7 @@ const databaseUrl = optionalUrl.transform((value) => {
   const url = new URL(value);
   if (
     !url.searchParams.has('uselibpqcompat') &&
-    ['prefer', 'require', 'verify-ca'].includes(
-      url.searchParams.get('sslmode') ?? '',
-    )
+    ['prefer', 'require', 'verify-ca'].includes(url.searchParams.get('sslmode') ?? '')
   ) {
     url.searchParams.set('sslmode', 'verify-full');
   }
@@ -22,9 +20,7 @@ const databaseUrl = optionalUrl.transform((value) => {
 });
 
 export const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   VERCEL: optionalText.pipe(z.enum(['0', '1']).optional()),
   SITE_URL: optionalUrl,
   BETTER_AUTH_URL: optionalUrl,

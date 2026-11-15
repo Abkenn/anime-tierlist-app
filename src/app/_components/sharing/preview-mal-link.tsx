@@ -3,21 +3,14 @@
 import { ExternalLink } from 'lucide-react';
 import { type CSSProperties, useState } from 'react';
 import { usePromiseValue } from '@/app/_hooks/use-promise-value';
-import {
-  knownMalId,
-  malLookupQueries,
-  normalizeMalTitle,
-} from '@/app/_lib/mal-anime';
+import { knownMalId, malLookupQueries, normalizeMalTitle } from '@/app/_lib/mal-anime';
 import { getTierItemLabel } from '@/app/_lib/tier-item-label';
 import { resolveMalLink } from '@/app/_services/mal-anime.actions';
 import type { TierItemData } from '@/app/_types/tierlist.types';
 
 type Resolution = { id: number | null };
 const unavailable: Resolution = { id: null };
-const requests = new Map<
-  string,
-  { expires: number; task: Promise<Resolution> }
->();
+const requests = new Map<string, { expires: number; task: Promise<Resolution> }>();
 const lookup = (queries: string[]) => {
   const key = JSON.stringify(queries.map(normalizeMalTitle));
   const cached = requests.get(key);
@@ -43,12 +36,8 @@ export const PreviewMalLink = ({ item, style }: PreviewMalLinkProps) => {
   const id = known ?? resolution?.id;
   const queries = malLookupQueries(item);
   const pending = !known && request && !resolution;
-  const unknownLabel = pending
-    ? 'Looking up MAL link...'
-    : 'Unknown MAL link. Please add label';
-  const label = id
-    ? `Open ${getTierItemLabel(item)} on MyAnimeList`
-    : unknownLabel;
+  const unknownLabel = pending ? 'Looking up MAL link...' : 'Unknown MAL link. Please add label';
+  const label = id ? `Open ${getTierItemLabel(item)} on MyAnimeList` : unknownLabel;
   const load = () => {
     if (!known && queries.length) {
       setRequest(lookup(queries));
@@ -68,9 +57,7 @@ export const PreviewMalLink = ({ item, style }: PreviewMalLinkProps) => {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 hidden items-center justify-center overflow-hidden bg-neutral-800/80 px-2 py-8 text-center text-xs leading-snug font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:flex"
       >
-        <span className="line-clamp-4 wrap-anywhere">
-          {getTierItemLabel(item)}
-        </span>
+        <span className="line-clamp-4 wrap-anywhere">{getTierItemLabel(item)}</span>
       </span>
 
       <a

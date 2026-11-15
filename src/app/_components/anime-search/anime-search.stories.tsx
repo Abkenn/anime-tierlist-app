@@ -58,9 +58,7 @@ export const InlineRankImport: Story = {
     const row = canvas.getByRole('listitem', { name: 'A tier, empty' });
     await userEvent.hover(row);
     within(row).getByRole('button', { name: 'Rename A' }).focus();
-    await userEvent.click(
-      within(row).getByRole('button', { name: 'Add anime to A' }),
-    );
+    await userEvent.click(within(row).getByRole('button', { name: 'Add anime to A' }));
     const page = within(canvasElement.ownerDocument.body);
     const popup = await page.findByRole('dialog', {
       name: 'Add to A',
@@ -84,9 +82,7 @@ export const InlineRankImport: Story = {
     }
 
     await userEvent.click(portraitCard);
-    canvas
-      .getByRole('listitem', { name: /Watching tier/ })
-      .scrollIntoView({ block: 'nearest' });
+    canvas.getByRole('listitem', { name: /Watching tier/ }).scrollIntoView({ block: 'nearest' });
     await canvas.findByRole('button', {
       name: 'Item Portrait TEST in Watching',
     });
@@ -103,9 +99,7 @@ export const ClearSearchImmediately: Story = {
 
       if (value.length < 2) {
         expect(canvas.queryByText('Waiting...')).not.toBeInTheDocument();
-        expect(
-          canvasElement.querySelector('[data-slot="skeleton"]'),
-        ).toBeNull();
+        expect(canvasElement.querySelector('[data-slot="skeleton"]')).toBeNull();
         expect(canvasElement.querySelector('[data-search-result]')).toBeNull();
       }
     }
@@ -127,9 +121,7 @@ export const DirectImageImport: Story = {
     }
 
     await userEvent.click(card);
-    canvas
-      .getByRole('listitem', { name: /Watching tier/ })
-      .scrollIntoView({ block: 'nearest' });
+    canvas.getByRole('listitem', { name: /Watching tier/ }).scrollIntoView({ block: 'nearest' });
     await canvas.findByRole('button', {
       name: 'Item Unknown in Watching',
     });
@@ -244,10 +236,7 @@ export const LargeLibrary: Story = {
   render: (args) => (
     <TierBoardProvider>
       <main className="grid h-[calc(100dvh-2rem)] min-h-0 min-w-0 grid-cols-1 grid-rows-[minmax(0,0.35fr)_minmax(0,0.65fr)] gap-4 lg:grid-cols-[16rem_minmax(0,1fr)] lg:grid-rows-1">
-        <aside
-          aria-label="Anime search"
-          className="relative flex min-h-0 min-w-0 flex-col"
-        >
+        <aside aria-label="Anime search" className="relative flex min-h-0 min-w-0 flex-col">
           <AnimeSearchProvider {...args}>
             <AnimeSearchResults />
           </AnimeSearchProvider>

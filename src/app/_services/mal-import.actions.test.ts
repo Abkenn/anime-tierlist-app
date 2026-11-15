@@ -21,23 +21,19 @@ it('accepts page offsets beyond the former 5,000-entry cap', async () => {
 });
 
 it('recognizes real cross-realm errors with Error.isError while rejecting message-shaped objects', async () => {
-  const error: unknown = runInNewContext(
-    'new Error("MAL profile is private.")',
-  );
+  const error: unknown = runInNewContext('new Error("MAL profile is private.")');
   expect(error instanceof Error).toBe(false);
   provider.list.mockRejectedValueOnce(error);
-  expect(
-    await loadMalListPage({ username: 'Abkenn', offset: 0 }),
-  ).toMatchObject({ ok: false, message: 'MAL profile is private.' });
+  expect(await loadMalListPage({ username: 'Abkenn', offset: 0 })).toMatchObject({
+    ok: false,
+    message: 'MAL profile is private.',
+  });
   provider.list.mockRejectedValueOnce({
     message: 'MAL pretend error with private details',
   });
-  expect(
-    await loadMalListPage({ username: 'Abkenn', offset: 0 }),
-  ).toMatchObject({
+  expect(await loadMalListPage({ username: 'Abkenn', offset: 0 })).toMatchObject({
     ok: false,
-    message:
-      'Unable to load MAL data. The provider may be busy. Try again shortly.',
+    message: 'Unable to load MAL data. The provider may be busy. Try again shortly.',
   });
 });
 
@@ -57,7 +53,7 @@ it('batches season lookups with at most four simultaneous provider calls', async
     value: Array.from({ length: 8 }, (_, index) => ({ id: index + 1 })),
   });
   expect(maximum).toBe(4);
-  expect(
-    await loadMalAnimeBatch(Array.from({ length: 9 }, (_, index) => index + 1)),
-  ).toMatchObject({ ok: false });
+  expect(await loadMalAnimeBatch(Array.from({ length: 9 }, (_, index) => index + 1))).toMatchObject(
+    { ok: false },
+  );
 });

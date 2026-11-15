@@ -44,9 +44,7 @@ export const TierlistConflict = ({
           type="button"
           disabled={busy}
           title={
-            localUpdatedAt === undefined
-              ? undefined
-              : new Date(localUpdatedAt).toLocaleString()
+            localUpdatedAt === undefined ? undefined : new Date(localUpdatedAt).toLocaleString()
           }
           onClick={() => {
             void onKeepDevice();
@@ -54,17 +52,14 @@ export const TierlistConflict = ({
           className="cursor-pointer underline underline-offset-4 disabled:opacity-50"
         >
           This device · {localItemCount} items
-          {localUpdatedAt !== undefined &&
-            ` (${formatRelativeTime(localUpdatedAt, now)})`}
+          {localUpdatedAt !== undefined && ` (${formatRelativeTime(localUpdatedAt, now)})`}
         </button>
 
         <button
           type="button"
           disabled={busy}
           title={
-            onlineUpdatedAt === undefined
-              ? undefined
-              : new Date(onlineUpdatedAt).toLocaleString()
+            onlineUpdatedAt === undefined ? undefined : new Date(onlineUpdatedAt).toLocaleString()
           }
           onClick={() => {
             void onAcceptOnline();
@@ -72,8 +67,7 @@ export const TierlistConflict = ({
           className="cursor-pointer underline underline-offset-4 disabled:opacity-50"
         >
           Saved online · {onlineItemCount} items
-          {onlineUpdatedAt !== undefined &&
-            ` (${formatRelativeTime(onlineUpdatedAt, now)})`}
+          {onlineUpdatedAt !== undefined && ` (${formatRelativeTime(onlineUpdatedAt, now)})`}
         </button>
       </div>
 

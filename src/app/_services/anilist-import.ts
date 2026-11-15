@@ -19,15 +19,10 @@ const envelope = <T extends z.ZodType>(data: T) =>
     errors: z.array(z.object({ message: z.string() })).optional(),
   });
 
-const readData = <T extends z.ZodType>(
-  schema: T,
-  response: unknown,
-): z.infer<T> => {
+const readData = <T extends z.ZodType>(schema: T, response: unknown): z.infer<T> => {
   const result = envelope(schema).parse(response);
   if (result.errors?.length || !result.data) {
-    throw new Error(
-      'AniList profile is unavailable or private. Check the username and try again.',
-    );
+    throw new Error('AniList profile is unavailable or private. Check the username and try again.');
   }
   return result.data;
 };
@@ -44,9 +39,7 @@ export const readAnilistPage = async (username: string, page: number) => {
   );
   return {
     entries: data.Page.mediaList.map(normalizeAnilistEntry),
-    catalog: data.Page.mediaList.map((entry) =>
-      normalizeAnilistAnime(entry.media),
-    ),
+    catalog: data.Page.mediaList.map((entry) => normalizeAnilistAnime(entry.media)),
     hasNext: data.Page.pageInfo.hasNextPage,
   };
 };

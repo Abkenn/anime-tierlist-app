@@ -1,9 +1,6 @@
 import type { AnimeImportCheckpoint } from '@/app/_lib/anime-import-checkpoint';
 import { isError } from '@/app/_lib/is-error';
-import {
-  readAnimeImportCheckpoint,
-  saveAnimeImportCheckpoint,
-} from './anime-import-checkpoint';
+import { readAnimeImportCheckpoint, saveAnimeImportCheckpoint } from './anime-import-checkpoint';
 import { pollAnimeImportQueue } from './anime-import-queue.actions';
 import { generateAnimeTierlist } from './generate-anime-tierlist';
 import { waitForImport } from './import-wait';
@@ -22,8 +19,10 @@ export const runAnimeImport = async ({
 }: RunImportInput) => {
   const provider = input.provider ?? 'mal';
   const label = provider === 'mal' ? 'MAL' : 'AniList';
-  let checkpoint: AnimeImportCheckpoint | undefined =
-    await readAnimeImportCheckpoint(seed, provider);
+  let checkpoint: AnimeImportCheckpoint | undefined = await readAnimeImportCheckpoint(
+    seed,
+    provider,
+  );
   let heartbeat = 0;
   let released = false;
   let outcome: 'generated' | 'failed' = 'failed';
@@ -95,9 +94,7 @@ export const runAnimeImport = async ({
         if (attempt >= 2 || !transient) {
           throw error;
         }
-        const seconds = /rate limit|AniList is busy/iu.test(error.message)
-          ? 60
-          : (attempt + 1) * 3;
+        const seconds = /rate limit|AniList is busy/iu.test(error.message) ? 60 : (attempt + 1) * 3;
         input.onProgress({
           phase: 'Retrying import',
           percent: null,

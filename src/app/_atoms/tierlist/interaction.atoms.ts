@@ -5,20 +5,17 @@ export const editingItemIdAtom = atom<string | null>(null);
 
 type EditingChange = { id: string; editing: boolean };
 
-export const setEditingItemAtom = atom(
-  null,
-  (get, set, { id, editing }: EditingChange) => {
-    if (editing) {
-      set(editingItemIdAtom, id);
+export const setEditingItemAtom = atom(null, (get, set, { id, editing }: EditingChange) => {
+  if (editing) {
+    set(editingItemIdAtom, id);
 
-      return;
-    }
+    return;
+  }
 
-    if (get(editingItemIdAtom) === id) {
-      set(editingItemIdAtom, null);
-    }
-  },
-);
+  if (get(editingItemIdAtom) === id) {
+    set(editingItemIdAtom, null);
+  }
+});
 
 export const clearEditingItemAtom = atom(null, (_get, set) => {
   set(editingItemIdAtom, null);

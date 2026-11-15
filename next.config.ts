@@ -43,8 +43,7 @@ const nextConfig: NextConfig = {
         {
           key: 'Content-Security-Policy',
           // The worker fetches external posters, including user-supplied URLs.
-          value:
-            "default-src 'self'; script-src 'self'; connect-src 'self' https: http:",
+          value: "default-src 'self'; script-src 'self'; connect-src 'self' https: http:",
         },
       ],
     },

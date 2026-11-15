@@ -1,8 +1,4 @@
-import {
-  type ExportPoster,
-  type ExportRow,
-  exportPosterSize,
-} from './tierlist-export-layout';
+import { type ExportPoster, type ExportRow, exportPosterSize } from './tierlist-export-layout';
 
 export type PreviewSlot = { rank: string; index: number };
 export type PreviewSpriteBox = {

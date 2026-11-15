@@ -27,16 +27,8 @@ export const dropSearchItemAtom = atom(null, (get, set) => {
   const slot = get(searchDropSlotAtom);
   const items = get(tierItemsAtom);
 
-  if (
-    item &&
-    slot &&
-    slot.id === item.id &&
-    !items.some((existing) => existing.id === item.id)
-  ) {
-    set(
-      tierItemsAtom,
-      projectTierItems([...items, item], slot, get(availableRanksAtom)),
-    );
+  if (item && slot && slot.id === item.id && !items.some((existing) => existing.id === item.id)) {
+    set(tierItemsAtom, projectTierItems([...items, item], slot, get(availableRanksAtom)));
   }
 });
 

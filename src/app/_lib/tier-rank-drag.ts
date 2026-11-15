@@ -3,10 +3,7 @@ import type { TierRank } from '@/app/_types/tierlist.types';
 
 export type RankDragRow = { rank: TierRank; top: number; height: number };
 
-export const getRankOffset = (
-  offsets: Map<TierRank, MotionValue<number>>,
-  rank: TierRank,
-) => {
+export const getRankOffset = (offsets: Map<TierRank, MotionValue<number>>, rank: TierRank) => {
   let offset = offsets.get(rank);
   if (!offset) {
     offset = motionValue(0);
@@ -16,11 +13,7 @@ export const getRankOffset = (
   return offset;
 };
 
-export const projectRankDrag = (
-  rows: RankDragRow[],
-  rank: TierRank,
-  delta: number,
-) => {
+export const projectRankDrag = (rows: RankDragRow[], rank: TierRank, delta: number) => {
   const source = rows.find((row) => row.rank === rank);
   if (!source) {
     return {
@@ -33,9 +26,7 @@ export const projectRankDrag = (
   const others = rows.filter((row) => row.rank !== rank);
   const down = rows
     .slice(sourceIndex + 1)
-    .filter(
-      (row) => source.top + source.height + delta > row.top + row.height / 2,
-    ).length;
+    .filter((row) => source.top + source.height + delta > row.top + row.height / 2).length;
   const up = rows
     .slice(0, sourceIndex)
     .filter((row) => source.top + delta < row.top + row.height / 2).length;

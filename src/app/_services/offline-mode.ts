@@ -4,9 +4,7 @@ export const OFFLINE_RECOVERED_EVENT = 'tierlist:connection-restored';
 export const OFFLINE_RECONNECT_EVENT = 'tierlist:reconnect';
 export const OFFLINE_POLL_INTERVAL_MS = 30_000;
 
-export const getOfflineMode = (
-  params: Pick<URLSearchParams, 'get' | 'has'>,
-): OfflineMode => {
+export const getOfflineMode = (params: Pick<URLSearchParams, 'get' | 'has'>): OfflineMode => {
   if (!params.has('offline')) {
     return null;
   }

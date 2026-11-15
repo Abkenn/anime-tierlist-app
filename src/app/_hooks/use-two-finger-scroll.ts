@@ -35,9 +35,7 @@ export const useTwoFingerScroll = () => {
         return;
       }
 
-      const viewport = root.querySelector<HTMLElement>(
-        '[data-slot="scroll-area-viewport"]',
-      );
+      const viewport = root.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]');
       if (!viewport) {
         return;
       }
@@ -45,9 +43,7 @@ export const useTwoFingerScroll = () => {
       // End the first finger's drag before switching to a scrolling gesture.
       const targets = new Set(
         Array.from(event.touches, (touch) =>
-          touch.target instanceof Element
-            ? (touch.target.closest('button') ?? touch.target)
-            : null,
+          touch.target instanceof Element ? (touch.target.closest('button') ?? touch.target) : null,
         ),
       );
       targets.forEach((target) => {

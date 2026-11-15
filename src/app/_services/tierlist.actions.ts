@@ -2,11 +2,7 @@
 
 import { z } from 'zod';
 import { safely } from '@/app/_lib/safely';
-import {
-  type SyncResult,
-  tierlistDocumentSchema,
-  userSeedSchema,
-} from '@/app/_lib/tierlist-sync';
+import { type SyncResult, tierlistDocumentSchema, userSeedSchema } from '@/app/_lib/tierlist-sync';
 import {
   connectAccountTierlist,
   connectSeedTierlist,
@@ -16,9 +12,7 @@ import {
 } from './tierlist';
 import { endTierlistSession, TierlistAccessError } from './tierlist-identity';
 
-const handleTierlistError = (
-  error: unknown,
-): Extract<SyncResult<never>, { ok: false }> => {
+const handleTierlistError = (error: unknown): Extract<SyncResult<never>, { ok: false }> => {
   if (error instanceof z.ZodError) {
     return {
       ok: false,
@@ -32,17 +26,13 @@ const handleTierlistError = (
   }
 
   console.error('Tierlist operation failed', {
-    code:
-      typeof error === 'object' && error && 'code' in error
-        ? error.code
-        : 'unknown',
+    code: typeof error === 'object' && error && 'code' in error ? error.code : 'unknown',
   });
 
   return {
     ok: false,
     code: 'unavailable',
-    message:
-      'Online saving is unavailable. Your local tierlist is kept on this device.',
+    message: 'Online saving is unavailable. Your local tierlist is kept on this device.',
   };
 };
 

@@ -9,15 +9,9 @@ import { z } from 'zod';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { createUserSeed } from '@/app/_lib/local-tierlist';
-import {
-  type RemoteTierlist,
-  tierlistDocumentSchema,
-} from '@/app/_lib/tierlist-sync';
+import { type RemoteTierlist, tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { loadLocalTierlist } from '@/app/_services/local-tierlist';
-import {
-  connectTierlist,
-  syncTierlist,
-} from '@/app/_services/tierlist.actions';
+import { connectTierlist, syncTierlist } from '@/app/_services/tierlist.actions';
 import { useLocalTierlist } from './use-local-tierlist';
 import { useTierlistSync } from './use-tierlist-sync';
 
@@ -29,26 +23,22 @@ vi.mock('@/app/_services/tierlist.actions', () => ({
 it('serializes online saves and reads the newest shared draft before another tab uploads', async () => {
   await clear(createDatabaseStore('anime-tierlist', 'drafts'));
   let queue = Promise.resolve();
-  const request = vi.fn(
-    async (_name: string, operation: () => Promise<void>) => {
-      const previous = queue;
-      const { promise, resolve } = Promise.withResolvers<void>();
-      queue = promise;
-      await previous;
+  const request = vi.fn(async (_name: string, operation: () => Promise<void>) => {
+    const previous = queue;
+    const { promise, resolve } = Promise.withResolvers<void>();
+    queue = promise;
+    await previous;
 
-      try {
-        await operation();
-      } finally {
-        resolve();
-      }
-    },
-  );
+    try {
+      await operation();
+    } finally {
+      resolve();
+    }
+  });
   vi.stubGlobal('navigator', { onLine: true, locks: { request } });
   let remote: RemoteTierlist | undefined;
   vi.mocked(connectTierlist).mockImplementation(async (value) => {
-    const input = z
-      .object({ document: tierlistDocumentSchema.optional() })
-      .parse(value);
+    const input = z.object({ document: tierlistDocumentSchema.optional() }).parse(value);
     if (!remote && input.document) {
       remote = { ownerId: 'owner', revision: 0, document: input.document };
     }
@@ -60,9 +50,7 @@ it('serializes online saves and reads the newest shared draft before another tab
     return { ok: true, value: structuredClone(remote) };
   });
   vi.mocked(syncTierlist).mockImplementation(async (value) => {
-    const input = z
-      .object({ revision: z.number(), document: tierlistDocumentSchema })
-      .parse(value);
+    const input = z.object({ revision: z.number(), document: tierlistDocumentSchema }).parse(value);
     if (!remote) {
       throw new Error('Missing test owner');
     }
@@ -88,9 +76,7 @@ it('serializes online saves and reads the newest shared draft before another tab
         return { storage, sync };
       },
       {
-        wrapper: ({ children }: PropsWithChildren) => (
-          <Provider store={store}>{children}</Provider>
-        ),
+        wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
       },
     );
 
@@ -108,9 +94,7 @@ it('serializes online saves and reads the newest shared draft before another tab
     );
     act(() => {
       tabs[0].store.set(imageModeAtom, 'cover');
-      tabs[1].store.set(tierItemsAtom, [
-        { id: 'shared', label: 'Shared', rank: 'Watching' },
-      ]);
+      tabs[1].store.set(tierItemsAtom, [{ id: 'shared', label: 'Shared', rank: 'Watching' }]);
     });
     await waitFor(
       () => {
@@ -118,9 +102,7 @@ it('serializes online saves and reads the newest shared draft before another tab
         expect(remote?.document.items[0]?.label).toBe('Shared');
         tabs.forEach(({ hook }) => {
           expect(hook.result.current.sync.status).toBe('saved');
-          expect(
-            hook.result.current.storage.snapshot?.sync?.syncedLocalRevision,
-          ).toBe(2);
+          expect(hook.result.current.storage.snapshot?.sync?.syncedLocalRevision).toBe(2);
         });
       },
       { timeout: 5000 },
@@ -218,12 +200,8 @@ it.each(['device', 'online'] as const)(
       await waitFor(() => {
         tabs.forEach(({ hook, store }) => {
           expect(hook.result.current.sync).not.toHaveProperty('conflict');
-          expect(store.get(imageModeAtom)).toBe(
-            choice === 'device' ? 'cover' : 'contain',
-          );
-          expect(store.get(tierItemsAtom)).toHaveLength(
-            choice === 'device' ? 0 : 1,
-          );
+          expect(store.get(imageModeAtom)).toBe(choice === 'device' ? 'cover' : 'contain');
+          expect(store.get(tierItemsAtom)).toHaveLength(choice === 'device' ? 0 : 1);
         });
       });
       upload.resolve();
@@ -235,9 +213,7 @@ it.each(['device', 'online'] as const)(
         },
         { timeout: 5000 },
       );
-      expect(remote.document.imageMode).toBe(
-        choice === 'device' ? 'cover' : 'contain',
-      );
+      expect(remote.document.imageMode).toBe(choice === 'device' ? 'cover' : 'contain');
     } finally {
       upload.resolve();
       tabs.forEach(({ hook }) => {

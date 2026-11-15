@@ -16,16 +16,10 @@ export const GET = (request: Request) => {
       target.username ||
       target.password
     ) {
-      return Response.json(
-        { error: 'No preview is available for this URL.' },
-        { status: 404 },
-      );
+      return Response.json({ error: 'No preview is available for this URL.' }, { status: 404 });
     }
   } catch {
-    return Response.json(
-      { error: 'A valid homepage URL is required.' },
-      { status: 400 },
-    );
+    return Response.json({ error: 'A valid homepage URL is required.' }, { status: 400 });
   }
 
   return Response.json(

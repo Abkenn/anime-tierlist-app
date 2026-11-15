@@ -16,8 +16,7 @@ export const rankTextColor = (background: HexColor): HexColor => {
   const dark = '#171717';
   const value = luminance(background);
   const contrast = (color: HexColor) =>
-    (Math.max(value, luminance(color)) + 0.05) /
-    (Math.min(value, luminance(color)) + 0.05);
+    (Math.max(value, luminance(color)) + 0.05) / (Math.min(value, luminance(color)) + 0.05);
 
   return contrast(light) > contrast(dark) ? light : dark;
 };

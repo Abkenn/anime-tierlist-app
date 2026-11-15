@@ -20,9 +20,7 @@ export const useMobileBoardScroll = ({
 
   const getScroll = useCallback(() => {
     const viewport = viewportRef.current;
-    const board = boardRef.current?.querySelector<HTMLElement>(
-      '[data-tier-viewport]',
-    );
+    const board = boardRef.current?.querySelector<HTMLElement>('[data-tier-viewport]');
     if (!viewport || !board) {
       return;
     }
@@ -91,8 +89,7 @@ export const useMobileBoardScroll = ({
 
       const touch = event.touches[0];
       const delta = gesture.y - touch.clientY;
-      gesture.vertical ??=
-        Math.abs(delta) > Math.abs(gesture.x - touch.clientX);
+      gesture.vertical ??= Math.abs(delta) > Math.abs(gesture.x - touch.clientX);
       if (!gesture.vertical || !event.cancelable) {
         return;
       }
@@ -106,8 +103,7 @@ export const useMobileBoardScroll = ({
       event.preventDefault();
       scroll.moveTo(Math.min(scroll.max, scroll.position + delta));
       gesture.velocity =
-        (0.7 * delta) / Math.max(1, event.timeStamp - gesture.time) +
-        0.3 * gesture.velocity;
+        (0.7 * delta) / Math.max(1, event.timeStamp - gesture.time) + 0.3 * gesture.velocity;
       gesture.y = touch.clientY;
       gesture.time = event.timeStamp;
     };
@@ -115,20 +111,12 @@ export const useMobileBoardScroll = ({
       const finished = gesture;
       gesture = undefined;
       const scroll = getScroll();
-      if (
-        !finished?.vertical ||
-        !scroll ||
-        reducedMotion ||
-        event.timeStamp - finished.time > 90
-      ) {
+      if (!finished?.vertical || !scroll || reducedMotion || event.timeStamp - finished.time > 90) {
         return;
       }
 
       const velocity = Math.max(-3, Math.min(3, finished.velocity));
-      const target = Math.max(
-        0,
-        Math.min(scroll.max, scroll.position + velocity * 160),
-      );
+      const target = Math.max(0, Math.min(scroll.max, scroll.position + velocity * 160));
       animation.current = animate(scroll.position, target, {
         duration: 0.24,
         ease: 'easeOut',

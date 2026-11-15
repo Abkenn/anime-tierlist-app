@@ -17,17 +17,14 @@ afterEach(() => {
 it.each([
   ['', 'http://localhost:3000'],
   ['1', 'https://anime-tierlist.com'],
-])(
-  'uses the right production auth origin with VERCEL=%s',
-  async (vercel, url) => {
-    vi.resetModules();
-    vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('VERCEL', vercel);
-    vi.stubEnv('BETTER_AUTH_URL', undefined);
-    vi.stubEnv('SITE_URL', undefined);
+])('uses the right production auth origin with VERCEL=%s', async (vercel, url) => {
+  vi.resetModules();
+  vi.stubEnv('NODE_ENV', 'production');
+  vi.stubEnv('VERCEL', vercel);
+  vi.stubEnv('BETTER_AUTH_URL', undefined);
+  vi.stubEnv('SITE_URL', undefined);
 
-    await import('./auth');
+  await import('./auth');
 
-    expect(mocks.configure.mock.calls[0]?.[0].baseURL).toBe(url);
-  },
-);
+  expect(mocks.configure.mock.calls[0]?.[0].baseURL).toBe(url);
+});

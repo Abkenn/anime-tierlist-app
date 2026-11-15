@@ -10,8 +10,8 @@ describe('item title input', () => {
   });
 
   it('preserves Unicode and manual lines while limiting titles to four lines', () => {
-    expect(
-      limitTitleLines('推しの子\r\nHeavenly\nЗаглавие\r✨ TEST\nfifth'),
-    ).toBe('推しの子\nHeavenly\nЗаглавие\n✨ TEST');
+    expect(limitTitleLines('推しの子\r\nHeavenly\nЗаглавие\r✨ TEST\nfifth')).toBe(
+      '推しの子\nHeavenly\nЗаглавие\n✨ TEST',
+    );
   });
 });

@@ -51,17 +51,14 @@ export const generateAnimeTierlist = async ({
 }: GenerateAnimeInput) => {
   const adapter = animeImportProviders[provider];
   const name = adapter.parseUsername(username);
-  const saved =
-    histories?.[provider] ?? (provider === 'mal' ? history : undefined);
-  const previous =
-    saved?.username.toLowerCase() === name.toLowerCase() ? saved : undefined;
+  const saved = histories?.[provider] ?? (provider === 'mal' ? history : undefined);
+  const previous = saved?.username.toLowerCase() === name.toLowerCase() ? saved : undefined;
   const checkpoint =
     savedCheckpoint?.provider === provider &&
     savedCheckpoint.username.toLowerCase() === name.toLowerCase()
       ? savedCheckpoint
       : undefined;
-  const resuming =
-    checkpoint && !checkpoint.complete && checkpoint.scope === 'statuses-v2';
+  const resuming = checkpoint && !checkpoint.complete && checkpoint.scope === 'statuses-v2';
   const request = async <T>(operation: () => Promise<T>) => {
     signal.throwIfAborted();
     await beforeRequest?.();
@@ -105,9 +102,7 @@ export const generateAnimeTierlist = async ({
     });
     const fresh = page.entries.filter((entry) => !seen.has(entry.id));
     if (page.entries.length && !fresh.length) {
-      throw new Error(
-        `${adapter.label} returned a repeated list page. Try again later.`,
-      );
+      throw new Error(`${adapter.label} returned a repeated list page. Try again later.`);
     }
     fresh.forEach((entry) => {
       seen.add(entry.id);
@@ -128,9 +123,7 @@ export const generateAnimeTierlist = async ({
   }
   const eligible = entries.filter(eligibleImportEntry);
   if (!eligible.length) {
-    throw new Error(
-      'No completed, watching or dropped TV or episodic ONA series were found.',
-    );
+    throw new Error('No completed, watching or dropped TV or episodic ONA series were found.');
   }
   const needed = new Set(eligible.map((entry) => entry.id));
   const resolved = new Set<number>();
@@ -142,9 +135,7 @@ export const generateAnimeTierlist = async ({
     if (missing.length) {
       const batch = await request(() => adapter.readAnime(missing));
       if (missing.some((id) => !batch.some((anime) => anime.id === id))) {
-        throw new Error(
-          `${adapter.label} season metadata is incomplete. Try again later.`,
-        );
+        throw new Error(`${adapter.label} season metadata is incomplete. Try again later.`);
       }
       batch.forEach((anime) => {
         catalog.set(anime.id, anime);
@@ -165,10 +156,7 @@ export const generateAnimeTierlist = async ({
     seasonPercent =
       resolved.size === needed.size
         ? 100
-        : Math.max(
-            seasonPercent,
-            Math.min(99, Math.round((resolved.size / needed.size) * 100)),
-          );
+        : Math.max(seasonPercent, Math.min(99, Math.round((resolved.size / needed.size) * 100)));
     onProgress({
       phase: 'Checking seasons',
       percent: seasonPercent,
@@ -176,9 +164,7 @@ export const generateAnimeTierlist = async ({
   }
   const series = groupImportSeries(entries, [...catalog.values()]);
   onProgress({ phase: 'Finding posters', percent: 0 });
-  const missingPosters = series.filter(
-    (entry) => !Object.hasOwn(posters, String(entry.id)),
-  );
+  const missingPosters = series.filter((entry) => !Object.hasOwn(posters, String(entry.id)));
   for (let offset = 0; offset < missingPosters.length; offset += 8) {
     const batch = missingPosters.slice(offset, offset + 8);
     const found = await request(() => adapter.readPosters(batch));
@@ -189,8 +175,7 @@ export const generateAnimeTierlist = async ({
     onProgress({
       phase: 'Finding posters',
       percent: Math.round(
-        (Math.min(offset + 8, missingPosters.length) / missingPosters.length) *
-          100,
+        (Math.min(offset + 8, missingPosters.length) / missingPosters.length) * 100,
       ),
     });
   }
@@ -244,9 +229,7 @@ export const generateAnimeTierlist = async ({
       });
     }
   };
-  await Promise.all(
-    Array.from({ length: Math.min(6, document.items.length) }, loadPosters),
-  );
+  await Promise.all(Array.from({ length: Math.min(6, document.items.length) }, loadPosters));
   signal.throwIfAborted();
 
   await save(true);

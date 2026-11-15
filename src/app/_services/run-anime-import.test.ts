@@ -108,9 +108,7 @@ it('cancels while queued without starting provider calls and releases the ticket
   expect(vi.getTimerCount()).toBe(0);
 });
 it('does not retry a permanent profile error', async () => {
-  mocks.generate.mockRejectedValue(
-    new Error('MAL could not find that public list.'),
-  );
+  mocks.generate.mockRejectedValue(new Error('MAL could not find that public list.'));
   await expect(runAnimeImport(input())).rejects.toThrow('could not find');
   expect(mocks.generate).toHaveBeenCalledOnce();
   expect(mocks.queue).toHaveBeenLastCalledWith(

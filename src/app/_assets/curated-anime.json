@@ -2,13 +2,7 @@
   {
     "id": "curated-86",
     "title": "86 Eighty-Six",
-    "keywords": [
-      "86 Eighty-Six",
-      "86 (Eighty-Six)",
-      "Eighty-Six",
-      "Eighty Six",
-      "86 -Eighty Six-"
-    ],
+    "keywords": ["86 Eighty-Six", "86 (Eighty-Six)", "Eighty-Six", "Eighty Six", "86 -Eighty Six-"],
     "imageUrl": "/curated/86.jpg",
     "image": {
       "src": "/curated/86.jpg",
@@ -110,12 +104,7 @@
   {
     "id": "curated-bocchi-the-rock",
     "title": "BOCCHI THE ROCK!",
-    "keywords": [
-      "BOCCHI THE ROCK!",
-      "Bocchi the Rock!",
-      "Bocchi",
-      "Bocchi the Rock"
-    ],
+    "keywords": ["BOCCHI THE ROCK!", "Bocchi the Rock!", "Bocchi", "Bocchi the Rock"],
     "imageUrl": "/curated/bocchi-the-rock.jpg",
     "image": {
       "src": "/curated/bocchi-the-rock.jpg",
@@ -381,11 +370,7 @@
   {
     "id": "curated-hell-s-paradise",
     "title": "Hell's Paradise",
-    "keywords": [
-      "Hell's Paradise",
-      "Jigokuraku",
-      "Hell's Paradise: Jigokuraku"
-    ],
+    "keywords": ["Hell's Paradise", "Jigokuraku", "Hell's Paradise: Jigokuraku"],
     "imageUrl": "/curated/hell-s-paradise.jpg",
     "image": {
       "src": "/curated/hell-s-paradise.jpg",
@@ -433,11 +418,7 @@
   {
     "id": "curated-kowloon-generic-romance",
     "title": "Kowloon Generic Romance",
-    "keywords": [
-      "Kowloon Generic Romance",
-      "Kowloon Romance",
-      "Kuuroon Generic Romance"
-    ],
+    "keywords": ["Kowloon Generic Romance", "Kowloon Romance", "Kuuroon Generic Romance"],
     "imageUrl": "/curated/kowloon-generic-romance.jpg",
     "image": {
       "src": "/curated/kowloon-generic-romance.jpg",
@@ -540,13 +521,7 @@
   {
     "id": "curated-neon-genesis-evangelion",
     "title": "Neon Genesis Evangelion",
-    "keywords": [
-      "Neon Genesis Evangelion",
-      "Shinseiki Evangelion",
-      "Evangelion",
-      "NGE",
-      "Eva"
-    ],
+    "keywords": ["Neon Genesis Evangelion", "Shinseiki Evangelion", "Evangelion", "NGE", "Eva"],
     "imageUrl": "/curated/neon-genesis-evangelion.jpg",
     "image": {
       "src": "/curated/neon-genesis-evangelion.jpg",
@@ -792,12 +767,7 @@
   {
     "id": "curated-takopi-s-original-sin",
     "title": "Takopi's Original Sin",
-    "keywords": [
-      "Takopi's Original Sin",
-      "Takopii no Genzai",
-      "Takopi",
-      "Takopi no Genzai"
-    ],
+    "keywords": ["Takopi's Original Sin", "Takopii no Genzai", "Takopi", "Takopi no Genzai"],
     "imageUrl": "/curated/takopi-s-original-sin.jpg",
     "image": {
       "src": "/curated/takopi-s-original-sin.jpg",
@@ -858,11 +828,7 @@
   {
     "id": "curated-vivy-fluorite-eye-s-song",
     "title": "Vivy -Fluorite Eye's Song-",
-    "keywords": [
-      "Vivy -Fluorite Eye's Song-",
-      "Vivy: Fluorite Eye's Song",
-      "Vivy"
-    ],
+    "keywords": ["Vivy -Fluorite Eye's Song-", "Vivy: Fluorite Eye's Song", "Vivy"],
     "imageUrl": "/curated/vivy-fluorite-eye-s-song.jpg",
     "image": {
       "src": "/curated/vivy-fluorite-eye-s-song.jpg",

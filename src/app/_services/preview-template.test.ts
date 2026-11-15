@@ -49,9 +49,7 @@ const active = {
 beforeEach(() => vi.resetAllMocks());
 
 it('adopts anonymous templates without changing an account', async () => {
-  expect(await adoptPreviewTemplate({ id: 'share', document, local })).toBe(
-    '/?profile=local',
-  );
+  expect(await adoptPreviewTemplate({ id: 'share', document, local })).toBe('/?profile=local');
   expect(mocks.adopt).toHaveBeenCalledWith(document, local);
   expect(mocks.replace).not.toHaveBeenCalled();
 });

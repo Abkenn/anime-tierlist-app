@@ -23,9 +23,7 @@ describe('tier item labels', () => {
 
   it('finds labels without case or Unicode width differences', () => {
     expect(matchesTierItemLabel(item, ' YOUR LIE ')).toBe(true);
-    expect(matchesTierItemLabel({ ...item, label: 'ＴＥＳＴ' }, 'test')).toBe(
-      true,
-    );
+    expect(matchesTierItemLabel({ ...item, label: 'ＴＥＳＴ' }, 'test')).toBe(true);
     expect(matchesTierItemLabel(item, 'Naruto')).toBe(false);
   });
 });

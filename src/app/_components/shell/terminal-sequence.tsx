@@ -12,15 +12,9 @@ type SequenceClock = {
   startedAt?: number;
 };
 
-export const TerminalSequenceContext = createContext<SequenceClock | null>(
-  null,
-);
+export const TerminalSequenceContext = createContext<SequenceClock | null>(null);
 
-export const TerminalSequence = ({
-  lines,
-  identity,
-  children,
-}: TerminalSequenceProps) => {
+export const TerminalSequence = ({ lines, identity, children }: TerminalSequenceProps) => {
   const [clock, setClock] = useState<SequenceClock>(() => ({
     lines,
     identity,
@@ -30,7 +24,5 @@ export const TerminalSequence = ({
     setClock({ lines, identity });
   }
 
-  return (
-    <TerminalSequenceContext value={clock}>{children}</TerminalSequenceContext>
-  );
+  return <TerminalSequenceContext value={clock}>{children}</TerminalSequenceContext>;
 };

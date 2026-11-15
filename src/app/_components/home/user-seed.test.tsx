@@ -1,11 +1,5 @@
 import { Popover } from '@base-ui/react/popover';
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { type ComponentProps, useState } from 'react';
 import { expect, it, vi } from 'vitest';
 import type { generateAnimeTierlist } from '@/app/_services/generate-anime-tierlist';
@@ -68,13 +62,7 @@ const Fixture = ({
 };
 
 it('defers the unopened save panel and retains it after first use', async () => {
-  render(
-    <Fixture
-      initialOpen={false}
-      onImport={async () => true}
-      onBackup={async () => ''}
-    />,
-  );
+  render(<Fixture initialOpen={false} onImport={async () => true} onBackup={async () => ''} />);
   expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
 
   fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
@@ -97,25 +85,20 @@ it('offers both local choices and confirms before adopting an imported copy', as
     />,
   );
 
-  fireEvent.click(
-    await screen.findByRole('button', { name: 'Replace local with this' }),
-  );
+  fireEvent.click(await screen.findByRole('button', { name: 'Replace local with this' }));
   expect(
     screen.getByRole('button', { name: 'Go back to local', hidden: true }),
   ).toBeInTheDocument();
   expect(onReplaceDevice).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(onReplaceDevice).not.toHaveBeenCalled();
-  fireEvent.click(
-    screen.getByRole('button', { name: 'Replace local with this' }),
-  );
+  fireEvent.click(screen.getByRole('button', { name: 'Replace local with this' }));
   fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
   await waitFor(() => expect(onReplaceDevice).toHaveBeenCalledOnce());
 });
 
 it('keeps MAL generation, username and results alive while switching tabs and closing the popover', async () => {
-  const pending =
-    Promise.withResolvers<Awaited<ReturnType<typeof generateAnimeTierlist>>>();
+  const pending = Promise.withResolvers<Awaited<ReturnType<typeof generateAnimeTierlist>>>();
   let signal: AbortSignal | undefined;
   malGeneration.mockImplementationOnce(
     async (input: Parameters<typeof generateAnimeTierlist>[0]) => {
@@ -147,19 +130,20 @@ it('keeps MAL generation, username and results alive while switching tabs and cl
     />,
   );
   fireEvent.click(screen.getByRole('tab', { name: 'MAL/AniList' }));
-  fireEvent.change(
-    await screen.findByRole('textbox', { name: 'Public MAL username' }),
-    { target: { value: 'Abkenn' } },
-  );
+  fireEvent.change(await screen.findByRole('textbox', { name: 'Public MAL username' }), {
+    target: { value: 'Abkenn' },
+  });
   fireEvent.click(screen.getByRole('button', { name: 'Generate tierlist' }));
-  expect(
-    await screen.findByRole('progressbar', { name: 'Checking seasons' }),
-  ).toHaveAttribute('aria-valuenow', '42');
+  expect(await screen.findByRole('progressbar', { name: 'Checking seasons' })).toHaveAttribute(
+    'aria-valuenow',
+    '42',
+  );
   fireEvent.click(screen.getByRole('tab', { name: 'Save for later' }));
   fireEvent.click(screen.getByRole('tab', { name: 'MAL/AniList' }));
-  expect(
-    screen.getByRole('progressbar', { name: 'Checking seasons' }),
-  ).toHaveAttribute('aria-valuenow', '42');
+  expect(screen.getByRole('progressbar', { name: 'Checking seasons' })).toHaveAttribute(
+    'aria-valuenow',
+    '42',
+  );
   fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
   await waitFor(() =>
     expect(
@@ -186,12 +170,8 @@ it('keeps MAL generation, username and results alive while switching tabs and cl
     });
   });
   fireEvent.click(screen.getByRole('button', { name: 'Save & import' }));
-  expect(
-    await screen.findByRole('button', { name: 'Use generated tierlist' }),
-  ).toBeVisible();
-  expect(
-    screen.getByRole('textbox', { name: 'Public MAL username' }),
-  ).toHaveValue('Abkenn');
+  expect(await screen.findByRole('button', { name: 'Use generated tierlist' })).toBeVisible();
+  expect(screen.getByRole('textbox', { name: 'Public MAL username' })).toHaveValue('Abkenn');
   expect(malGeneration).toHaveBeenCalledOnce();
   expect(onApply).not.toHaveBeenCalled();
 });
@@ -201,24 +181,16 @@ it('offers a separate share seed and requires confirmation before replacing an a
   const onBackup = vi.fn(async () => 'b'.repeat(64));
 
   render(<Fixture onImport={onImport} onBackup={onBackup} />);
-  expect(
-    screen.queryByRole('textbox', { name: 'Your user seed' }),
-  ).not.toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: 'Your user seed' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Show copy seed' }));
   await waitFor(() =>
-    expect(screen.getByRole('textbox', { name: 'Backup seed' })).toHaveValue(
-      'b'.repeat(64),
-    ),
+    expect(screen.getByRole('textbox', { name: 'Backup seed' })).toHaveValue('b'.repeat(64)),
   );
   fireEvent.click(screen.getByRole('tab', { name: /^Import$/ }));
   const seedInput = screen.getByRole('textbox', { name: 'Seed to import' });
   fireEvent.change(seedInput, { target: { value: 'invalid-seed' } });
-  expect(
-    screen.getByRole('button', { name: 'Replace tierlist' }),
-  ).toBeDisabled();
-  await waitFor(() =>
-    expect(screen.getByText('Enter a valid 64-character seed.')).toBeVisible(),
-  );
+  expect(screen.getByRole('button', { name: 'Replace tierlist' })).toBeDisabled();
+  await waitFor(() => expect(screen.getByText('Enter a valid 64-character seed.')).toBeVisible());
   const form = seedInput.closest('form');
   if (!form) {
     throw new Error('Seed input must belong to its submission form.');
@@ -236,16 +208,12 @@ it('offers a separate share seed and requires confirmation before replacing an a
   expect(onImport).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(onImport).not.toHaveBeenCalled();
-  await waitFor(() =>
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
-  );
+  await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   fireEvent.click(screen.getByRole('button', { name: 'Replace tierlist' }));
   await screen.findByRole('alertdialog');
   const buttons = screen.getAllByRole('button', { name: 'Replace tierlist' });
   fireEvent.click(buttons[buttons.length - 1]);
-  await waitFor(() =>
-    expect(onImport).toHaveBeenCalledExactlyOnceWith('c'.repeat(64)),
-  );
+  await waitFor(() => expect(onImport).toHaveBeenCalledExactlyOnceWith('c'.repeat(64)));
 });
 
 it('opens saving with Ctrl+S and saves a project copy without publishing a public preview', async () => {
@@ -258,9 +226,7 @@ it('opens saving with Ctrl+S and saves a project copy without publishing a publi
     'true',
   );
   fireEvent.click(screen.getByRole('button', { name: 'Save project file' }));
-  await waitFor(() =>
-    expect(projectDownload).toHaveBeenCalledWith('d'.repeat(64)),
-  );
+  await waitFor(() => expect(projectDownload).toHaveBeenCalledWith('d'.repeat(64)));
   expect(onBackup).toHaveBeenCalledOnce();
 });
 

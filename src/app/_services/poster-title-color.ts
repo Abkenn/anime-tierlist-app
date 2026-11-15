@@ -3,15 +3,8 @@
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { usesAutomaticTitleColor } from '@/app/_lib/tier-item-title';
-import {
-  contrastingTitleColor,
-  titleSampleSize,
-} from '@/app/_lib/title-contrast';
-import type {
-  HexColor,
-  TierImageMode,
-  TierItemData,
-} from '@/app/_types/tierlist.types';
+import { contrastingTitleColor, titleSampleSize } from '@/app/_lib/title-contrast';
+import type { HexColor, TierImageMode, TierItemData } from '@/app/_types/tierlist.types';
 
 const samples = new Map<string, Promise<Uint8ClampedArray | null>>();
 
@@ -37,9 +30,7 @@ const readPixels = (source: string) => {
           return;
         }
         context.drawImage(image, 0, 0, titleSampleSize, titleSampleSize);
-        resolve(
-          context.getImageData(0, 0, titleSampleSize, titleSampleSize).data,
-        );
+        resolve(context.getImageData(0, 0, titleSampleSize, titleSampleSize).data);
       } catch {
         resolve(null);
       }

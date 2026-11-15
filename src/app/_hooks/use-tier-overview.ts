@@ -50,12 +50,11 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
   };
 
   const jumpToRank = (rank: string) => {
-    const row = Array.from(
-      viewport?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? [],
-    ).find((row) => row.dataset.tierRank === rank);
+    const row = Array.from(viewport?.querySelectorAll<HTMLElement>('[data-tier-rank]') ?? []).find(
+      (row) => row.dataset.tierRank === rank,
+    );
     if (row && viewport) {
-      viewport.scrollTop +=
-        row.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+      viewport.scrollTop += row.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
       viewport.focus({ preventScroll: true });
     }
   };
@@ -68,9 +67,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     let fadeTimer: ReturnType<typeof setTimeout>;
     let frame = 0;
     let scrollFrame = 0;
-    const media = window.matchMedia(
-      '(min-width: 64rem) and (hover: hover) and (pointer: fine)',
-    );
+    const media = window.matchMedia('(min-width: 64rem) and (hover: hover) and (pointer: fine)');
     const pageBoard = Boolean(viewport.closest('main'));
 
     const measure = () => {
@@ -86,13 +83,10 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
         viewportWidth: viewport.clientWidth,
         viewportHeight: viewport.clientHeight,
         labelWidth:
-          viewport
-            .querySelector('[data-tier-rank]')
-            ?.firstElementChild?.getBoundingClientRect().width ?? 96,
+          viewport.querySelector('[data-tier-rank]')?.firstElementChild?.getBoundingClientRect()
+            .width ?? 96,
         left: viewport.scrollLeft,
-        rows: Array.from(
-          viewport.querySelectorAll<HTMLElement>('[data-tier-rank]'),
-        ).map((row) => {
+        rows: Array.from(viewport.querySelectorAll<HTMLElement>('[data-tier-rank]')).map((row) => {
           const rect = row.getBoundingClientRect();
 
           return {
@@ -123,8 +117,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
           scrollFrame = 0;
           setOverview((current) => ({
             ...current,
-            top:
-              (viewport.scrollTop / Math.max(1, viewport.scrollHeight)) * 100,
+            top: (viewport.scrollTop / Math.max(1, viewport.scrollHeight)) * 100,
             left: viewport.scrollLeft,
             viewportWidth: viewport.clientWidth,
             viewportHeight: viewport.clientHeight,
@@ -144,11 +137,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       }
       const surface = viewport.closest('[data-slot="scroll-area"]') ?? viewport;
       const bounds = surface.getBoundingClientRect();
-      const edgeWidth = Math.min(
-        bounds.width,
-        120,
-        Math.max(48, bounds.width * 0.1),
-      );
+      const edgeWidth = Math.min(bounds.width, 120, Math.max(48, bounds.width * 0.1));
 
       setNearEdge(
         pointer.x >= bounds.right - edgeWidth &&
@@ -240,8 +229,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
             [...record.addedNodes, ...record.removedNodes].some(
               (node) =>
                 node instanceof Element &&
-                (node.matches('[data-tier-rank]') ||
-                  node.querySelector('[data-tier-rank]')),
+                (node.matches('[data-tier-rank]') || node.querySelector('[data-tier-rank]')),
             ),
         )
       ) {
@@ -286,8 +274,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     jumpToRank,
     scrollToOffset,
     getScrollOffset: () => viewport?.scrollTop ?? 0,
-    scrollByOffset: (offset: number) =>
-      scrollToOffset((viewport?.scrollTop ?? 0) + offset),
+    scrollByOffset: (offset: number) => scrollToOffset((viewport?.scrollTop ?? 0) + offset),
     viewportId: viewport?.id,
     focusViewport: () => viewport?.focus({ preventScroll: true }),
   };

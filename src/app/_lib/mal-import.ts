@@ -39,9 +39,11 @@ export type MalAnime = ImportAnime;
 
 export type MalSeries = ImportSeries;
 
-const malStatuses: Partial<
-  Record<number, NonNullable<ImportListEntry['status']>>
-> = { 1: 'watching', 2: 'completed', 4: 'dropped' };
+const malStatuses: Partial<Record<number, NonNullable<ImportListEntry['status']>>> = {
+  1: 'watching',
+  2: 'completed',
+  4: 'dropped',
+};
 
 export const normalizeMalEntry = (entry: MalListEntry): ImportListEntry => ({
   id: entry.anime_id,

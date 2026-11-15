@@ -66,20 +66,13 @@ type TrimFrameInput = {
 
 export const getTierTrimFrame = ({ bounds, image, trim }: TrimFrameInput) => {
   const cropped = getTrimmedImage(image, trim);
-  const scale = Math.min(
-    bounds.width / cropped.width,
-    bounds.height / cropped.height,
-  );
+  const scale = Math.min(bounds.width / cropped.width, bounds.height / cropped.height);
   const width = image.width * scale;
   const height = image.height * scale;
 
   return {
-    x:
-      bounds.x + (bounds.width - cropped.width * scale) / 2 - trim.left * width,
-    y:
-      bounds.y +
-      (bounds.height - cropped.height * scale) / 2 -
-      trim.top * height,
+    x: bounds.x + (bounds.width - cropped.width * scale) / 2 - trim.left * width,
+    y: bounds.y + (bounds.height - cropped.height * scale) / 2 - trim.top * height,
     width,
     height,
   };

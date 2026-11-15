@@ -41,8 +41,7 @@ export const usePreviewPosters = (
           bounds.left + poster.x * scaleX <= right + 100,
       );
       setVisible((previous) =>
-        previous.length === next.length &&
-        previous.every((poster, index) => poster === next[index])
+        previous.length === next.length && previous.every((poster, index) => poster === next[index])
           ? previous
           : next,
       );

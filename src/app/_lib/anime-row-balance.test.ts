@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  balanceImportRows,
-  findImportRowSplit,
-  type ImportSeriesRow,
-} from './anime-row-balance';
-import {
-  type MalSeries,
-  malImportRanks,
-  malScoreRank,
-  malSeriesDocument,
-} from './mal-import';
+import { balanceImportRows, findImportRowSplit, type ImportSeriesRow } from './anime-row-balance';
+import { type MalSeries, malImportRanks, malScoreRank, malSeriesDocument } from './mal-import';
 import { tierlistDocumentSchema } from './tierlist-sync';
 
 const series = (id: number, score: number, episodes = 12): MalSeries => ({
@@ -20,16 +11,11 @@ const series = (id: number, score: number, episodes = 12): MalSeries => ({
   seasons: 1,
   seasonIds: [id],
 });
-const row = (
-  rank: ImportSeriesRow['rank'],
-  scores: number[],
-  offset: number,
-): ImportSeriesRow => ({
+const row = (rank: ImportSeriesRow['rank'], scores: number[], offset: number): ImportSeriesRow => ({
   rank,
   series: scores.map((score, index) => series(offset + index, score)),
 });
-const counts = (rows: ImportSeriesRow[]) =>
-  rows.map((entry) => entry.series.length);
+const counts = (rows: ImportSeriesRow[]) => rows.map((entry) => entry.series.length);
 const crowded = () => [
   row('S+', [10], 1),
   row('S', [9.9, 9.8, 9.7], 10),
@@ -67,12 +53,8 @@ describe('score-aware split selection', () => {
         scores: [...Array<number>(19).fill(9), 8.79, 8.52, 8.5],
       }),
     ).toBe(19);
-    expect(
-      findImportRowSplit({ scores: [10, ...Array<number>(8).fill(9)] }),
-    ).toBeNull();
-    expect(
-      findImportRowSplit({ scores: [...Array<number>(8).fill(9), 8] }),
-    ).toBeNull();
+    expect(findImportRowSplit({ scores: [10, ...Array<number>(8).fill(9)] })).toBeNull();
+    expect(findImportRowSplit({ scores: [...Array<number>(8).fill(9), 8] })).toBeNull();
     expect(findImportRowSplit({ scores: [9, 8, 7] })).toBeNull();
   });
 
@@ -89,9 +71,7 @@ describe('score-aware split selection', () => {
         targetSize: 13,
       }),
     ).toBe(19);
-    expect(
-      findImportRowSplit({ scores: Array<number>(9).fill(9), targetSize: 4 }),
-    ).toBeNull();
+    expect(findImportRowSplit({ scores: Array<number>(9).fill(9), targetSize: 4 })).toBeNull();
   });
 
   it('keeps the left/right directional preference when equally good cuts exist', () => {
@@ -115,18 +95,14 @@ describe('score-aware split selection', () => {
         targetSize: 6,
       }),
     ).toBe(5);
-    expect(
-      findImportRowSplit({ scores, episodes: Array<number>(12).fill(13) }),
-    ).toBeNull();
+    expect(findImportRowSplit({ scores, episodes: Array<number>(12).fill(13) })).toBeNull();
     expect(
       findImportRowSplit({
         scores,
         episodes: [24, ...Array<number>(11).fill(13)],
       }),
     ).toBeNull();
-    expect(
-      findImportRowSplit({ scores: [9, 9, 8, 8], episodes: [13, 13, 13, 13] }),
-    ).toBe(2);
+    expect(findImportRowSplit({ scores: [9, 9, 8, 8], episodes: [13, 13, 13, 13] })).toBe(2);
   });
 });
 
@@ -173,9 +149,7 @@ describe('soft bell balancing', () => {
   });
 
   it('preserves groups with identical score and episode count even when this prevents a smooth curve', () => {
-    expect(counts(balanceImportRows(crowded()))).toEqual([
-      1, 3, 19, 24, 2, 1, 0, 1, 0,
-    ]);
+    expect(counts(balanceImportRows(crowded()))).toEqual([1, 3, 19, 24, 2, 1, 0, 1, 0]);
     const tied = [
       row('S', [10, 9.8, 9.7], 1),
       row('A+', Array<number>(9).fill(9), 10),
@@ -239,9 +213,7 @@ describe('soft bell balancing', () => {
     ];
     const document = malSeriesDocument(source);
     expect(document.ranks).toEqual(malImportRanks);
-    expect(document.items.filter((entry) => entry.rank === 'A+')).toHaveLength(
-      4,
-    );
+    expect(document.items.filter((entry) => entry.rank === 'A+')).toHaveLength(4);
     expect(document.items.find((entry) => entry.malId === 14)).toMatchObject({
       id: 'mal-14',
       rank: 'A',
@@ -280,9 +252,9 @@ describe('large-list half-point dents', () => {
     const after = balanceImportRows(before);
     expect(counts(after).slice(0, 6)).toEqual([31, 31, 37, 25, 25, 17]);
     expect(after.slice(6)).toEqual(before.slice(6));
-    expect(
-      after.flatMap((entry) => entry.series).map((entry) => entry.id),
-    ).toEqual(before.flatMap((entry) => entry.series).map((entry) => entry.id));
+    expect(after.flatMap((entry) => entry.series).map((entry) => entry.id)).toEqual(
+      before.flatMap((entry) => entry.series).map((entry) => entry.id),
+    );
     expect(before).toEqual(snapshot);
     expect(balanceImportRows(after)).toEqual(after);
   });
@@ -304,11 +276,7 @@ describe('large-list half-point dents', () => {
     const before = [
       row('S+', [10], 1),
       row('S', [9.7, 9.6], 10),
-      row(
-        'A+',
-        [9.4, 9.3, 9.2, 9.1, 9.02, 9.01, ...Array<number>(60).fill(9)],
-        20,
-      ),
+      row('A+', [9.4, 9.3, 9.2, 9.1, 9.02, 9.01, ...Array<number>(60).fill(9)], 20),
       row('A', Array<number>(80).fill(8), 100),
       row('B+', Array<number>(90).fill(7.5), 200),
       row('B', Array<number>(60).fill(7), 300),
@@ -332,11 +300,7 @@ describe('large-list half-point dents', () => {
       Array<number>(60).fill(9),
       [...Array<number>(30).fill(9.1), ...Array<number>(30).fill(9)],
     ]) {
-      const before = [
-        row('S', [9.7, 9.6], 1),
-        row('A+', scores, 10),
-        row('B', [], 100),
-      ];
+      const before = [row('S', [9.7, 9.6], 1), row('A+', scores, 10), row('B', [], 100)];
       const after = balanceImportRows(before);
       expect(after[0]).toEqual(before[0]);
     }
@@ -350,9 +314,7 @@ describe('large-list half-point dents', () => {
       start: number,
     ): ImportSeriesRow => ({
       rank,
-      series: Array.from({ length }, (_, index) =>
-        series(start + index, score, 2000 - index),
-      ),
+      series: Array.from({ length }, (_, index) => series(start + index, score, 2000 - index)),
     });
     const before = [
       make('S+', 8, 10, 1),
@@ -367,9 +329,7 @@ describe('large-list half-point dents', () => {
     ];
     const snapshot = structuredClone(before);
     const after = balanceImportRows(before);
-    expect(after[4].series.length).toBeGreaterThanOrEqual(
-      after[3].series.length,
-    );
+    expect(after[4].series.length).toBeGreaterThanOrEqual(after[3].series.length);
     expect(after[4].series.length).toBeGreaterThan(after[5].series.length);
     expect(after[2].series.length).toBeLessThanOrEqual(after[3].series.length);
     expect(after[0]).toEqual(before[0]);

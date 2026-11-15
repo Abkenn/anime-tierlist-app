@@ -119,10 +119,7 @@ export const useOfflineReconnect = () => {
       return;
     }
 
-    const timer = window.setTimeout(
-      () => void reconnect(),
-      Math.max(0, retryAt - Date.now()),
-    );
+    const timer = window.setTimeout(() => void reconnect(), Math.max(0, retryAt - Date.now()));
 
     return () => window.clearTimeout(timer);
   }, [retryAt, mode, reconnect]);

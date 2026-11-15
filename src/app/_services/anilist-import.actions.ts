@@ -7,9 +7,7 @@ import { safely } from '@/app/_lib/safely';
 import type { SyncResult } from '@/app/_lib/tierlist-sync';
 import { readAnilistAnime, readAnilistPage } from './anilist-import';
 
-const onError = (
-  error: unknown,
-): Extract<SyncResult<never>, { ok: false }> => ({
+const onError = (error: unknown): Extract<SyncResult<never>, { ok: false }> => ({
   ok: false,
   code: 'unavailable',
   message:
@@ -35,8 +33,6 @@ export const loadAnilistPage = async (input: unknown) =>
 export const loadAnilistAnimeBatch = async (input: unknown) =>
   safely({
     operation: () =>
-      readAnilistAnime(
-        z.array(z.number().int().positive()).min(1).max(8).parse(input),
-      ),
+      readAnilistAnime(z.array(z.number().int().positive()).min(1).max(8).parse(input)),
     onError,
   });

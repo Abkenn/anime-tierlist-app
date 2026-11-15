@@ -9,11 +9,9 @@ const normalizeAlias = (value: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
-const seasonPattern =
-  /\b(?:season\s*(\d+)|(\d+)(?:st|nd|rd|th)\s+season|s(\d+))\b/u;
+const seasonPattern = /\b(?:season\s*(\d+)|(\d+)(?:st|nd|rd|th)\s+season|s(\d+))\b/u;
 
-const seasonNumber = (value: string) =>
-  value.match(seasonPattern)?.slice(1).find(Boolean);
+const seasonNumber = (value: string) => value.match(seasonPattern)?.slice(1).find(Boolean);
 
 export const searchCuratedAnime = (
   images: CuratedAnimeImage[],
@@ -25,11 +23,7 @@ export const searchCuratedAnime = (
   }
 
   const requestedSeason = seasonNumber(query);
-  const queryWords = query
-    .replace(seasonPattern, '')
-    .trim()
-    .split(/\s+/u)
-    .filter(Boolean);
+  const queryWords = query.replace(seasonPattern, '').trim().split(/\s+/u).filter(Boolean);
   if (!queryWords.length) {
     return [];
   }
@@ -46,9 +40,7 @@ export const searchCuratedAnime = (
         normalizeAlias(alias).replace(seasonPattern, '').trim().split(/\s+/u),
       ),
     }));
-  const words = [
-    ...new Set(candidates.flatMap(({ aliases }) => aliases.flat())),
-  ];
+  const words = [...new Set(candidates.flatMap(({ aliases }) => aliases.flat()))];
   const matches = queryWords.map(
     (word) =>
       new Set([
@@ -61,10 +53,7 @@ export const searchCuratedAnime = (
               ignoreFieldNorm: true,
             })
               .search(word)
-              .filter(
-                ({ matches }) =>
-                  (matches?.[0]?.indices[0]?.[0] ?? Infinity) <= 1,
-              )
+              .filter(({ matches }) => (matches?.[0]?.indices[0]?.[0] ?? Infinity) <= 1)
               .map(({ item }) => item)
           : []),
       ]),
@@ -76,9 +65,7 @@ export const searchCuratedAnime = (
         let position = -1;
 
         return matches.every((matchingWords) => {
-          position = alias.findIndex(
-            (word, index) => index > position && matchingWords.has(word),
-          );
+          position = alias.findIndex((word, index) => index > position && matchingWords.has(word));
 
           return position !== -1;
         });

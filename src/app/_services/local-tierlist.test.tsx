@@ -1,11 +1,6 @@
 import 'fake-indexeddb/auto';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import {
-  clear,
-  createStore as createDatabaseStore,
-  get,
-  set,
-} from 'idb-keyval';
+import { clear, createStore as createDatabaseStore, get, set } from 'idb-keyval';
 import { Provider } from 'jotai';
 import { createStore } from 'jotai/vanilla';
 import { type PropsWithChildren, StrictMode } from 'react';
@@ -58,9 +53,7 @@ describe('local tierlist durability', () => {
     const generated = {
       ...initial,
       ranks: ['S' as const],
-      items: [
-        { id: 'mal-1', malId: 1, label: 'Generated', rank: 'S' as const },
-      ],
+      items: [{ id: 'mal-1', malId: 1, label: 'Generated', rank: 'S' as const }],
     };
     const saved = await replaceLocalDocument(generated, initial);
     expect(saved).toMatchObject({
@@ -69,12 +62,10 @@ describe('local tierlist durability', () => {
       revision: 1,
       items: generated.items,
     });
-    expect(await get(`before-replace:${device.seed}`, database)).toEqual(
-      device,
+    expect(await get(`before-replace:${device.seed}`, database)).toEqual(device);
+    await expect(replaceLocalDocument({ ...generated, items: [] }, initial)).rejects.toBeInstanceOf(
+      tierlistPersistence.LocalTierlistChangedError,
     );
-    await expect(
-      replaceLocalDocument({ ...generated, items: [] }, initial),
-    ).rejects.toBeInstanceOf(tierlistPersistence.LocalTierlistChangedError);
     expect(await getDeviceTierlist()).toEqual(saved);
   });
   it('copies a public snapshot into the local identity and refuses a stale replacement', async () => {
@@ -92,9 +83,9 @@ describe('local tierlist durability', () => {
       items: document.items,
       imageMode: 'cover',
     });
-    await expect(
-      adoptPublicTierlist({ ...document, items: [] }, initial),
-    ).rejects.toBeInstanceOf(tierlistPersistence.LocalTierlistChangedError);
+    await expect(adoptPublicTierlist({ ...document, items: [] }, initial)).rejects.toBeInstanceOf(
+      tierlistPersistence.LocalTierlistChangedError,
+    );
     expect(await getDeviceTierlist()).toEqual(saved);
   });
   it('adopts an imported copy as the default without adopting its identity or changing its source', async () => {
@@ -151,9 +142,7 @@ describe('local tierlist durability', () => {
     });
     expect(await loadLocalTierlist(initial)).toEqual(copied);
     expect(await readLocalTierlist(sourceSeed)).toEqual(source);
-    expect(await get(`before-replace:${device.seed}`, database)).toEqual(
-      device,
-    );
+    expect(await get(`before-replace:${device.seed}`, database)).toEqual(device);
   });
 
   it('leaves both profiles unchanged if the imported copy changed before confirmation', async () => {
@@ -207,9 +196,7 @@ describe('local tierlist durability', () => {
     const tabs = Array.from({ length: 3 }, () => {
       const store = createStore();
       const hook = renderHook(useLocalTierlist, {
-        wrapper: ({ children }: PropsWithChildren) => (
-          <Provider store={store}>{children}</Provider>
-        ),
+        wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
       });
 
       return { store, hook };
@@ -221,11 +208,7 @@ describe('local tierlist durability', () => {
           expect(hook.result.current.status).toBe('saved');
         }),
       );
-      act(() =>
-        tabs[0].store.set(tierItemsAtom, [
-          { id: 'shared', label: 'Shared', rank: 'S+' },
-        ]),
-      );
+      act(() => tabs[0].store.set(tierItemsAtom, [{ id: 'shared', label: 'Shared', rank: 'S+' }]));
       await waitFor(() =>
         tabs.forEach(({ store }) => {
           expect(store.get(tierItemsAtom)[0]?.label).toBe('Shared');
@@ -276,9 +259,7 @@ describe('local tierlist durability', () => {
       {
         ...previous,
         revision: 1,
-        items: [
-          { id: 'draft', label: 'Unsynced account edit', rank: 'Watching' },
-        ],
+        items: [{ id: 'draft', label: 'Unsynced account edit', rank: 'Watching' }],
       },
       0,
     );
@@ -313,10 +294,7 @@ describe('local tierlist durability', () => {
     };
     await activateImportedTierlist(seed, remote);
     const imported = await loadLocalTierlist(initial);
-    await saveLocalTierlist(
-      { ...imported, revision: 1, imageMode: 'contain' },
-      0,
-    );
+    await saveLocalTierlist({ ...imported, revision: 1, imageMode: 'contain' }, 0);
     expect(await getDeviceTierlist()).toEqual(machine);
     await activateDeviceTierlist();
     expect(await loadLocalTierlist(initial)).toEqual(machine);
@@ -355,26 +333,18 @@ describe('local tierlist durability', () => {
     };
     await saveLocalTierlist(saved, 0);
 
-    expect(
-      await loadLocalTierlist({ ...initial, seed: createUserSeed() }),
-    ).toEqual(saved);
+    expect(await loadLocalTierlist({ ...initial, seed: createUserSeed() })).toEqual(saved);
   });
 
   it('rejects a stale tab write without overwriting the newer draft', async () => {
     await loadLocalTierlist(initial);
     await saveLocalTierlist({ ...initial, revision: 1, imageMode: 'cover' }, 0);
-    await expect(
-      saveLocalTierlist({ ...initial, revision: 1 }, 0),
-    ).rejects.toThrow('another tab');
+    await expect(saveLocalTierlist({ ...initial, revision: 1 }, 0)).rejects.toThrow('another tab');
     expect((await loadLocalTierlist(initial)).imageMode).toBe('cover');
   });
 
   it('preserves unreadable data instead of resetting it', async () => {
-    await set(
-      'personal-tierlist',
-      { version: 99, important: 'keep' },
-      database,
-    );
+    await set('personal-tierlist', { version: 99, important: 'keep' }, database);
     await expect(loadLocalTierlist(initial)).rejects.toThrow();
     expect(await get<unknown>('personal-tierlist', database)).toEqual({
       version: 99,
@@ -398,9 +368,7 @@ describe('local tierlist durability', () => {
     act(() => {
       store.set(tierItemsAtom, [{ id: 'new', label: 'New', rank: 'S+' }]);
     });
-    await waitFor(async () =>
-      expect((await loadLocalTierlist(initial)).items).toHaveLength(1),
-    );
+    await waitFor(async () => expect((await loadLocalTierlist(initial)).items).toHaveLength(1));
     hook.unmount();
     expect((await loadLocalTierlist(initial)).seed).toBe(initial.seed);
   });
@@ -409,9 +377,7 @@ describe('local tierlist durability', () => {
     await loadLocalTierlist(initial);
     const store = createStore();
     const hook = renderHook(useLocalTierlist, {
-      wrapper: ({ children }: PropsWithChildren) => (
-        <Provider store={store}>{children}</Provider>
-      ),
+      wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
     });
     await waitFor(() => expect(hook.result.current.status).toBe('saved'));
     const save = vi
@@ -428,9 +394,7 @@ describe('local tierlist durability', () => {
       expect(save).toHaveBeenCalledTimes(1);
       expect(hook.result.current.error).toBe('Storage is full.');
       expect(store.get(imageModeAtom)).toBe('contain');
-      expect((await loadLocalTierlist(initial)).imageMode).toBe(
-        initial.imageMode,
-      );
+      expect((await loadLocalTierlist(initial)).imageMode).toBe(initial.imageMode);
     } finally {
       save.mockRestore();
       hook.unmount();
@@ -441,17 +405,11 @@ describe('local tierlist durability', () => {
     await loadLocalTierlist(initial);
     const store = createStore();
     const hook = renderHook(useLocalTierlist, {
-      wrapper: ({ children }: PropsWithChildren) => (
-        <Provider store={store}>{children}</Provider>
-      ),
+      wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
     });
     await waitFor(() => expect(hook.result.current.status).toBe('saved'));
     const expected = { seed: initial.seed, revision: 0 };
-    act(() =>
-      store.set(tierItemsAtom, [
-        { id: 'new', label: 'Keep my edit', rank: 'S' },
-      ]),
-    );
+    act(() => store.set(tierItemsAtom, [{ id: 'new', label: 'Keep my edit', rank: 'S' }]));
     await act(async () => {
       await hook.result.current.flush();
     });

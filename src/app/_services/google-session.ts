@@ -1,9 +1,6 @@
 import 'server-only';
 import { headers } from 'next/headers';
-import {
-  findAuthGoogleAccount,
-  findGoogleAccount,
-} from '@/app/_data/queries/google-account';
+import { findAuthGoogleAccount, findGoogleAccount } from '@/app/_data/queries/google-account';
 import { auth } from '@/app/_lib/auth';
 export const getGooglePrincipal = async () => {
   const session = await auth.api.getSession({ headers: await headers() });

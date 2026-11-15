@@ -9,20 +9,11 @@ import {
   useScroll,
   useTransform,
 } from 'motion/react';
-import {
-  type PropsWithChildren,
-  type ReactNode,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type PropsWithChildren, type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { useMobileBoardScroll } from '@/app/_hooks/use-mobile-board-scroll';
 import { transferBoardScroll } from '@/app/_lib/touch-scroll';
 
-export const HomeWorkspace = ({
-  search,
-  children,
-}: PropsWithChildren<{ search: ReactNode }>) => {
+export const HomeWorkspace = ({ search, children }: PropsWithChildren<{ search: ReactNode }>) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>();
@@ -30,9 +21,7 @@ export const HomeWorkspace = ({
   const [searchHidden, setSearchHidden] = useState(false);
   const reducedMotion = useReducedMotion();
   const { scrollY } = useScroll({ container: viewportRef });
-  const searchY = useTransform(scrollY, (offset) =>
-    mobile && !reducedMotion ? offset * 0.15 : 0,
-  );
+  const searchY = useTransform(scrollY, (offset) => (mobile && !reducedMotion ? offset * 0.15 : 0));
 
   const revealSearch = useMobileBoardScroll({
     enabled: mobile,
@@ -40,9 +29,7 @@ export const HomeWorkspace = ({
     boardRef,
   });
 
-  useMotionValueEvent(scrollY, 'change', (offset) =>
-    setSearchHidden(offset > 2),
-  );
+  useMotionValueEvent(scrollY, 'change', (offset) => setSearchHidden(offset > 2));
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -50,16 +37,13 @@ export const HomeWorkspace = ({
       return;
     }
 
-    const boardViewport = boardRef.current?.querySelector<HTMLElement>(
-      '[data-tier-viewport]',
-    );
+    const boardViewport = boardRef.current?.querySelector<HTMLElement>('[data-tier-viewport]');
     const media = window.matchMedia('(max-width: 63.999rem)');
     const measure = () => {
       setMobile(media.matches);
       const controlsHeight =
         boardViewport && boardRef.current
-          ? boardViewport.getBoundingClientRect().top -
-            boardRef.current.getBoundingClientRect().top
+          ? boardViewport.getBoundingClientRect().top - boardRef.current.getBoundingClientRect().top
           : 0;
       setHeight(viewport.clientHeight + controlsHeight);
       if (!media.matches) {
@@ -104,10 +88,7 @@ export const HomeWorkspace = ({
       >
         <div className="flex min-h-full min-w-0 flex-col gap-4 lg:h-full lg:flex-row">
           <div className="shrink-0 overflow-clip lg:flex lg:min-h-0 lg:w-64 lg:overflow-visible">
-            <motion.div
-              style={{ y: searchY }}
-              className="lg:flex lg:min-h-0 lg:flex-1"
-            >
+            <motion.div style={{ y: searchY }} className="lg:flex lg:min-h-0 lg:flex-1">
               {search}
             </motion.div>
           </div>

@@ -22,13 +22,9 @@ const client = createClient({
     }),
 });
 
-const result = await client
-  .query<IntrospectionQuery>(getIntrospectionQuery(), {})
-  .toPromise();
+const result = await client.query<IntrospectionQuery>(getIntrospectionQuery(), {}).toPromise();
 if (result.error || !result.data) {
-  throw new Error(
-    `Unable to refresh AniList schema: ${result.error?.message ?? 'empty response'}`,
-  );
+  throw new Error(`Unable to refresh AniList schema: ${result.error?.message ?? 'empty response'}`);
 }
 
 const schema = printSchema(buildClientSchema(result.data));

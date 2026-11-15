@@ -30,11 +30,7 @@ const Sandbox = ({ imageMode }: SandboxProps) => {
         animate={{ width: interaction.canvasWidth }}
         transition={{ duration: 0 }}
       >
-        <TierBoardRows
-          ranks={defaultTierRanks}
-          layout="single-line"
-          interaction={interaction}
-        />
+        <TierBoardRows ranks={defaultTierRanks} layout="single-line" interaction={interaction} />
 
         <TierBoardItems interaction={interaction} />
       </motion.div>

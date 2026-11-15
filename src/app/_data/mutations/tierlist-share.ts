@@ -12,8 +12,7 @@ type PublishInput = {
 export const publishTierlistSnapshot = (input: PublishInput) =>
   db.transaction(async (tx) => {
     await tx.query(
-      db.raw
-        .sql`SELECT id FROM "TierlistOwner" WHERE id = ${input.ownerId} FOR UPDATE`
+      db.raw.sql`SELECT id FROM "TierlistOwner" WHERE id = ${input.ownerId} FOR UPDATE`
         .returnsRow({ id: 'pg/text@1' })
         .build(),
     );

@@ -12,10 +12,7 @@ it('opens known MAL entries safely without starting the poster drag', () => {
   const drag = vi.fn();
   render(
     <div onPointerDown={drag}>
-      <PreviewMalLink
-        item={{ id: 'mal-52991', label: 'Frieren', rank: 'S' }}
-        style={{}}
-      />
+      <PreviewMalLink item={{ id: 'mal-52991', label: 'Frieren', rank: 'S' }} style={{}} />
     </div>,
   );
   const link = screen.getByRole('link', {
@@ -30,10 +27,7 @@ it('opens known MAL entries safely without starting the poster drag', () => {
 
 it('looks up custom labels lazily and preserves the same focused link element when ready', async () => {
   render(
-    <PreviewMalLink
-      item={{ id: 'custom-voice', label: 'A Silent Voice', rank: 'S' }}
-      style={{}}
-    />,
+    <PreviewMalLink item={{ id: 'custom-voice', label: 'A Silent Voice', rank: 'S' }} style={{}} />,
   );
   const link = screen.getByRole('link', {
     name: 'Unknown MAL link. Please add label',
@@ -41,9 +35,7 @@ it('looks up custom labels lazily and preserves the same focused link element wh
   expect(link).not.toHaveAttribute('href');
   expect(resolve).not.toHaveBeenCalled();
   fireEvent.focus(link);
-  await waitFor(() =>
-    expect(link).toHaveAttribute('href', 'https://myanimelist.net/anime/28851'),
-  );
+  await waitFor(() => expect(link).toHaveAttribute('href', 'https://myanimelist.net/anime/28851'));
   expect(resolve).toHaveBeenCalledWith(['A Silent Voice']);
   expect(link).toHaveAttribute('aria-disabled', 'false');
 });

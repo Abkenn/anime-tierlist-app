@@ -5,11 +5,7 @@ import { Check, Copy, SwatchBook } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useId, useRef, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import {
-  type ColorFormat,
-  formatColor,
-  parseColor,
-} from '@/app/_lib/color-format';
+import { type ColorFormat, formatColor, parseColor } from '@/app/_lib/color-format';
 import type { HexColor } from '@/app/_types/tierlist.types';
 import { SegmentedControl } from './segmented-control';
 
@@ -46,9 +42,7 @@ export const ColorPickerEditor = ({
   const id = useId();
   const reducedMotion = useReducedMotion();
   const value =
-    draft?.color === color && draft.format === format
-      ? draft.text
-      : formatColor(color, format);
+    draft?.color === color && draft.format === format ? draft.text : formatColor(color, format);
   const valid = parseColor(value) !== null;
   const isCopied = copied === value;
   const changeColor = (text: string) => {
@@ -168,17 +162,12 @@ export const ColorPickerEditor = ({
                     const field = event.currentTarget;
                     event.clipboardData.setData(
                       'text/plain',
-                      value.slice(
-                        field.selectionStart ?? 0,
-                        field.selectionEnd ?? value.length,
-                      ),
+                      value.slice(field.selectionStart ?? 0, field.selectionEnd ?? value.length),
                     );
                     event.preventDefault();
                   }}
                   onPaste={(event) => {
-                    const next = parseColor(
-                      event.clipboardData.getData('text/plain'),
-                    );
+                    const next = parseColor(event.clipboardData.getData('text/plain'));
                     if (next) {
                       event.preventDefault();
                       setDraft(undefined);

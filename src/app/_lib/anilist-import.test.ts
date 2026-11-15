@@ -54,13 +54,7 @@ it('shares weighted scores and filtering without confusing AniList IDs with MAL 
       edges: [{ relationType: 'PREQUEL', node: { id: 1, type: 'ANIME' } }],
     },
   };
-  const sources = [
-    a,
-    b,
-    media(3, 1, 'ONA'),
-    media(4, 12, 'OVA'),
-    media(5, 12, 'ONA'),
-  ];
+  const sources = [a, b, media(3, 1, 'ONA'), media(4, 12, 'OVA'), media(5, 12, 'ONA')];
   const entries = sources.map((source, index) =>
     normalizeAnilistEntry({
       status: 'COMPLETED',
@@ -77,9 +71,7 @@ it('shares weighted scores and filtering without confusing AniList IDs with MAL 
     seasons: 2,
   });
   const document = importSeriesDocument(series, 'anilist');
-  expect(document.items.find((entry) => entry.id === 'anilist-1')?.malId).toBe(
-    101,
-  );
+  expect(document.items.find((entry) => entry.id === 'anilist-1')?.malId).toBe(101);
   const missing = importSeriesDocument(
     [
       {
@@ -109,14 +101,8 @@ it('maps AniList current and repeating to Watching, Dropped separately, and skip
     sources.map((entry) => normalizeAnilistAnime(entry.media)),
   );
   const document = importSeriesDocument(series, 'anilist');
-  expect(
-    document.items.filter((item) => item.rank === 'Watching'),
-  ).toHaveLength(2);
-  expect(document.items.filter((item) => item.rank === 'Dropped')).toHaveLength(
-    1,
-  );
+  expect(document.items.filter((item) => item.rank === 'Watching')).toHaveLength(2);
+  expect(document.items.filter((item) => item.rank === 'Dropped')).toHaveLength(1);
   expect(document.items).toHaveLength(3);
-  expect(document.items.every((item) => !item.label.includes('/10'))).toBe(
-    true,
-  );
+  expect(document.items.every((item) => !item.label.includes('/10'))).toBe(true);
 });

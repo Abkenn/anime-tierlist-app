@@ -93,9 +93,7 @@ describe('Google tierlist access separation', () => {
       document: sourceDocument,
       revision: 0,
     });
-    mocks.googleOwner.mockImplementation(async (id) =>
-      id === owner.id ? { ownerId: id } : null,
-    );
+    mocks.googleOwner.mockImplementation(async (id) => (id === owner.id ? { ownerId: id } : null));
     mocks.saveOwner.mockResolvedValue({
       ...owner,
       document: sourceDocument,

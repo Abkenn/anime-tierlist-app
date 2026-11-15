@@ -13,10 +13,7 @@ type TerminalTextProps = {
   pending?: boolean;
   replaceTail?: boolean;
   line?: number;
-} & (
-  | { text: string; segments?: never }
-  | { text?: never; segments: readonly TerminalSegment[] }
-);
+} & ({ text: string; segments?: never } | { text?: never; segments: readonly TerminalSegment[] });
 
 export const TerminalText = ({
   text: plainText,
@@ -48,21 +45,13 @@ type TypedTerminalTextProps = {
   line: number;
 };
 
-const TypedTerminalText = ({
-  text,
-  parts,
-  pending,
-  replaceTail,
-  line,
-}: TypedTerminalTextProps) => {
+const TypedTerminalText = ({ text, parts, pending, replaceTail, line }: TypedTerminalTextProps) => {
   const { typed, reducedMotion } = useTerminalTyping({
     text,
     replaceTail,
     line,
   });
-  const cursor = useTransform(typed, (value): string =>
-    value.length > 0 ? '▍' : '',
-  );
+  const cursor = useTransform(typed, (value): string => (value.length > 0 ? '▍' : ''));
   let offset = 0;
 
   return (
@@ -71,9 +60,7 @@ const TypedTerminalText = ({
         const start = offset;
         offset += Array.from(part.text).length;
 
-        return (
-          <TypedSegment key={part.id} part={part} start={start} typed={typed} />
-        );
+        return <TypedSegment key={part.id} part={part} start={start} typed={typed} />;
       })}
 
       {pending && (

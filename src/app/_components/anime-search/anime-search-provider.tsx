@@ -12,10 +12,7 @@ import {
 
 type AnimeSearchProviderProps = PropsWithChildren<AnimeSearchConfig>;
 
-export const AnimeSearchProvider = ({
-  children,
-  ...config
-}: AnimeSearchProviderProps) => {
+export const AnimeSearchProvider = ({ children, ...config }: AnimeSearchProviderProps) => {
   useHydrateAtoms([[animeSearchConfigAtom, config]]);
 
   const client = useAtomValue(animeSearchClientAtom);

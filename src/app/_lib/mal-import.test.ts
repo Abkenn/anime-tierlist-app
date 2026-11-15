@@ -41,17 +41,11 @@ const anime = (
 describe('MAL series generation', () => {
   it('includes completed scored TV and episodic ONA, excluding movies, OVAs, single-episode ONAs and unscored completed entries', () => {
     expect(eligibleMalEntry(entry(1))).toBe(true);
-    expect(
-      eligibleMalEntry(entry(1, 9, 8, { anime_media_type_string: 'ONA' })),
-    ).toBe(true);
+    expect(eligibleMalEntry(entry(1, 9, 8, { anime_media_type_string: 'ONA' }))).toBe(true);
     for (const type of ['Movie', 'OVA', 'Special', 'TV Special', 'Music']) {
-      expect(
-        eligibleMalEntry(entry(1, 9, 12, { anime_media_type_string: type })),
-      ).toBe(false);
+      expect(eligibleMalEntry(entry(1, 9, 12, { anime_media_type_string: type }))).toBe(false);
     }
-    expect(
-      eligibleMalEntry(entry(1, 9, 1, { anime_media_type_string: 'ONA' })),
-    ).toBe(false);
+    expect(eligibleMalEntry(entry(1, 9, 1, { anime_media_type_string: 'ONA' }))).toBe(false);
     expect(eligibleMalEntry(entry(1, 0))).toBe(false);
     expect(eligibleMalEntry(entry(1, 0, 13, { status: 1 }))).toBe(true);
     expect(eligibleMalEntry(entry(1, 0, 13, { status: 4 }))).toBe(true);
@@ -64,9 +58,7 @@ describe('MAL series generation', () => {
       [entry(1, 10, 10), entry(2, 8, 30), entry(3, 0, 99)],
       [anime(1, 10), anime(2, 30, [1]), anime(3, 99, [2])],
     );
-    expect(result).toMatchObject([
-      { id: 1, score: 8.5, episodes: 40, seasons: 2 },
-    ]);
+    expect(result).toMatchObject([{ id: 1, score: 8.5, episodes: 40, seasons: 2 }]);
     expect(malSeriesDocument(result).items[0].rank).toBe('A+');
     const below = groupMalSeries(
       [entry(1, 10, 10), entry(2, 8, 31)],
@@ -84,52 +76,28 @@ describe('MAL series generation', () => {
       anime(3, 12, [2]),
     ];
     const result = groupMalSeries(
-      [
-        entry(1, 10),
-        entry(2, 1, 1, { anime_media_type_string: 'Movie' }),
-        entry(4, 8, 12),
-      ],
+      [entry(1, 10), entry(2, 1, 1, { anime_media_type_string: 'Movie' }), entry(4, 8, 12)],
       catalog,
     );
-    expect(result).toMatchObject([
-      { id: 1, episodes: 25, seasons: 2, score: 9.04 },
-    ]);
+    expect(result).toMatchObject([{ id: 1, episodes: 25, seasons: 2, score: 9.04 }]);
     expect(result[0].seasonIds).toEqual([1, 4]);
   });
 
   it('uses exact score, then total episodes, then title for stable left-to-right order', () => {
     const result = groupMalSeries(
-      [
-        entry(1, 9, 13),
-        entry(2, 9, 23),
-        entry(3, 9, 12),
-        entry(4, 9, 12),
-        entry(5, 10, 1),
-      ],
-      [
-        anime(1, 13),
-        anime(2, 23),
-        anime(3, 12),
-        anime(4, 12, [3]),
-        anime(5, 1),
-      ],
+      [entry(1, 9, 13), entry(2, 9, 23), entry(3, 9, 12), entry(4, 9, 12), entry(5, 10, 1)],
+      [anime(1, 13), anime(2, 23), anime(3, 12), anime(4, 12, [3]), anime(5, 1)],
     );
     expect(result.map((series) => series.id)).toEqual([5, 3, 2, 1]);
     expect(result.map((series) => series.episodes)).toEqual([1, 24, 23, 13]);
-    expect(
-      tierlistDocumentSchema.safeParse(malSeriesDocument(result)).success,
-    ).toBe(true);
+    expect(tierlistDocumentSchema.safeParse(malSeriesDocument(result)).success).toBe(true);
   });
 
   it('does not double-count duplicate list entries and fails closed on missing metadata/counts', () => {
     expect(groupMalSeries([entry(1), entry(1)], [anime(1)])[0].seasons).toBe(1);
     expect(() => groupMalSeries([entry(1)], [])).toThrow('metadata');
-    expect(() => groupMalSeries([entry(1, 9, 0)], [anime(1, 0)])).toThrow(
-      'episode count',
-    );
-    expect(groupMalSeries([entry(1, 9, 12)], [anime(1, 0)])[0].episodes).toBe(
-      12,
-    );
+    expect(() => groupMalSeries([entry(1, 9, 0)], [anime(1, 0)])).toThrow('episode count');
+    expect(groupMalSeries([entry(1, 9, 12)], [anime(1, 0)])[0].episodes).toBe(12);
   });
 
   it.each([
@@ -196,9 +164,7 @@ it('adds only unique Watching/Dropped franchises, with rated completed seasons t
     rank: 'Dropped',
     label: 'Series 20',
   });
-  expect(
-    document.items.filter((item) =>
-      ['Watching', 'Dropped'].includes(item.rank),
-    ),
-  ).toHaveLength(2);
+  expect(document.items.filter((item) => ['Watching', 'Dropped'].includes(item.rank))).toHaveLength(
+    2,
+  );
 });

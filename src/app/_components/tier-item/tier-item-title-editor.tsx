@@ -56,9 +56,7 @@ export const TierItemTitleEditor = ({
           align="start"
           positionMethod="fixed"
           sideOffset={() =>
-            Number.parseFloat(
-              getComputedStyle(document.documentElement).fontSize,
-            ) * 0.5
+            Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5
           }
           collisionPadding={16}
           className="z-50"
@@ -100,9 +98,7 @@ export const TierItemTitleEditor = ({
               <input
                 type="checkbox"
                 checked={title.wrap}
-                onChange={(event) =>
-                  onChange({ ...title, wrap: event.currentTarget.checked })
-                }
+                onChange={(event) => onChange({ ...title, wrap: event.currentTarget.checked })}
               />
               Wrap text
             </label>
@@ -118,8 +114,7 @@ export const TierItemTitleEditor = ({
               onChange={(event) =>
                 onChange({
                   ...title,
-                  position: event.currentTarget
-                    .value as TierItemTitle['position'],
+                  position: event.currentTarget.value as TierItemTitle['position'],
                 })
               }
             >
@@ -140,9 +135,7 @@ export const TierItemTitleEditor = ({
                   className="size-9 cursor-pointer border border-divider bg-transparent p-0.5"
                   onChange={(event) => {
                     setHex(event.currentTarget.value);
-                    const color = normalizeTitleColor(
-                      event.currentTarget.value,
-                    );
+                    const color = normalizeTitleColor(event.currentTarget.value);
 
                     if (color) {
                       onChange({ ...title, color, autoColor: false });
@@ -176,9 +169,7 @@ export const TierItemTitleEditor = ({
               <input
                 type="checkbox"
                 checked={usesAutomaticTitleColor(title)}
-                onChange={(event) =>
-                  onChange({ ...title, autoColor: event.currentTarget.checked })
-                }
+                onChange={(event) => onChange({ ...title, autoColor: event.currentTarget.checked })}
               />
               Automatic contrast
             </label>
@@ -199,20 +190,12 @@ export const TierItemTitleEditor = ({
                 Save
               </button>
 
-              <button
-                type="button"
-                className={actionClassName}
-                onClick={onCancel}
-              >
+              <button type="button" className={actionClassName} onClick={onCancel}>
                 Cancel
               </button>
 
               {existing && (
-                <button
-                  type="button"
-                  className={actionClassName}
-                  onClick={onRemove}
-                >
+                <button type="button" className={actionClassName} onClick={onRemove}>
                   Remove text
                 </button>
               )}

@@ -9,10 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  previewLeaveEvent,
-  previewReturnEvent,
-} from '@/app/_lib/tierlist-share-id';
+import { previewLeaveEvent, previewReturnEvent } from '@/app/_lib/tierlist-share-id';
 
 export const usePreviewReturn = (beforeNavigate?: () => void) => {
   const router = useRouter();

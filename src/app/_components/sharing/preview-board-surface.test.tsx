@@ -19,21 +19,11 @@ it('keeps a visible poster and its clipping identity stable when earlier posters
   };
   const board = layoutExportBoard(document);
   const { container, rerender } = render(
-    <PreviewBoardSurface
-      {...board}
-      mode="natural"
-      visibleIds={new Set(['first', 'second'])}
-    />,
+    <PreviewBoardSurface {...board} mode="natural" visibleIds={new Set(['first', 'second'])} />,
   );
   const image = container.querySelector('image[href="/second.jpg"]');
   const clip = image?.closest('g[clip-path]')?.getAttribute('clip-path');
-  rerender(
-    <PreviewBoardSurface
-      {...board}
-      mode="natural"
-      visibleIds={new Set(['second'])}
-    />,
-  );
+  rerender(<PreviewBoardSurface {...board} mode="natural" visibleIds={new Set(['second'])} />);
   expect(container.querySelector('image[href="/second.jpg"]')).toBe(image);
   expect(image?.closest('g[clip-path]')?.getAttribute('clip-path')).toBe(clip);
 });
@@ -64,16 +54,12 @@ it('lets posters paint without waiting for React loading-state updates', () => {
     />,
   );
   const parsed = new DOMParser().parseFromString(markup, 'text/html');
-  expect(
-    parsed
-      .querySelector('image[href="/poster-S.jpg"]')
-      ?.getAttribute('fetchpriority'),
-  ).toBe('high');
-  expect(
-    parsed
-      .querySelector('image[href="/poster-A.jpg"]')
-      ?.hasAttribute('fetchpriority'),
-  ).toBe(false);
+  expect(parsed.querySelector('image[href="/poster-S.jpg"]')?.getAttribute('fetchpriority')).toBe(
+    'high',
+  );
+  expect(parsed.querySelector('image[href="/poster-A.jpg"]')?.hasAttribute('fetchpriority')).toBe(
+    false,
+  );
   expect(
     parsed
       .querySelector('image[href="/poster-S.jpg"]')
@@ -114,9 +100,7 @@ it('renders only visible poster sources from a large preview without any export 
   );
   const parsed = new DOMParser().parseFromString(markup, 'text/html');
   expect(parsed.querySelectorAll('image')).toHaveLength(2);
-  expect(parsed.querySelector('image')?.getAttribute('href')).toContain(
-    '/_next/image?',
-  );
+  expect(parsed.querySelector('image')?.getAttribute('href')).toContain('/_next/image?');
   expect(markup).toContain('poster-0.jpg');
   expect(markup).not.toContain('poster-2.jpg');
   expect(markup).not.toContain('/api/tierlist-preview/');

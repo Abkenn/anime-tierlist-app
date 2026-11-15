@@ -42,11 +42,7 @@ it('rejects partial GraphQL failures and missing relationship metadata', async (
     data: { Page: { pageInfo: { hasNextPage: false }, mediaList: [] } },
     errors: [{ message: 'Private User' }],
   });
-  await expect(readAnilistPage('Private', 1)).rejects.toThrow(
-    'AniList profile',
-  );
+  await expect(readAnilistPage('Private', 1)).rejects.toThrow('AniList profile');
   api.query.mockResolvedValueOnce({ data: { Page: { media: [media] } } });
-  await expect(readAnilistAnime([7, 8])).rejects.toThrow(
-    'metadata is unavailable',
-  );
+  await expect(readAnilistAnime([7, 8])).rejects.toThrow('metadata is unavailable');
 });

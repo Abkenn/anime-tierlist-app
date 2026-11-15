@@ -51,10 +51,7 @@ export const AnimeSearchResultCard = ({
     }
 
     const timer = setTimeout(
-      () =>
-        setState((current) =>
-          current.status === 'loading' ? { status: 'error' } : current,
-        ),
+      () => setState((current) => (current.status === 'loading' ? { status: 'error' } : current)),
       15000,
     );
 
@@ -66,9 +63,7 @@ export const AnimeSearchResultCard = ({
       <div
         className={`relative max-w-full${reveal ? '' : ' invisible'}`}
         style={{
-          width: dimensions
-            ? `${(dimensions.width / dimensions.height) * 6}rem`
-            : '4rem',
+          width: dimensions ? `${(dimensions.width / dimensions.height) * 6}rem` : '4rem',
         }}
       >
         <motion.button
@@ -120,10 +115,7 @@ export const AnimeSearchResultCard = ({
         </motion.button>
 
         {image && (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 lg:hidden"
-          >
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 lg:hidden">
             {[
               'inset-x-0 top-0 h-0.5',
               'inset-x-0 bottom-0 h-0.5',

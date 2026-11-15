@@ -22,9 +22,7 @@ export const AnimeSearch = async ({
 
   const query = normalizeAnimeQuery(initialQuery);
   const initialPage =
-    query.length >= 2 && query.length <= 300
-      ? await searchAnimePage(query, 1)
-      : undefined;
+    query.length >= 2 && query.length <= 300 ? await searchAnimePage(query, 1) : undefined;
 
   return (
     <aside

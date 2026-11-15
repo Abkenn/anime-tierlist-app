@@ -21,13 +21,8 @@ it('projects only the source and destination rank with each poster retaining its
   expect(sprites.map((box) => box.id)).toEqual(['two', 'one', 'three']);
   expect(sprites.find((box) => box.id === 'four')).toBeUndefined();
   expect(sprites.find((box) => box.id === 'two')?.targetX).toBe(from.x);
-  expect(sprites.find((box) => box.id === 'one')?.targetY).toBe(
-    rows[1].posters[0].y,
-  );
-  expect(rows[0].posters.map((poster) => poster.item.id)).toEqual([
-    'one',
-    'two',
-  ]);
+  expect(sprites.find((box) => box.id === 'one')?.targetY).toBe(rows[1].posters[0].y);
+  expect(rows[0].posters.map((poster) => poster.item.id)).toEqual(['one', 'two']);
   expect(previewDropSlot(rows, from, 900, 240)).toEqual({
     rank: 'A',
     index: 1,

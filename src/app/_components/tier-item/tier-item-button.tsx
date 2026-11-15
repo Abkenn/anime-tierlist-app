@@ -51,8 +51,7 @@ export const TierItemButton = ({
   const imageMode = useAtomValue(imageModeAtom);
   const previews = useAtomValue(posterPreviewsAtom);
   const [readySource, setReadySource] = useState('');
-  const preview =
-    image && readySource !== image.src ? previews.get(image.src) : undefined;
+  const preview = image && readySource !== image.src ? previews.get(image.src) : undefined;
 
   return (
     <motion.button
@@ -70,11 +69,7 @@ export const TierItemButton = ({
       className={cn(
         'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
         'touch-none [-webkit-touch-callout:none]',
-        image &&
-          !editing &&
-          !dragging &&
-          !positioning &&
-          'pointer-coarse:[clip-path:inset(4px)]',
+        image && !editing && !dragging && !positioning && 'pointer-coarse:[clip-path:inset(4px)]',
         dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
         editing && 'z-30 cursor-move ring-2 ring-white',
         image ? 'border-0 bg-transparent' : 'bg-gray',
@@ -102,11 +97,7 @@ export const TierItemButton = ({
                 preserveAspectRatio="none"
                 className="pointer-events-none absolute inset-0 size-full"
               >
-                <image
-                  href={preview.src}
-                  width={preview.width}
-                  height={preview.height}
-                />
+                <image href={preview.src} width={preview.width} height={preview.height} />
               </svg>
             )}
 
@@ -126,13 +117,7 @@ export const TierItemButton = ({
       )}
 
       {itemTitle?.text && !preview && (!image || readySource === image.src) && (
-        <TierItemTitle
-          title={itemTitle}
-          image={image}
-          mode={imageMode}
-          trim={trim}
-          crop={crop}
-        />
+        <TierItemTitle title={itemTitle} image={image} mode={imageMode} trim={trim} crop={crop} />
       )}
     </motion.button>
   );

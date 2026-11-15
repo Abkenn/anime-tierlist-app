@@ -2,10 +2,7 @@
 
 import type { LocalTierlist } from '@/app/_lib/local-tierlist';
 import { savePreviewHandoff } from '@/app/_lib/preview-handoff';
-import {
-  getTierlistDocument,
-  type TierlistDocument,
-} from '@/app/_lib/tierlist-sync';
+import { getTierlistDocument, type TierlistDocument } from '@/app/_lib/tierlist-sync';
 import {
   activateAccountTierlist,
   adoptPublicTierlist,
@@ -40,15 +37,9 @@ export const adoptPreviewTemplate = async ({
 }: TemplateInput) => {
   const selected = document;
   if (account) {
-    const previous =
-      active?.accountOwnerId === account.ownerId ? active : undefined;
-    if (
-      previous?.sync &&
-      previous.sync.syncedLocalRevision !== previous.revision
-    ) {
-      throw new Error(
-        'Save your latest changes before replacing your tierlist.',
-      );
+    const previous = active?.accountOwnerId === account.ownerId ? active : undefined;
+    if (previous?.sync && previous.sync.syncedLocalRevision !== previous.revision) {
+      throw new Error('Save your latest changes before replacing your tierlist.');
     }
     if (previous) {
       await backupLocalTierlist(previous);

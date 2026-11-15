@@ -31,11 +31,7 @@ it('moves deleted tier posters to the beginning of the next tier and preserves a
     { id: 'existing', label: 'Existing', rank: 'A' },
   ]);
   store.set(removeRankAtom, 'S');
-  expect(store.get(tierItemsAtom).map((item) => item.id)).toEqual([
-    'first',
-    'second',
-    'existing',
-  ]);
+  expect(store.get(tierItemsAtom).map((item) => item.id)).toEqual(['first', 'second', 'existing']);
   expect(store.get(tierItemsAtom)[0]).toMatchObject({
     rank: 'A',
     crop: { x: 0.2, y: 0.7 },

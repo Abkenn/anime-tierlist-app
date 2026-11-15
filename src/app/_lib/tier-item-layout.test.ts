@@ -30,21 +30,25 @@ const pack = (items: TierItemData[], capacity = 100, wrap = false) =>
 
 describe('tier item layout', () => {
   it('keeps both square modes in square slots', () => {
-    expect(
-      getTierItemSize({ item: portrait, size: 4, mode: 'contain' }),
-    ).toEqual({ width: 4, height: 4 });
-    expect(
-      getTierItemSize({ item: landscape, size: 4, mode: 'cover' }),
-    ).toEqual({ width: 4, height: 4 });
+    expect(getTierItemSize({ item: portrait, size: 4, mode: 'contain' })).toEqual({
+      width: 4,
+      height: 4,
+    });
+    expect(getTierItemSize({ item: landscape, size: 4, mode: 'cover' })).toEqual({
+      width: 4,
+      height: 4,
+    });
   });
 
   it('fits portraits by height and landscapes by width without stretching', () => {
-    expect(
-      getTierItemSize({ item: portrait, size: 4, mode: 'natural' }),
-    ).toEqual({ width: 2.25, height: 4 });
-    expect(
-      getTierItemSize({ item: landscape, size: 4, mode: 'natural' }),
-    ).toEqual({ width: 4, height: 2.25 });
+    expect(getTierItemSize({ item: portrait, size: 4, mode: 'natural' })).toEqual({
+      width: 2.25,
+      height: 4,
+    });
+    expect(getTierItemSize({ item: landscape, size: 4, mode: 'natural' })).toEqual({
+      width: 4,
+      height: 2.25,
+    });
     expect(pack([landscape])[0].y).toBe(0.875);
   });
 
@@ -55,9 +59,10 @@ describe('tier item layout', () => {
       width: 64 / 9,
       height: 4,
     });
-    expect(
-      getTierItemSize({ item: landscape, size: 4, mode: 'natural' }),
-    ).toEqual({ width: 4, height: 2.25 });
+    expect(getTierItemSize({ item: landscape, size: 4, mode: 'natural' })).toEqual({
+      width: 4,
+      height: 2.25,
+    });
   });
 
   it('lets a panorama take three square widths when forced to row height', () => {
@@ -106,9 +111,7 @@ describe('tier item layout', () => {
     const boxes = pack(items, capacity, true);
 
     expect(new Set(boxes.map((box) => box.line)).size).toBe(2);
-    expect(boxes.every((box) => box.x + box.width <= capacity + 0.001)).toBe(
-      true,
-    );
+    expect(boxes.every((box) => box.x + box.width <= capacity + 0.001)).toBe(true);
     expect(boxes.map((box) => box.id)).toEqual(items.map((item) => item.id));
     const secondLine = boxes.find((box) => box.line === 1);
 

@@ -35,9 +35,7 @@ it('keeps posters inside the panned pinch-zoom viewport and updates on visual vi
     })),
   });
   const posters = board.rows.flatMap((row) => row.posters);
-  const { result } = renderHook(() =>
-    usePreviewPosters(root, posters, 1000, 1000),
-  );
+  const { result } = renderHook(() => usePreviewPosters(root, posters, 1000, 1000));
   expect(result.current.some((poster) => poster.item.id === '3')).toBe(true);
   expect(result.current.some((poster) => poster.item.id === '0')).toBe(false);
   act(() => {

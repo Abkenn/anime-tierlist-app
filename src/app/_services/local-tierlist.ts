@@ -1,20 +1,6 @@
-import {
-  createStore,
-  entries,
-  get,
-  promisifyRequest,
-  set,
-  setMany,
-  update,
-} from 'idb-keyval';
-import {
-  type LocalTierlist,
-  localTierlistSchema,
-} from '@/app/_lib/local-tierlist';
-import {
-  applyLocalTierlistEdit,
-  type LocalTierlistContent,
-} from '@/app/_lib/tierlist-local-edit';
+import { createStore, entries, get, promisifyRequest, set, setMany, update } from 'idb-keyval';
+import { type LocalTierlist, localTierlistSchema } from '@/app/_lib/local-tierlist';
+import { applyLocalTierlistEdit, type LocalTierlistContent } from '@/app/_lib/tierlist-local-edit';
 import {
   getTierlistDocument,
   type RemoteTierlist,
@@ -29,9 +15,7 @@ const activeKey = 'active-tierlist-seed';
 
 export class LocalTierlistChangedError extends Error {
   constructor() {
-    super(
-      'This tierlist changed in another tab. Reload before editing further.',
-    );
+    super('This tierlist changed in another tab. Reload before editing further.');
   }
 }
 
@@ -42,9 +26,7 @@ const profileKey = async (seed: string) =>
   (await getDeviceTierlist()).seed === seed ? key : `profile:${seed}`;
 
 export const readLocalTierlist = async (seed: string) =>
-  localTierlistSchema.parse(
-    await get<unknown>(await profileKey(seed), storage),
-  );
+  localTierlistSchema.parse(await get<unknown>(await profileKey(seed), storage));
 
 export const saveLocalTierlistEdit = async (
   seed: string,
@@ -56,11 +38,7 @@ export const saveLocalTierlistEdit = async (
     await profileKey(seed),
     (existing) => {
       saved = localTierlistSchema.parse(
-        applyLocalTierlistEdit(
-          localTierlistSchema.parse(existing),
-          before,
-          after,
-        ),
+        applyLocalTierlistEdit(localTierlistSchema.parse(existing), before, after),
       );
 
       return saved;
@@ -115,10 +93,7 @@ export const loadLocalTierlist = async (initial: LocalTierlist) => {
     : device;
 };
 
-export const saveLocalTierlist = async (
-  snapshot: LocalTierlist,
-  revision: number,
-) => {
+export const saveLocalTierlist = async (snapshot: LocalTierlist, revision: number) => {
   await update<unknown>(
     await profileKey(snapshot.seed),
     (existing) => {
@@ -156,10 +131,7 @@ export const activateImportedTierlist = async (
         })
       : localTierlistSchema.parse(existing);
   await setMany(
-    [
-      [target, snapshot],
-      ...(temporary ? [] : [[activeKey, seed] as [string, string]]),
-    ],
+    [[target, snapshot], ...(temporary ? [] : [[activeKey, seed] as [string, string]])],
     storage,
   );
 };
@@ -173,13 +145,8 @@ export const replaceLocalDocument = async (
   await storage('readwrite', async (store) => {
     const complete = promisifyRequest(store.transaction);
     const replace = async () => {
-      const current = localTierlistSchema.parse(
-        await promisifyRequest(store.get(target)),
-      );
-      if (
-        current.seed !== expected.seed ||
-        current.revision !== expected.revision
-      ) {
+      const current = localTierlistSchema.parse(await promisifyRequest(store.get(target)));
+      if (current.seed !== expected.seed || current.revision !== expected.revision) {
         throw new LocalTierlistChangedError();
       }
       saved = localTierlistSchema.parse({
@@ -209,10 +176,7 @@ export const activateDeviceTierlist = async () => {
 
 type ReplaceDeviceInput = { seed: string; revision: number };
 
-const copyImportedIntoDevice = async (
-  store: IDBObjectStore,
-  input: ReplaceDeviceInput,
-) => {
+const copyImportedIntoDevice = async (store: IDBObjectStore, input: ReplaceDeviceInput) => {
   const [deviceValue, sourceValue] = await Promise.all([
     promisifyRequest(store.get(key)),
     promisifyRequest(store.get(`profile:${input.seed}`)),
@@ -222,14 +186,8 @@ const copyImportedIntoDevice = async (
   if (source.revision !== input.revision) {
     throw new LocalTierlistChangedError();
   }
-  if (
-    source.accountOwnerId ||
-    device.accountOwnerId ||
-    source.seed === device.seed
-  ) {
-    throw new Error(
-      'Open an imported anonymous tierlist before replacing this device’s list.',
-    );
+  if (source.accountOwnerId || device.accountOwnerId || source.seed === device.seed) {
+    throw new Error('Open an imported anonymous tierlist before replacing this device’s list.');
   }
 
   const snapshot = localTierlistSchema.parse({
@@ -253,10 +211,7 @@ const copyImportedIntoDevice = async (
 export const replaceDeviceTierlist = async (input: ReplaceDeviceInput) => {
   const snapshot = await storage('readwrite', async (store) => {
     const complete = promisifyRequest(store.transaction);
-    const [copied] = await Promise.all([
-      copyImportedIntoDevice(store, input),
-      complete,
-    ]);
+    const [copied] = await Promise.all([copyImportedIntoDevice(store, input), complete]);
 
     return copied;
   });
@@ -272,9 +227,7 @@ export const adoptPublicTierlist = async (
   await storage('readwrite', async (store) => {
     const complete = promisifyRequest(store.transaction);
     const copy = async () => {
-      const device = localTierlistSchema.parse(
-        await promisifyRequest(store.get(key)),
-      );
+      const device = localTierlistSchema.parse(await promisifyRequest(store.get(key)));
       if (
         device.seed !== expected.seed ||
         device.revision !== expected.revision ||
@@ -302,29 +255,21 @@ export const adoptPublicTierlist = async (
   notifyTierlistTabs();
 };
 
-export const activateAccountTierlist = async (
-  profileKey: string,
-  remote: RemoteTierlist,
-) => {
+export const activateAccountTierlist = async (profileKey: string, remote: RemoteTierlist) => {
   const existing = await get<unknown>(`profile:${profileKey}`, storage);
   const active = await get<string>(activeKey, storage);
   const profiles = await entries(storage);
   const previous = profiles
     .filter(
       ([key]) =>
-        typeof key === 'string' &&
-        (key === 'personal-tierlist' || key.startsWith('profile:')),
+        typeof key === 'string' && (key === 'personal-tierlist' || key.startsWith('profile:')),
     )
     .sort(
       ([first], [second]) =>
-        Number(second === `profile:${active}`) -
-        Number(first === `profile:${active}`),
+        Number(second === `profile:${active}`) - Number(first === `profile:${active}`),
     )
     .map(([, value]) => localTierlistSchema.safeParse(value))
-    .find(
-      (profile) =>
-        profile.success && profile.data.sync?.ownerId === remote.ownerId,
-    );
+    .find((profile) => profile.success && profile.data.sync?.ownerId === remote.ownerId);
   const snapshot = localTierlistSchema.parse(
     existing ??
       (previous?.success
@@ -342,10 +287,7 @@ export const activateAccountTierlist = async (
   );
   await setMany(
     [
-      [
-        `profile:${profileKey}`,
-        { ...snapshot, accountOwnerId: remote.ownerId },
-      ],
+      [`profile:${profileKey}`, { ...snapshot, accountOwnerId: remote.ownerId }],
       [activeKey, profileKey],
     ],
     storage,
@@ -356,9 +298,6 @@ export const backupLocalTierlist = async (snapshot: LocalTierlist) => {
   await set(`before-replace:${snapshot.seed}`, snapshot, storage);
 };
 
-export const backupRemoteTierlist = async (
-  seed: string,
-  remote: RemoteTierlist,
-) => {
+export const backupRemoteTierlist = async (seed: string, remote: RemoteTierlist) => {
   await set(`before-upload:${seed}`, remote, storage);
 };

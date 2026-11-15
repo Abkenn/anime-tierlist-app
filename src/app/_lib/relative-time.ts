@@ -1,9 +1,6 @@
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'always' });
 
-export const formatRelativeTime = (
-  timestamp: number | undefined,
-  now: number,
-) => {
+export const formatRelativeTime = (timestamp: number | undefined, now: number) => {
   if (timestamp === undefined) {
     return 'time unavailable';
   }

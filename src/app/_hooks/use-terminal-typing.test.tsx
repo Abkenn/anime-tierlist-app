@@ -58,11 +58,7 @@ it('resumes a repeated message and preserves the prefix when account text is app
   expect(result.current.typed.get()).toBe('Saved on this device · Connect');
   act(() => result.current.typed.set('Saved on this device · Connecting...'));
   rerender({ text: 'Saved on this device · Connecting... · Google account' });
-  expect(result.current.typed.get()).toBe(
-    'Saved on this device · Connecting...',
-  );
+  expect(result.current.typed.get()).toBe('Saved on this device · Connecting...');
   rerender({ text: 'Saved on this device · Connecting...' });
-  expect(result.current.typed.get()).toBe(
-    'Saved on this device · Connecting...',
-  );
+  expect(result.current.typed.get()).toBe('Saved on this device · Connecting...');
 });

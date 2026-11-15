@@ -15,9 +15,7 @@ it('cancels drops above the board and discards only inside the marked zone', () 
         initialItems: [{ id: 'poster', label: 'Anime', rank: 'Watching' }],
       }),
     {
-      wrapper: ({ children }: PropsWithChildren) => (
-        <Provider store={store}>{children}</Provider>
-      ),
+      wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
     },
   );
   const board = document.createElement('div');

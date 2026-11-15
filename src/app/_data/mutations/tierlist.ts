@@ -18,11 +18,7 @@ type CreateSessionInput = {
   expiresAt: bigint;
 };
 
-export const createTierlistOwner = ({
-  id,
-  seedHash,
-  document,
-}: CreateOwnerInput) =>
+export const createTierlistOwner = ({ id, seedHash, document }: CreateOwnerInput) =>
   db.orm.public.TierlistOwner.upsert({
     create: {
       id,
@@ -34,11 +30,7 @@ export const createTierlistOwner = ({
     conflictOn: { seedHash },
   });
 
-export const saveTierlistOwner = async ({
-  id,
-  revision,
-  document,
-}: SaveOwnerInput) => {
+export const saveTierlistOwner = async ({ id, revision, document }: SaveOwnerInput) => {
   const table = db.sql.public.TierlistOwner;
   const plan = db.raw.sql`
     UPDATE "TierlistOwner" SET document = ${JSON.stringify({ ...document, updatedAt: Date.now() })}::jsonb, revision = revision + 1
@@ -63,12 +55,8 @@ export const deleteTierlistSession = (tokenHash: string) =>
 
 export const pruneTierlistAccessRecords = async () => {
   const cutoff = BigInt(Date.now() - 86_400_000);
-  await db.orm.public.TierlistSession.where((session) =>
-    session.expiresAt.lt(cutoff),
-  ).deleteAll();
-  await db.orm.public.TierlistRateLimit.where((limit) =>
-    limit.expiresAt.lt(cutoff),
-  ).deleteAll();
+  await db.orm.public.TierlistSession.where((session) => session.expiresAt.lt(cutoff)).deleteAll();
+  await db.orm.public.TierlistRateLimit.where((limit) => limit.expiresAt.lt(cutoff)).deleteAll();
 };
 
 export const consumeTierlistRateLimit = async ({

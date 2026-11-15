@@ -3,18 +3,9 @@
 import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
 import { useDeferredValue, useState } from 'react';
-import {
-  renamingItemIdAtom,
-  tierFindQueryAtom,
-} from '@/app/_atoms/tierlist/find.atoms';
-import {
-  editingItemIdAtom,
-  menuItemIdAtom,
-} from '@/app/_atoms/tierlist/interaction.atoms';
-import {
-  draggedRankAtom,
-  rankOffsetsAtom,
-} from '@/app/_atoms/tierlist/layout.atoms';
+import { renamingItemIdAtom, tierFindQueryAtom } from '@/app/_atoms/tierlist/find.atoms';
+import { editingItemIdAtom, menuItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { TierItemInteractionHost } from '@/app/_components/tier-item/tier-item-interaction-host';
 import { TierItemPassive } from '@/app/_components/tier-item/tier-item-passive';
 import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
@@ -23,10 +14,7 @@ import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
 import { getTrimmedImage } from '@/app/_lib/tier-image-trim';
 import { TierItemActionsContext } from '@/app/_lib/tier-item-actions-context';
-import {
-  getTierItemLabel,
-  matchesTierItemLabel,
-} from '@/app/_lib/tier-item-label';
+import { getTierItemLabel, matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
@@ -55,9 +43,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const offsets = useAtomValue(rankOffsetsAtom);
   const draggedRank = useAtomValue(draggedRankAtom);
-  const geometry = new Map(
-    interaction.posterLayout.map((poster) => [poster.id, poster]),
-  );
+  const geometry = new Map(interaction.posterLayout.map((poster) => [poster.id, poster]));
   const menuItemId = useAtomValue(menuItemIdAtom);
   const renamingItemId = useAtomValue(renamingItemIdAtom);
   const editingItemId = useAtomValue(editingItemIdAtom);
@@ -97,9 +83,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   });
   const priorityIds = new Set(
     (window.visible.right > window.visible.left && geometry.size > 0
-      ? priorityItems
-          .filter((item) => item.area > 0)
-          .sort((a, b) => b.area - a.area)
+      ? priorityItems.filter((item) => item.area > 0).sort((a, b) => b.area - a.area)
       : interaction.items.filter((item) => item.image)
     )
       .slice(0, 3)
@@ -141,9 +125,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
       return;
     }
     const paths = placeholderPaths.get(rank) ?? [];
-    paths.push(
-      `M${rect.x},${rect.y}h${rect.width}v${rect.height}h${-rect.width}Z`,
-    );
+    paths.push(`M${rect.x},${rect.y}h${rect.width}v${rect.height}h${-rect.width}Z`);
     placeholderPaths.set(rank, paths);
   });
 
@@ -159,9 +141,8 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
           className="pointer-events-none absolute inset-0"
           onFocusCapture={(event) =>
             setFocusedId(
-              (event.target as HTMLElement).closest<HTMLElement>(
-                '[data-tier-item-id]',
-              )?.dataset.tierItemId ?? null,
+              (event.target as HTMLElement).closest<HTMLElement>('[data-tier-item-id]')?.dataset
+                .tierItemId ?? null,
             )
           }
           onBlurCapture={(event) => {
@@ -220,9 +201,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                   key={item.id}
                   id={item.id}
                   label={getTierItemLabel(item)}
-                  dimmed={
-                    Boolean(query.trim()) && !matchesTierItemLabel(item, query)
-                  }
+                  dimmed={Boolean(query.trim()) && !matchesTierItemLabel(item, query)}
                   rank={rank}
                   editing={editingItemId === item.id}
                   image={item.image}
@@ -232,9 +211,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
                   trim={item.trim}
                   sizingControl={
                     <TierItemSizing
-                      image={
-                        item.image && getTrimmedImage(item.image, item.trim)
-                      }
+                      image={item.image && getTrimmedImage(item.image, item.trim)}
                       expansion={item.rowHeightExpansion ?? 1}
                       onChange={(rowHeightExpansion) =>
                         interaction.updateItem(item.id, {

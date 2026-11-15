@@ -58,9 +58,7 @@ export const useTierLabelLayout = ({ ref, label, editing }: TierLabelInput) => {
         width,
         height,
         fontSize: Number.parseFloat(parent.fontSize),
-        measure: context
-          ? (word) => context.measureText(word).width / 100
-          : undefined,
+        measure: context ? (word) => context.measureText(word).width / 100 : undefined,
       });
       setLayout((current) =>
         current.label === label &&
@@ -91,7 +89,5 @@ export const useTierLabelLayout = ({ ref, label, editing }: TierLabelInput) => {
       }
     };
   }, [ref, label, editing]);
-  return layout.label === label
-    ? layout
-    : { lines: [label], fontSize: undefined };
+  return layout.label === label ? layout : { lines: [label], fontSize: undefined };
 };

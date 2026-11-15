@@ -1,7 +1,4 @@
-import {
-  tierlistShareIdPattern,
-  tierlistShareVersion,
-} from '@/app/_lib/tierlist-share-id';
+import { tierlistShareIdPattern, tierlistShareVersion } from '@/app/_lib/tierlist-share-id';
 import 'server-only';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { cacheLife, cacheTag, updateTag } from 'next/cache';
@@ -10,14 +7,8 @@ import { createTierlistOwner } from '@/app/_data/mutations/tierlist';
 import { publishTierlistSnapshot } from '@/app/_data/mutations/tierlist-share';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
 import { findOwnerById } from '@/app/_data/queries/tierlist';
-import {
-  findOwnerTierlistShare,
-  findTierlistShare,
-} from '@/app/_data/queries/tierlist-share';
-import {
-  type TierlistDocument,
-  tierlistDocumentSchema,
-} from '@/app/_lib/tierlist-sync';
+import { findOwnerTierlistShare, findTierlistShare } from '@/app/_data/queries/tierlist-share';
+import { type TierlistDocument, tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import { env } from '@/env';
 import {
   hashTierlistSecret,
@@ -47,10 +38,7 @@ const previewFingerprint = (revision: number, document: TierlistDocument) => {
   return `v${revision}.${previewFormat}:${digest}`;
 };
 
-const findPublishedTierlistPreview = async (
-  ownerId: string,
-  fingerprint: string,
-) => {
+const findPublishedTierlistPreview = async (ownerId: string, fingerprint: string) => {
   const share = await findOwnerTierlistShare(ownerId);
   if (!share || share.fingerprint !== fingerprint) {
     return null;
@@ -66,10 +54,7 @@ const findPublishedTierlistPreview = async (
   return { id: share.id, version };
 };
 
-export const readExistingTierlistPreview = async (input: {
-  ownerId: string;
-  revision: number;
-}) => {
+export const readExistingTierlistPreview = async (input: { ownerId: string; revision: number }) => {
   await requireTierlistOwner(input.ownerId);
   const owner = await findOwnerById(input.ownerId);
   if (!owner || owner.revision !== input.revision) {
@@ -99,9 +84,7 @@ export const readPublicTierlist = async (slug: string) => {
   return publicTierlistSnapshot(await findTierlistShare(id));
 };
 
-const publicTierlistSnapshot = (
-  share: Awaited<ReturnType<typeof findTierlistShare>>,
-) =>
+const publicTierlistSnapshot = (share: Awaited<ReturnType<typeof findTierlistShare>>) =>
   share
     ? {
         id: share.id,
@@ -140,14 +123,8 @@ export const prepareTierlistShare = async (input: {
   }
   const document = tierlistDocumentSchema.parse(owner.document);
   const account = await findGoogleAccountByOwner(owner.id);
-  if (
-    !account &&
-    (!input.seed || hashTierlistSecret(input.seed) !== owner.seedHash)
-  ) {
-    throw new TierlistAccessError(
-      'unauthorized',
-      'Reconnect your tierlist before sharing.',
-    );
+  if (!account && (!input.seed || hashTierlistSecret(input.seed) !== owner.seedHash)) {
+    throw new TierlistAccessError('unauthorized', 'Reconnect your tierlist before sharing.');
   }
   const seed = account ? randomBytes(32).toString('hex') : input.seed;
   if (!seed) {
@@ -164,10 +141,7 @@ export const prepareTierlistShare = async (input: {
   return { seed };
 };
 
-export const publishTierlist = async (input: {
-  ownerId: string;
-  revision: number;
-}) => {
+export const publishTierlist = async (input: { ownerId: string; revision: number }) => {
   await limitSeedAccess();
   await requireTierlistOwner(input.ownerId);
   const owner = await findOwnerById(input.ownerId);
@@ -179,10 +153,7 @@ export const publishTierlist = async (input: {
   }
   const document = publicDocument(owner.document);
   const fingerprint = previewFingerprint(owner.revision, document);
-  const existing = await findPublishedTierlistPreview(
-    input.ownerId,
-    fingerprint,
-  );
+  const existing = await findPublishedTierlistPreview(input.ownerId, fingerprint);
   if (existing) {
     return existing;
   }
@@ -212,10 +183,7 @@ export const copyPublicTierlistSeed = async (id: string) => {
   await limitSeedAccess();
   const share = await readPublicTierlist(id);
   if (!share) {
-    throw new TierlistAccessError(
-      'not_found',
-      'This shared tierlist is unavailable.',
-    );
+    throw new TierlistAccessError('not_found', 'This shared tierlist is unavailable.');
   }
   const seed = randomBytes(32).toString('hex');
   await createTierlistOwner({

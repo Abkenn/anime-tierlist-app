@@ -84,12 +84,8 @@ beforeEach(() => {
 
 it('requires ownership and rejects stale publishing without creating a public snapshot', async () => {
   mocks.requireOwner.mockRejectedValueOnce(new Error('Unauthorized'));
-  await expect(
-    publishTierlist({ ownerId: 'owner', revision: 4 }),
-  ).rejects.toThrow('Unauthorized');
-  await expect(
-    publishTierlist({ ownerId: 'owner', revision: 3 }),
-  ).rejects.toThrow('changed');
+  await expect(publishTierlist({ ownerId: 'owner', revision: 4 })).rejects.toThrow('Unauthorized');
+  await expect(publishTierlist({ ownerId: 'owner', revision: 3 })).rejects.toThrow('changed');
   expect(mocks.publish).not.toHaveBeenCalled();
 });
 
@@ -187,39 +183,27 @@ it('recovers a ready revision across clients without publishing, invalidating or
     vi.mocked((await import('next/cache')).updateTag).mockClear();
     mocks.publish.mockClear();
     mocks.png.mockClear();
-    expect(
-      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).toEqual(published);
-    expect(await publishTierlist({ ownerId: 'owner', revision: 4 })).toEqual(
-      published,
-    );
+    expect(await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 })).toEqual(published);
+    expect(await publishTierlist({ ownerId: 'owner', revision: 4 })).toEqual(published);
     expect(mocks.publish).not.toHaveBeenCalled();
     expect(mocks.png).not.toHaveBeenCalled();
     expect((await import('next/cache')).updateTag).not.toHaveBeenCalled();
     mocks.share.mockResolvedValueOnce(null);
-    expect(
-      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).toEqual(published);
+    expect(await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 })).toEqual(published);
     expect((await import('next/cache')).updateTag).toHaveBeenCalledWith(
       `tierlist-share:${published.id}`,
     );
     expect(mocks.png).not.toHaveBeenCalled();
-    expect(
-      await readExistingTierlistPreview({ ownerId: 'owner', revision: 3 }),
-    ).toBeNull();
+    expect(await readExistingTierlistPreview({ ownerId: 'owner', revision: 3 })).toBeNull();
     mocks.existing.mockResolvedValue({ ...input, fingerprint: 'old-version' });
-    expect(
-      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).toBeNull();
+    expect(await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 })).toBeNull();
     mocks.existing.mockResolvedValue(input);
     mocks.storedPng.mockResolvedValue(null);
-    expect(
-      await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).toEqual(published);
+    expect(await readExistingTierlistPreview({ ownerId: 'owner', revision: 4 })).toEqual(published);
     mocks.requireOwner.mockRejectedValueOnce(new Error('Unauthorized'));
-    await expect(
-      readExistingTierlistPreview({ ownerId: 'owner', revision: 4 }),
-    ).rejects.toThrow('Unauthorized');
+    await expect(readExistingTierlistPreview({ ownerId: 'owner', revision: 4 })).rejects.toThrow(
+      'Unauthorized',
+    );
   } finally {
     vi.unstubAllEnvs();
   }
@@ -269,10 +253,6 @@ it('keeps import history private when publishing a preview', async () => {
     },
   });
   await publishTierlist({ ownerId: 'owner', revision: 4 });
-  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty(
-    'malImport',
-  );
-  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty(
-    'animeImports',
-  );
+  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty('malImport');
+  expect(mocks.publish.mock.calls[0][0].document).not.toHaveProperty('animeImports');
 });

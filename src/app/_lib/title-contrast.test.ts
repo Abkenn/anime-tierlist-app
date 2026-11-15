@@ -48,12 +48,8 @@ it('chooses opposite text colors for bright and dark title regions, including cr
       'natural',
     ),
   ).toBe('#ededeb');
-  expect(usesAutomaticTitleColor({ ...item.title, autoColor: undefined })).toBe(
-    true,
-  );
-  expect(usesAutomaticTitleColor({ ...item.title, autoColor: false })).toBe(
-    false,
-  );
+  expect(usesAutomaticTitleColor({ ...item.title, autoColor: undefined })).toBe(true);
+  expect(usesAutomaticTitleColor({ ...item.title, autoColor: false })).toBe(false);
   expect(
     usesAutomaticTitleColor({
       ...item.title,

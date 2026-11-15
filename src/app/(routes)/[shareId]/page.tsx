@@ -5,9 +5,7 @@ import { SharedTierlist } from '@/app/_components/sharing/shared-tierlist';
 import { siteUrl } from '@/app/_lib/site-metadata';
 import { readPublicTierlist } from '@/app/_services/tierlist-share';
 
-export const generateMetadata = async ({
-  params,
-}: PageProps<'/[shareId]'>): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: PageProps<'/[shareId]'>): Promise<Metadata> => {
   const { shareId } = await params;
   const share = await readPublicTierlist(shareId);
   if (!share) {
@@ -17,10 +15,7 @@ export const generateMetadata = async ({
     };
   }
   const url = new URL(`/${share.id}.${share.version}`, siteUrl);
-  const image = new URL(
-    `/api/tierlist-preview/${shareId}/image?v=${share.version}`,
-    siteUrl,
-  );
+  const image = new URL(`/api/tierlist-preview/${shareId}/image?v=${share.version}`, siteUrl);
 
   return {
     title: 'Shared Anime Tierlist',
@@ -52,11 +47,7 @@ const SharedPage = (props: PageProps<'/[shareId]'>) => (
   <PreviewPageFrame>
     <h1 className="sr-only">Shared Anime Tierlist</h1>
 
-    <Suspense
-      fallback={
-        <p className="text-xs text-muted-foreground">Loading tierlist...</p>
-      }
-    >
+    <Suspense fallback={<p className="text-xs text-muted-foreground">Loading tierlist...</p>}>
       <ShareContent {...props} />
     </Suspense>
   </PreviewPageFrame>

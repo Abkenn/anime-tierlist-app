@@ -13,11 +13,7 @@ export const PreviewPageFrame = ({ children }: PropsWithChildren) => {
       data-preview-page=""
       className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-8 lg:px-6"
       initial={false}
-      animate={
-        returning
-          ? { opacity: 0, scale: 0.99, y: 4 }
-          : { opacity: 1, scale: 1, y: 0 }
-      }
+      animate={returning ? { opacity: 0, scale: 0.99, y: 4 } : { opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
       onAnimationComplete={(definition) => {
         if (

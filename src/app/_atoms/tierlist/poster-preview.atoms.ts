@@ -6,6 +6,4 @@ export type PosterPreview = {
   height: number;
   viewBox: string;
 };
-export const posterPreviewsAtom = atom<ReadonlyMap<string, PosterPreview>>(
-  new Map(),
-);
+export const posterPreviewsAtom = atom<ReadonlyMap<string, PosterPreview>>(new Map());

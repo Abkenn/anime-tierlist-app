@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { MalListEntry } from '@/app/_lib/mal-import';
-import {
-  type AnimeImportProgress,
-  generateAnimeTierlist,
-} from './generate-anime-tierlist';
+import { type AnimeImportProgress, generateAnimeTierlist } from './generate-anime-tierlist';
 
 const anilist = vi.hoisted(() => ({ page: vi.fn(), anime: vi.fn() }));
 const api = vi.hoisted(() => ({
@@ -15,15 +12,11 @@ vi.mock('./mal-import.actions', () => ({
   loadMalListPage: api.list,
   loadMalAnimeBatch: async (ids: number[]) => ({
     ok: true,
-    value: await Promise.all(
-      ids.map(async (id) => (await api.anime(id)).value),
-    ),
+    value: await Promise.all(ids.map(async (id) => (await api.anime(id)).value)),
   }),
   loadMalPosterBatch: async (titles: string[]) => ({
     ok: true,
-    value: await Promise.all(
-      titles.map(async (title) => (await api.poster(title)).value),
-    ),
+    value: await Promise.all(titles.map(async (title) => (await api.poster(title)).value)),
   }),
 }));
 
@@ -93,33 +86,20 @@ it('imports more than 600 entries with batched requests, monotonic phase percent
     posterSize: 'dynamic',
   });
   expect(api.anime).toHaveBeenCalledTimes(601);
-  expect(
-    starts.slice(1).every((start, index) => start - starts[index] === 0),
-  ).toBe(true);
+  expect(starts.slice(1).every((start, index) => start - starts[index] === 0)).toBe(true);
   expect(progress[0]).toEqual({ phase: 'Reading list', percent: null });
-  for (const phase of [
-    'Checking seasons',
-    'Finding posters',
-    'Loading posters',
-  ]) {
-    const values = progress
-      .filter((value) => value.phase === phase)
-      .map((value) => value.percent);
+  for (const phase of ['Checking seasons', 'Finding posters', 'Loading posters']) {
+    const values = progress.filter((value) => value.phase === phase).map((value) => value.percent);
     expect(values[0]).toBe(0);
     expect(values.at(-1)).toBe(100);
     expect(
-      values.every(
-        (value, index) => value !== null && value >= (values[index - 1] ?? 0),
-      ),
+      values.every((value, index) => value !== null && value >= (values[index - 1] ?? 0)),
     ).toBe(true);
   }
 });
 
 it('continues paginating beyond 5,000 entries rather than rejecting the profile', async () => {
-  configure([
-    entry(1),
-    ...Array.from({ length: 5400 }, (_, index) => entry(index + 2, 'Movie')),
-  ]);
+  configure([entry(1), ...Array.from({ length: 5400 }, (_, index) => entry(index + 2, 'Movie'))]);
   const task = generateAnimeTierlist({
     username: 'Abkenn',
     signal: new AbortController().signal,
@@ -278,9 +258,7 @@ it('selects AniList, reuses list metadata, follows missing prequels and separate
     id: 'anilist-1',
     malId: 101,
   });
-  expect(result.document.animeImports?.mal).toEqual(
-    mal.document.animeImports?.mal,
-  );
+  expect(result.document.animeImports?.mal).toEqual(mal.document.animeImports?.mal);
   anilist.anime.mockClear();
   await generateAnimeTierlist({
     ...input,
@@ -299,9 +277,7 @@ it('resumes failed generation without repeating completed pages or metadata batc
     }
     return original?.(id);
   });
-  let checkpoint:
-    | import('@/app/_lib/anime-import-checkpoint').AnimeImportCheckpoint
-    | undefined;
+  let checkpoint: import('@/app/_lib/anime-import-checkpoint').AnimeImportCheckpoint | undefined;
   const input = {
     username: 'Abkenn',
     signal: new AbortController().signal,

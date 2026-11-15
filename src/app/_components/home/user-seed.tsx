@@ -2,10 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { lazy, Suspense, useEffect, useEffectEvent, useState } from 'react';
-import {
-  keyboardBehaviors,
-  matchesKeyboardBehavior,
-} from '@/app/_lib/keybindings';
+import { keyboardBehaviors, matchesKeyboardBehavior } from '@/app/_lib/keybindings';
 import type { UserSeedProps } from './user-seed-panel';
 
 const UserSeedPanel = lazy(async () => ({

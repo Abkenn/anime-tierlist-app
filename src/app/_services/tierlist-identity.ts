@@ -9,10 +9,7 @@ import {
   pruneTierlistAccessRecords,
 } from '@/app/_data/mutations/tierlist';
 import { findGoogleAccountByOwner } from '@/app/_data/queries/google-account';
-import {
-  findOwnerById,
-  findTierlistSession,
-} from '@/app/_data/queries/tierlist';
+import { findOwnerById, findTierlistSession } from '@/app/_data/queries/tierlist';
 import type { TierlistFailureCode } from '@/app/_lib/tierlist-sync';
 import { getGoogleIdentity } from './google-session';
 
@@ -21,8 +18,7 @@ const sessionSeconds = 60 * 60 * 24 * 30;
 
 export const readAnonymousTierlistOwner = async () => {
   const token = (await cookies()).get(cookieName)?.value;
-  const session =
-    token && (await findTierlistSession(hashTierlistSecret(token)));
+  const session = token && (await findTierlistSession(hashTierlistSecret(token)));
   if (
     !session ||
     session.expiresAt <= BigInt(Date.now()) ||
@@ -58,10 +54,7 @@ export const limitSeedAccess = async () => {
   });
 
   if (!allowed) {
-    throw new TierlistAccessError(
-      'rate_limit',
-      'Too many seed requests. Try again in a minute.',
-    );
+    throw new TierlistAccessError('rate_limit', 'Too many seed requests. Try again in a minute.');
   }
 
   await pruneTierlistAccessRecords();
@@ -70,9 +63,7 @@ export const limitSeedAccess = async () => {
 export const issueTierlistSession = async (ownerId: string) => {
   const jar = await cookies();
   const existingToken = jar.get(cookieName)?.value;
-  const existing =
-    existingToken &&
-    (await findTierlistSession(hashTierlistSecret(existingToken)));
+  const existing = existingToken && (await findTierlistSession(hashTierlistSecret(existingToken)));
 
   if (
     existing &&
@@ -100,25 +91,14 @@ export const issueTierlistSession = async (ownerId: string) => {
 export const requireTierlistOwner = async (ownerId: string) => {
   const googleOwner = await findGoogleAccountByOwner(ownerId);
   if (googleOwner && (await getGoogleIdentity())?.ownerId !== ownerId) {
-    throw new TierlistAccessError(
-      'unauthorized',
-      'Sign in with Google to access this tierlist.',
-    );
+    throw new TierlistAccessError('unauthorized', 'Sign in with Google to access this tierlist.');
   }
 
   const token = (await cookies()).get(cookieName)?.value;
-  const session =
-    token && (await findTierlistSession(hashTierlistSecret(token)));
+  const session = token && (await findTierlistSession(hashTierlistSecret(token)));
 
-  if (
-    !session ||
-    session.ownerId !== ownerId ||
-    session.expiresAt <= BigInt(Date.now())
-  ) {
-    throw new TierlistAccessError(
-      'unauthorized',
-      'Reconnect this tierlist before saving online.',
-    );
+  if (!session || session.ownerId !== ownerId || session.expiresAt <= BigInt(Date.now())) {
+    throw new TierlistAccessError('unauthorized', 'Reconnect this tierlist before saving online.');
   }
 
   if (

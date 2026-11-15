@@ -1,10 +1,6 @@
 import { type PointerEvent, useRef, useState } from 'react';
 import { getTierTrimFrame, moveTierTrim } from '@/app/_lib/tier-image-trim';
-import type {
-  TierCrop,
-  TierImage,
-  TierImageTrim,
-} from '@/app/_types/tierlist.types';
+import type { TierCrop, TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 
 type TrimPositionInput = {
   image?: TierImage;
@@ -12,11 +8,7 @@ type TrimPositionInput = {
   onChange?: (trim: TierImageTrim) => void;
 };
 
-export const useTierTrimPosition = ({
-  image,
-  trim,
-  onChange,
-}: TrimPositionInput) => {
+export const useTierTrimPosition = ({ image, trim, onChange }: TrimPositionInput) => {
   const [draft, setDraft] = useState(trim);
   const draftRef = useRef(trim);
   const session = useRef<{
@@ -101,8 +93,7 @@ export const useTierTrimPosition = ({
     }
   };
 
-  const nudge = (offset: TierCrop) =>
-    update(moveTierTrim(draftRef.current, offset));
+  const nudge = (offset: TierCrop) => update(moveTierTrim(draftRef.current, offset));
 
   return {
     draft,

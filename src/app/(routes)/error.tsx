@@ -40,18 +40,11 @@ const RouteError = ({ retry }: RouteErrorProps) => {
         </h1>
 
         <p className="mt-4 text-sm text-muted-foreground">
-          <TerminalText
-            text="Continue with the offline tierlist, or try again."
-            line={1}
-          />
+          <TerminalText text="Continue with the offline tierlist, or try again." line={1} />
         </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-6">
-          <Button
-            variant="link"
-            className="px-0"
-            onClick={() => setOffline(true)}
-          >
+          <Button variant="link" className="px-0" onClick={() => setOffline(true)}>
             <TerminalText text="Continue offline" line={2} />
           </Button>
 

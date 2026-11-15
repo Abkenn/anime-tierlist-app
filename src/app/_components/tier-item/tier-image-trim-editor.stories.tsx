@@ -62,24 +62,21 @@ export const Landscape: Story = {
   play: async ({ canvasElement, userEvent, args }) => {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Edit original crop' }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit original crop' }));
     const right = await page.findByRole('slider', { name: 'right crop edge' });
     fireEvent.keyDown(right, { code: 'KeyA', shiftKey: true });
     await expect(right).toHaveAttribute('aria-valuenow', '90');
     await userEvent.hover(right);
     await expect(getComputedStyle(right).stroke).toBe('none');
-    const rightBorder = page
-      .getByRole('dialog')
-      .querySelector('[data-crop-border="right"]');
+    const rightBorder = page.getByRole('dialog').querySelector('[data-crop-border="right"]');
     await expect(rightBorder).toHaveClass(/opacity-100/);
     const corner = page.getByRole('button', { name: 'top right crop corner' });
     fireEvent.keyDown(corner, { code: 'KeyS', shiftKey: true });
     fireEvent.keyDown(corner, { code: 'KeyA', shiftKey: true });
-    await expect(
-      page.getByRole('slider', { name: 'top crop edge' }),
-    ).toHaveAttribute('aria-valuenow', '10');
+    await expect(page.getByRole('slider', { name: 'top crop edge' })).toHaveAttribute(
+      'aria-valuenow',
+      '10',
+    );
     await expect(right).toHaveAttribute('aria-valuenow', '80');
     await userEvent.click(page.getByRole('button', { name: 'Done' }));
     await expect(args.onSave).toHaveBeenCalledWith({
@@ -92,9 +89,7 @@ export const Landscape: Story = {
         page.queryByRole('dialog', { name: 'Edit custom ratio crop' }),
       ).not.toBeInTheDocument(),
     );
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Edit original crop' }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit original crop' }));
     const left = await page.findByRole('slider', { name: 'left crop edge' });
     fireEvent.keyDown(left, { code: 'KeyD', shiftKey: true });
     await userEvent.click(page.getByRole('button', { name: 'Cancel' }));

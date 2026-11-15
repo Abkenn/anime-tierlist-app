@@ -153,12 +153,8 @@ export const TierItemMenu = ({
       ) : (
         <div
           className="group/item contents"
-          onPointerDownCapture={(event) =>
-            setMenuOrigin({ x: event.clientX, y: event.clientY })
-          }
-          onContextMenuCapture={(event) =>
-            setMenuOrigin({ x: event.clientX, y: event.clientY })
-          }
+          onPointerDownCapture={(event) => setMenuOrigin({ x: event.clientX, y: event.clientY })}
+          onContextMenuCapture={(event) => setMenuOrigin({ x: event.clientX, y: event.clientY })}
         >
           <ContextMenuTrigger
             render={trigger}
@@ -202,9 +198,7 @@ export const TierItemMenu = ({
                 align: 'start',
                 alignOffset: 0,
                 sideOffset: () =>
-                  Number.parseFloat(
-                    getComputedStyle(document.documentElement).fontSize,
-                  ) * 0.5,
+                  Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5,
               }
             : undefined
         }
@@ -265,27 +259,20 @@ export const TierItemMenu = ({
         {(mode === 'cover' || mode === 'natural') && (
           <div role="menu" aria-label="Image crop actions">
             <ContextMenuItem
-              disabled={
-                !hasImage || editing || (mode === 'cover' && squareImage)
-              }
+              disabled={!hasImage || editing || (mode === 'cover' && squareImage)}
               onClick={onEdit}
             >
               {mode === 'natural' ? 'Edit trim' : 'Edit crop'}
             </ContextMenuItem>
 
             {mode === 'natural' && (
-              <ContextMenuItem
-                disabled={!hasImage || editing || !canPosition}
-                onClick={onPosition}
-              >
+              <ContextMenuItem disabled={!hasImage || editing || !canPosition} onClick={onPosition}>
                 Edit crop
               </ContextMenuItem>
             )}
 
             <ContextMenuItem
-              disabled={
-                !hasImage || editing || (mode === 'cover' && squareImage)
-              }
+              disabled={!hasImage || editing || (mode === 'cover' && squareImage)}
               onClick={onReset}
             >
               {mode === 'natural' ? 'Reset trim' : 'Reset crop'}
@@ -301,20 +288,14 @@ export const TierItemMenu = ({
 
         {mode === 'natural' && sizingControl}
 
-        {mode === 'contain' && (
-          <ContextMenuItem disabled>Image centered in square</ContextMenuItem>
-        )}
+        {mode === 'contain' && <ContextMenuItem disabled>Image centered in square</ContextMenuItem>}
       </ContextMenuContent>
     </>
   );
   return host ? (
     content
   ) : (
-    <ContextMenu
-      open={open}
-      onOpenChange={changeOpen}
-      highlightItemOnHover={!renaming}
-    >
+    <ContextMenu open={open} onOpenChange={changeOpen} highlightItemOnHover={!renaming}>
       {content}
     </ContextMenu>
   );

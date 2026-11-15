@@ -3,20 +3,10 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { cancelFrame, frame } from 'motion/react';
 import { useLayoutEffect, useRef, useState, ViewTransition } from 'react';
-import {
-  draggedRankAtom,
-  rankOffsetsAtom,
-} from '@/app/_atoms/tierlist/layout.atoms';
-import {
-  imageModeAtom,
-  posterSizeAtom,
-} from '@/app/_atoms/tierlist/settings.atoms';
+import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
+import { imageModeAtom, posterSizeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
-import {
-  getAutoPosterWidth,
-  getPosterSize,
-  stabilizePosterWidth,
-} from '@/app/_lib/poster-size';
+import { getAutoPosterWidth, getPosterSize, stabilizePosterWidth } from '@/app/_lib/poster-size';
 import type { TierRank } from '@/app/_types/tierlist.types';
 import { TierRow } from './tier-row';
 
@@ -56,9 +46,7 @@ export const TierBoardRows = ({
     width: currentWidth,
   });
   const autoWidth =
-    autoFit.mode !== mode ||
-    autoFit.imageMode !== imageMode ||
-    autoFit.restoring !== restoring
+    autoFit.mode !== mode || autoFit.imageMode !== imageMode || autoFit.restoring !== restoring
       ? currentWidth
       : stabilizePosterWidth(autoFit.width, currentWidth);
   if (
@@ -70,10 +58,7 @@ export const TierBoardRows = ({
     setAutoFit({ mode, imageMode, restoring, width: autoWidth });
   }
   const size = getPosterSize({
-    mode:
-      restoring || (mode === 'dynamic' && interaction.items.length === 0)
-        ? 'small'
-        : mode,
+    mode: restoring || (mode === 'dynamic' && interaction.items.length === 0) ? 'small' : mode,
     imageMode,
     items: interaction.items,
     autoWidth,
@@ -120,11 +105,7 @@ export const TierBoardRows = ({
                 ? Math.max(
                     1,
                     Math.round(
-                      8 *
-                        Math.exp(
-                          -0.5 *
-                            ((index - middleRank) / skeletonDeviation) ** 2,
-                        ),
+                      8 * Math.exp(-0.5 * ((index - middleRank) / skeletonDeviation) ** 2),
                     ),
                   )
                 : undefined
@@ -132,9 +113,7 @@ export const TierBoardRows = ({
             lines={interaction.lines(rank)}
             searchPosition={interaction.searchPosition(rank)}
             itemCount={
-              interaction.items.filter(
-                (item) => interaction.visibleRank(item) === rank,
-              ).length
+              interaction.items.filter((item) => interaction.visibleRank(item) === rank).length
             }
           />
         ))}

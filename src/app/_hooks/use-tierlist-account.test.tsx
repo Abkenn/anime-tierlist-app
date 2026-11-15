@@ -5,10 +5,7 @@ import { Provider } from 'jotai';
 import type { PropsWithChildren } from 'react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import type { LocalTierlist } from '@/app/_lib/local-tierlist';
-import {
-  pendingProjectKey,
-  readProjectSession,
-} from '@/app/_lib/project-session';
+import { pendingProjectKey, readProjectSession } from '@/app/_lib/project-session';
 import { tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
 import {
   activateAccountTierlist,
@@ -74,9 +71,7 @@ const remote = {
   },
 };
 const database = createDatabaseStore('anime-tierlist', 'drafts');
-const wrapper = ({ children }: PropsWithChildren) => (
-  <Provider>{children}</Provider>
-);
+const wrapper = ({ children }: PropsWithChildren) => <Provider>{children}</Provider>;
 
 beforeEach(async () => {
   await clear(database);
@@ -95,9 +90,7 @@ it('opens a dropped project temporarily, retains it on refresh, and returns to G
     ownerId: '27a123b1-0b05-4702-a749-965faee5a5d4',
     document: {
       ...remote.document,
-      items: [
-        { id: 'project', label: 'Project copy', rank: 'Watching' as const },
-      ],
+      items: [{ id: 'project', label: 'Project copy', rank: 'Watching' as const }],
     },
   };
   await activateAccountTierlist(accountKey, remote);
@@ -110,9 +103,7 @@ it('opens a dropped project temporarily, retains it on refresh, and returns to G
     remote,
   });
   const first = renderHook(() => useTierlistAccount(), { wrapper });
-  await waitFor(() =>
-    expect(first.result.current.storage.seed).toBe(projectSeed),
-  );
+  await waitFor(() => expect(first.result.current.storage.seed).toBe(projectSeed));
   expect(readProjectSession()).toEqual({
     seed: projectSeed,
     returnSeed: accountKey,
@@ -121,18 +112,12 @@ it('opens a dropped project temporarily, retains it on refresh, and returns to G
   expect((await loadLocalTierlist(device)).seed).toBe(accountKey);
   first.unmount();
   const second = renderHook(() => useTierlistAccount(), { wrapper });
-  await waitFor(() =>
-    expect(second.result.current.storage.seed).toBe(projectSeed),
-  );
+  await waitFor(() => expect(second.result.current.storage.seed).toBe(projectSeed));
   await act(async () => {
     await second.result.current.actions.restoreDevice();
   });
-  await waitFor(() =>
-    expect(second.result.current.storage.seed).toBe(accountKey),
-  );
-  expect(second.result.current.storage.snapshot?.items).toEqual(
-    remote.document.items,
-  );
+  await waitFor(() => expect(second.result.current.storage.seed).toBe(accountKey));
+  expect(second.result.current.storage.snapshot?.items).toEqual(remote.document.items);
   expect(readProjectSession()).toBeNull();
   expect(mocks.session.data?.user.id).toBe('google-user');
 });
@@ -144,9 +129,7 @@ it('replaces the Google document from a temporary project only through the expli
     ownerId: '27a123b1-0b05-4702-a749-965faee5a5d4',
     document: {
       ...remote.document,
-      items: [
-        { id: 'project', label: 'Project copy', rank: 'Watching' as const },
-      ],
+      items: [{ id: 'project', label: 'Project copy', rank: 'Watching' as const }],
     },
   };
   await activateAccountTierlist(accountKey, remote);
@@ -191,9 +174,9 @@ it('restores the device list after confirmed sign-out without syncing the accoun
   await waitFor(() => expect(result.current.storage.seed).toBe(device.seed));
   expect(result.current.storage.snapshot?.items).toEqual(device.items);
   expect(mocks.connect).not.toHaveBeenCalled();
-  expect(
-    (await get<LocalTierlist>(`profile:${accountKey}`, database))?.items,
-  ).toEqual(remote.document.items);
+  expect((await get<LocalTierlist>(`profile:${accountKey}`, database))?.items).toEqual(
+    remote.document.items,
+  );
 });
 
 it('keeps an offline account draft without syncing it and restores the device when sign-out is confirmed', async () => {
@@ -220,9 +203,7 @@ it('keeps an explicitly chosen local copy open while preserving Google sign-in',
   mocks.session.data = { user: { id: 'google-user' } };
   try {
     const { result } = renderHook(() => useTierlistAccount(), { wrapper });
-    await waitFor(() =>
-      expect(result.current.status.verifyingIdentity).toBe(false),
-    );
+    await waitFor(() => expect(result.current.status.verifyingIdentity).toBe(false));
     expect(result.current.storage.seed).toBe(device.seed);
     expect(result.current.googleConnected).toBe(false);
     expect(mocks.readAccount).not.toHaveBeenCalled();
@@ -244,9 +225,9 @@ it('returns an old unmarked account profile to the device list after authorizati
   await waitFor(() => expect(result.current.storage.seed).toBe(device.seed));
   expect(mocks.connect).toHaveBeenCalledTimes(1);
   expect(result.current.storage.snapshot?.items).toEqual(device.items);
-  expect(
-    (await get<LocalTierlist>(`profile:${accountKey}`, database))?.items,
-  ).toEqual(remote.document.items);
+  expect((await get<LocalTierlist>(`profile:${accountKey}`, database))?.items).toEqual(
+    remote.document.items,
+  );
 });
 
 it('hides and restores an open account list when its session signs out', async () => {
@@ -261,9 +242,7 @@ it('hides and restores an open account list when its session signs out', async (
     wrapper,
   });
 
-  await waitFor(() =>
-    expect(result.current.status.verifyingIdentity).toBe(false),
-  );
+  await waitFor(() => expect(result.current.status.verifyingIdentity).toBe(false));
   expect(result.current.storage.seed).toBe(accountKey);
   mocks.session = { data: null, isPending: false, error: null };
   rerender();

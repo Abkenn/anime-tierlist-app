@@ -3,11 +3,7 @@ import { type ComponentProps, useEffect, useState } from 'react';
 import { fn } from 'storybook/test';
 import { TierItemSizing } from './tier-item-sizing';
 
-const Sandbox = ({
-  expansion,
-  onChange,
-  ...props
-}: ComponentProps<typeof TierItemSizing>) => {
+const Sandbox = ({ expansion, onChange, ...props }: ComponentProps<typeof TierItemSizing>) => {
   const [current, setCurrent] = useState(expansion);
 
   useEffect(() => {

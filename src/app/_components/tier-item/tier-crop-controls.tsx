@@ -4,11 +4,7 @@ import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
 import { type RefObject, useMemo } from 'react';
 import { centerTierTrim, getTierTrimFrame } from '@/app/_lib/tier-image-trim';
-import type {
-  TierCrop,
-  TierImage,
-  TierImageTrim,
-} from '@/app/_types/tierlist.types';
+import type { TierCrop, TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 
 const actionClassName =
   'min-h-11 cursor-pointer text-muted-foreground underline decoration-transparent underline-offset-4 transition-colors duration-150 hover:text-foreground hover:decoration-current active:decoration-2 active:opacity-60 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-reduce:transition-none';
@@ -52,10 +48,7 @@ export const TierCropControls = ({
           return new DOMRect(frame.x, frame.y, frame.width, frame.height);
         }
 
-        const ratio =
-          image && image.width > 0 && image.height > 0
-            ? image.width / image.height
-            : 1;
+        const ratio = image && image.width > 0 && image.height > 0 ? image.width / image.height : 1;
         const width = bounds.width * Math.max(1, ratio);
         const height = bounds.height * Math.max(1, 1 / ratio);
 
@@ -79,9 +72,7 @@ export const TierCropControls = ({
           align="start"
           positionMethod="fixed"
           sideOffset={() =>
-            Number.parseFloat(
-              getComputedStyle(document.documentElement).fontSize,
-            ) * 0.5
+            Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5
           }
           className="z-50"
         >
@@ -105,20 +96,13 @@ export const TierCropControls = ({
               <div className="flex items-center justify-center gap-4">
                 <button
                   type="button"
-                  className={cn(
-                    actionClassName,
-                    'text-foreground decoration-foreground/60',
-                  )}
+                  className={cn(actionClassName, 'text-foreground decoration-foreground/60')}
                   onClick={onSave}
                 >
                   Done
                 </button>
 
-                <button
-                  type="button"
-                  className={actionClassName}
-                  onClick={onCancel}
-                >
+                <button type="button" className={actionClassName} onClick={onCancel}>
                   Cancel
                 </button>
 

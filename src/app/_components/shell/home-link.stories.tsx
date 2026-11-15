@@ -1,9 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { HomeLink } from './home-link';
 
-const meta = { title: 'Shell/HomeLink', component: HomeLink } satisfies Meta<
-  typeof HomeLink
->;
+const meta = { title: 'Shell/HomeLink', component: HomeLink } satisfies Meta<typeof HomeLink>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

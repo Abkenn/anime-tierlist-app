@@ -24,11 +24,7 @@ type ProjectImportInput = {
   accountProfileKey: string;
 };
 
-export const useProjectImport = ({
-  storage,
-  ready,
-  accountProfileKey,
-}: ProjectImportInput) => {
+export const useProjectImport = ({ storage, ready, accountProfileKey }: ProjectImportInput) => {
   const [project, setProject] = useState<ProjectSession | null>(null);
   const [request, setRequest] = useState(0);
   const [opening, setOpening] = useState(false);
@@ -80,8 +76,7 @@ export const useProjectImport = ({
           returnSeed: previous?.returnSeed ?? storage.seed,
           returnAccount:
             previous?.returnAccount ??
-            (storage.seed === accountProfileKey ||
-              Boolean(storage.snapshot?.accountOwnerId)),
+            (storage.seed === accountProfileKey || Boolean(storage.snapshot?.accountOwnerId)),
         };
         saveProjectSession(next);
         try {

@@ -13,28 +13,18 @@ export const PreviewControlsLoading = () => (
       </span>
 
       <div aria-hidden="true" className={previewTemplateLayout}>
-        <span className="invisible inline-flex min-h-9 items-center">
-          Create your own tierlist
-        </span>
+        <span className="invisible inline-flex min-h-9 items-center">Create your own tierlist</span>
 
-        <span className="invisible inline-flex min-h-9 items-center">
-          Use as a template
-        </span>
+        <span className="invisible inline-flex min-h-9 items-center">Use as a template</span>
       </div>
     </div>
 
     <div aria-hidden="true" className={previewExportLayout}>
-      <span className="invisible inline-flex min-h-9 items-center">
-        Save project
-      </span>
+      <span className="invisible inline-flex min-h-9 items-center">Save project</span>
 
-      <span className="invisible inline-flex min-h-9 items-center">
-        Copy PNG
-      </span>
+      <span className="invisible inline-flex min-h-9 items-center">Copy PNG</span>
 
-      <span className="invisible inline-flex min-h-9 items-center">
-        Download as PNG
-      </span>
+      <span className="invisible inline-flex min-h-9 items-center">Download as PNG</span>
     </div>
   </div>
 );

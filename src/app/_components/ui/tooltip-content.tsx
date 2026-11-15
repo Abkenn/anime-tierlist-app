@@ -12,10 +12,7 @@ const TooltipContent = ({
   children,
   ...props
 }: TooltipPrimitive.Popup.Props &
-  Pick<
-    TooltipPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset'
-  >) => (
+  Pick<TooltipPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>) => (
   <TooltipPrimitive.Portal>
     <TooltipPrimitive.Positioner
       align={align}

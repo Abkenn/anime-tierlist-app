@@ -1,8 +1,4 @@
-import type {
-  TierImage,
-  TierItemData,
-  TierRank,
-} from '@/app/_types/tierlist.types';
+import type { TierImage, TierItemData, TierRank } from '@/app/_types/tierlist.types';
 
 const fixtureImages: TierImage[] = [
   {

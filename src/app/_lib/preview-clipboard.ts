@@ -26,13 +26,10 @@ export const copyPendingPreviewLink = async (pendingUrl: Promise<string>) => {
   let url: string;
   try {
     if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-      const text = (async () =>
-        new Blob([await pendingUrl], { type: 'text/plain' }))();
+      const text = (async () => new Blob([await pendingUrl], { type: 'text/plain' }))();
       const writing = (async () => {
         try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'text/plain': text }),
-          ]);
+          await navigator.clipboard.write([new ClipboardItem({ 'text/plain': text })]);
           return true;
         } catch {
           return false;
@@ -40,16 +37,14 @@ export const copyPendingPreviewLink = async (pendingUrl: Promise<string>) => {
       })();
       url = await pendingUrl;
       if (!(await writing)) {
-        title =
-          'Could not copy the link. Copy it from the preview address bar.';
+        title = 'Could not copy the link. Copy it from the preview address bar.';
       }
     } else {
       url = await pendingUrl;
       try {
         await navigator.clipboard.writeText(url);
       } catch {
-        title =
-          'Could not copy the link. Copy it from the preview address bar.';
+        title = 'Could not copy the link. Copy it from the preview address bar.';
       }
     }
     queueConfirmation(url, title);

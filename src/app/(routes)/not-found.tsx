@@ -9,10 +9,7 @@ const NotFound = () => (
         <TerminalText text="Page not found" />
       </h1>
 
-      <Link
-        href="/"
-        className="mt-6 inline-block text-sm underline underline-offset-4"
-      >
+      <Link href="/" className="mt-6 inline-block text-sm underline underline-offset-4">
         <TerminalText text="Return home" line={1} />
       </Link>
     </TerminalSequence>

@@ -4,9 +4,7 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
-const temporaryDirectory = fileURLToPath(
-  new URL('./.storybook-cache/tmp', import.meta.url),
-);
+const temporaryDirectory = fileURLToPath(new URL('./.storybook-cache/tmp', import.meta.url));
 
 mkdirSync(temporaryDirectory, { recursive: true });
 process.env.TEMP = temporaryDirectory;

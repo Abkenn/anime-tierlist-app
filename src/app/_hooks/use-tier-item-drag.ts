@@ -1,17 +1,6 @@
 import { useAtomValue } from 'jotai';
-import {
-  cancelFrame,
-  frame,
-  useAnimationControls,
-  useReducedMotion,
-} from 'motion/react';
-import {
-  type PointerEvent,
-  type RefObject,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { cancelFrame, frame, useAnimationControls, useReducedMotion } from 'motion/react';
+import { type PointerEvent, type RefObject, useLayoutEffect, useRef, useState } from 'react';
 import { draggedRankAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
@@ -67,10 +56,7 @@ export const useTierItemDrag = ({
     session.current?.stopFrame?.();
     session.current = null;
 
-    if (
-      pointerId !== undefined &&
-      itemRef.current?.hasPointerCapture(pointerId)
-    ) {
+    if (pointerId !== undefined && itemRef.current?.hasPointerCapture(pointerId)) {
       itemRef.current.releasePointerCapture(pointerId);
     }
 
@@ -95,9 +81,7 @@ export const useTierItemDrag = ({
       return;
     }
 
-    const rem = Number.parseFloat(
-      getComputedStyle(document.documentElement).fontSize,
-    );
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
     const bounds = board.getBoundingClientRect();
 
     // A transformed poster must not extend the scrollable board's bounds.
@@ -122,9 +106,7 @@ export const useTierItemDrag = ({
     controls.stop();
 
     const rect = event.currentTarget.getBoundingClientRect();
-    const rem = Number.parseFloat(
-      getComputedStyle(document.documentElement).fontSize,
-    );
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     session.current = {
       pointerId: event.pointerId,

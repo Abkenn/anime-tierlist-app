@@ -17,14 +17,10 @@ vi.mock('@/app/_hooks/use-viewport-window', () => ({
 }));
 
 vi.mock('@/app/_components/tier-item/tier-item-passive', () => ({
-  TierItemPassive: ({ id }: { id: string }) => (
-    <button type="button" data-testid={id} />
-  ),
+  TierItemPassive: ({ id }: { id: string }) => <button type="button" data-testid={id} />,
 }));
 
-const fixture = (
-  count: number,
-): ComponentProps<typeof TierBoardItems>['interaction'] => ({
+const fixture = (count: number): ComponentProps<typeof TierBoardItems>['interaction'] => ({
   boardRef: { current: null },
   items: Array.from({ length: count }, (_, index) => ({
     id: `poster-${index}`,
@@ -94,31 +90,17 @@ it('keeps skeleton geometry for every culled poster without mounting its control
   expect(screen.queryByTestId('poster-4999')).not.toBeInTheDocument();
   expect(screen.getAllByRole('button')).toHaveLength(6);
   const path = result.container.querySelector('[data-placeholder-rank="A"]');
-  expect(path).toHaveAttribute(
-    'd',
-    expect.stringContaining('M0,600h60v100h-60Z'),
-  );
-  expect(path).not.toHaveAttribute(
-    'd',
-    expect.stringContaining('M0,0h60v100h-60Z'),
-  );
-  expect(
-    result.container.querySelectorAll('[data-placeholder-rank]'),
-  ).toHaveLength(1);
+  expect(path).toHaveAttribute('d', expect.stringContaining('M0,600h60v100h-60Z'));
+  expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
+  expect(result.container.querySelectorAll('[data-placeholder-rank]')).toHaveLength(1);
 
   viewport.top = 4000;
   viewport.bottom = 4500;
   result.rerender(board());
   expect(screen.queryByTestId('poster-0')).not.toBeInTheDocument();
   expect(screen.getByTestId('poster-40')).toBeInTheDocument();
-  expect(path).toHaveAttribute(
-    'd',
-    expect.stringContaining('M0,0h60v100h-60Z'),
-  );
-  expect(path).not.toHaveAttribute(
-    'd',
-    expect.stringContaining('M0,4000h60v100h-60Z'),
-  );
+  expect(path).toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
+  expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,4000h60v100h-60Z'));
   viewport.top = 0;
   viewport.bottom = 500;
 });

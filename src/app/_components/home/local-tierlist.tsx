@@ -60,9 +60,7 @@ export const LocalTierlist = ({
                           render: (content: ReactNode) => (
                             <span
                               className={cn(
-                                !status.backedUp &&
-                                  !status.restoringAccount &&
-                                  'sm:hidden',
+                                !status.backedUp && !status.restoringAccount && 'sm:hidden',
                               )}
                             >
                               {content}
@@ -76,9 +74,7 @@ export const LocalTierlist = ({
                             <span
                               className={cn(
                                 'max-w-full wrap-break-word text-left align-baseline font-medium text-foreground',
-                                !status.backedUp &&
-                                  !status.restoringAccount &&
-                                  'sm:hidden',
+                                !status.backedUp && !status.restoringAccount && 'sm:hidden',
                               )}
                             >
                               {content}
@@ -91,11 +87,7 @@ export const LocalTierlist = ({
               />
             </p>
             <UserSeed
-              seed={
-                googleConnected || storage.snapshot?.accountOwnerId
-                  ? ''
-                  : storage.seed
-              }
+              seed={googleConnected || storage.snapshot?.accountOwnerId ? '' : storage.seed}
               open={accountOpen}
               handle={accountHandle}
               onOpenChange={setAccountOpen}
@@ -107,9 +99,7 @@ export const LocalTierlist = ({
               onUseDevice={actions.restoreDevice}
               onReplaceDevice={actions.replaceDevice}
               resolvingIdentity={status.verifyingIdentity}
-              googleConnected={
-                googleConnected || Boolean(status.restoringAccount)
-              }
+              googleConnected={googleConnected || Boolean(status.restoringAccount)}
               canSignIn={status.backedUp || sync.status === 'unauthorized'}
               onGoogleSignIn={actions.signIn}
               onGoogleSignOut={actions.restoreDevice}
@@ -139,11 +129,7 @@ export const LocalTierlist = ({
           </div>
         </div>
 
-        <TierlistSyncFeedback
-          sync={sync}
-          busy={busy}
-          onReload={actions.reloadApp}
-        />
+        <TierlistSyncFeedback sync={sync} busy={busy} onReload={actions.reloadApp} />
       </TerminalSequence>
 
       <PosterOfflineCache />
@@ -162,10 +148,7 @@ export const LocalTierlist = ({
       )}
 
       <div
-        className={cn(
-          'flex min-h-0 flex-1 flex-col',
-          accountUnavailable && 'invisible',
-        )}
+        className={cn('flex min-h-0 flex-1 flex-col', accountUnavailable && 'invisible')}
         inert={storage.status === 'loading' || busy || accountUnavailable}
         aria-busy={storage.status === 'loading' || busy || accountUnavailable}
       >

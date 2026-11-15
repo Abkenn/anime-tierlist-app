@@ -24,11 +24,7 @@ const meta = {
   },
   render: (args) => (
     <div className="relative h-40 w-24">
-      <TierItemImage
-        image={args.image ?? image}
-        mode={args.mode}
-        crop={{ x: 0.5, y: 0.5 }}
-      />
+      <TierItemImage image={args.image ?? image} mode={args.mode} crop={{ x: 0.5, y: 0.5 }} />
 
       <TierItemTitle {...args} />
     </div>
@@ -78,21 +74,13 @@ export const FourLines: Story = {
   },
   play: async ({ canvasElement }) => {
     await waitFor(() => {
-      const title = canvasElement.querySelector(
-        '[data-tier-title] > span > span',
-      );
+      const title = canvasElement.querySelector('[data-tier-title] > span > span');
       const bounds = title?.getBoundingClientRect();
       const frame = title?.parentElement?.getBoundingClientRect();
 
-      expect(
-        frame?.width && frame?.height ? frame.width / frame.height : 0,
-      ).toBeCloseTo(16 / 9);
-      expect(
-        bounds && frame ? bounds.top - frame.top : 0,
-      ).toBeGreaterThanOrEqual(3.5);
-      expect(
-        bounds && frame ? frame.bottom - bounds.bottom : 0,
-      ).toBeGreaterThanOrEqual(3.5);
+      expect(frame?.width && frame?.height ? frame.width / frame.height : 0).toBeCloseTo(16 / 9);
+      expect(bounds && frame ? bounds.top - frame.top : 0).toBeGreaterThanOrEqual(3.5);
+      expect(bounds && frame ? frame.bottom - bounds.bottom : 0).toBeGreaterThanOrEqual(3.5);
     });
   },
 };

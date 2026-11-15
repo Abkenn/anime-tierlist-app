@@ -8,13 +8,9 @@ it('keeps the same items reference when a poster returns to its original rank po
     { id: 'other', rank: 'A', label: 'Other' },
     { id: 'second', rank: 'S', label: 'Second' },
   ];
-  expect(
-    projectTierItems(items, { id: 'first', rank: 'S', index: 0 }, ['S', 'A']),
-  ).toBe(items);
-  expect(
-    projectTierItems(items, { id: 'second', rank: 'S', index: 1 }, ['S', 'A']),
-  ).toBe(items);
-  expect(
-    projectTierItems(items, { id: 'second', rank: 'S', index: 0 }, ['S', 'A']),
-  ).not.toBe(items);
+  expect(projectTierItems(items, { id: 'first', rank: 'S', index: 0 }, ['S', 'A'])).toBe(items);
+  expect(projectTierItems(items, { id: 'second', rank: 'S', index: 1 }, ['S', 'A'])).toBe(items);
+  expect(projectTierItems(items, { id: 'second', rank: 'S', index: 0 }, ['S', 'A'])).not.toBe(
+    items,
+  );
 });

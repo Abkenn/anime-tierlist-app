@@ -2,10 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import {
-  keyboardBehaviors,
-  matchesKeyboardBehavior,
-} from '@/app/_lib/keybindings';
+import { keyboardBehaviors, matchesKeyboardBehavior } from '@/app/_lib/keybindings';
 
 type TierlistFindProps = {
   query: string;
@@ -34,9 +31,7 @@ export const TierlistFind = ({
     event.preventDefault();
     if (!open) {
       previousFocus.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
     }
     setOpen(true);
     input.current?.focus();
@@ -81,10 +76,7 @@ export const TierlistFind = ({
         className="min-w-0 w-48 bg-transparent outline-none"
       />
 
-      <span
-        role="status"
-        className="whitespace-nowrap text-xs text-muted-foreground"
-      >
+      <span role="status" className="whitespace-nowrap text-xs text-muted-foreground">
         {query.trim() ? `${count} found` : ''}
       </span>
 

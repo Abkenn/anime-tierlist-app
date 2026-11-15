@@ -5,13 +5,7 @@ import { motion } from 'motion/react';
 import { useTierRankDrag } from '@/app/_hooks/use-tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
-export const TierRankMove = ({
-  rank,
-  label,
-}: {
-  rank: TierRank;
-  label: string;
-}) => {
+export const TierRankMove = ({ rank, label }: { rank: TierRank; label: string }) => {
   const { handle, gestureProps } = useTierRankDrag(rank);
 
   return (

@@ -21,7 +21,5 @@ it('wraps at spaces before shrinking, unless an individual word cannot fit', () 
   const narrow = getTierLabelLayout({ ...input, text: 'Extraordinary Shows' });
   expect(narrow.fontSize).toBeLessThan(14);
   expect(narrow.lines.join(' ')).toBe('Extraordinary Shows');
-  expect(narrow.lines.some((line) => line.includes('Extraordinary'))).toBe(
-    true,
-  );
+  expect(narrow.lines.some((line) => line.includes('Extraordinary'))).toBe(true);
 });

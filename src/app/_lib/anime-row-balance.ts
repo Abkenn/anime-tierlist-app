@@ -3,10 +3,7 @@ import type { ImportSeries } from './anime-import';
 
 export type ImportSeriesRow = { rank: TierRank; series: ImportSeries[] };
 
-export const compareImportSeries = (
-  first: ImportSeries,
-  second: ImportSeries,
-) =>
+export const compareImportSeries = (first: ImportSeries, second: ImportSeries) =>
   second.score - first.score ||
   (first.score === 10 && second.score === 10
     ? Number(second.seasons > 1) - Number(first.seasons > 1)
@@ -29,10 +26,7 @@ export const findImportRowSplit = ({
   targetSize,
 }: ImportRowSplitInput) => {
   const middle =
-    targetSize ??
-    (preferLargerLeft
-      ? Math.ceil(scores.length / 2)
-      : Math.floor(scores.length / 2));
+    targetSize ?? (preferLargerLeft ? Math.ceil(scores.length / 2) : Math.floor(scores.length / 2));
   const direction = preferLargerLeft ? 1 : -1;
   const candidates = [
     middle,
@@ -56,10 +50,7 @@ export const findImportRowSplit = ({
           episodes[cut - 1] > episodes[cut])),
   );
   if (targetSize !== undefined) {
-    valid.sort(
-      (first, second) =>
-        Math.abs(first - targetSize) - Math.abs(second - targetSize),
-    );
+    valid.sort((first, second) => Math.abs(first - targetSize) - Math.abs(second - targetSize));
   }
 
   return valid[0] ?? null;
@@ -73,11 +64,7 @@ const bellWeights: Partial<Record<TierRank, number>> = {
   B: 1,
 };
 
-const splitRowDown = (
-  rows: ImportSeriesRow[],
-  index: number,
-  targetSize: number,
-) => {
+const splitRowDown = (rows: ImportSeriesRow[], index: number, targetSize: number) => {
   const row = rows[index];
   if (row.series.length < 6 || row.series.length < targetSize + 2) {
     return;
@@ -88,40 +75,26 @@ const splitRowDown = (
     preferLargerLeft: row.rank === 'B+',
     targetSize,
   });
-  if (
-    cut === null ||
-    Math.abs(cut - targetSize) >= row.series.length - targetSize
-  ) {
+  if (cut === null || Math.abs(cut - targetSize) >= row.series.length - targetSize) {
     return;
   }
   const target = rows[index + 1];
-  target.series = [...row.series.splice(cut), ...target.series].sort(
-    compareImportSeries,
-  );
+  target.series = [...row.series.splice(cut), ...target.series].sort(compareImportSeries);
 };
 
 const repairSparseTopRow = (rows: ImportSeriesRow[]) => {
   const top = rows.find((row) => row.rank === 'S');
   const next = rows.find((row) => row.rank === 'A+');
-  if (
-    !top ||
-    !next ||
-    next.series.length < Math.max(12, top.series.length * 6)
-  ) {
+  if (!top || !next || next.series.length < Math.max(12, top.series.length * 6)) {
     return rows;
   }
   // Promote only the exceptional prefix above the common 9/10 plateau.
   // Keep equal scores together, and leave at least twice as many entries in A+.
   const target = Math.floor((top.series.length + next.series.length) / 4);
-  const limit = Math.min(
-    target - top.series.length,
-    Math.floor(next.series.length / 3),
-  );
+  const limit = Math.min(target - top.series.length, Math.floor(next.series.length / 3));
   const cut = next.series.findIndex((entry) => entry.score <= 9);
   if (cut > 0 && cut <= limit) {
-    top.series = [...top.series, ...next.series.splice(0, cut)].sort(
-      compareImportSeries,
-    );
+    top.series = [...top.series, ...next.series.splice(0, cut)].sort(compareImportSeries);
   }
   return rows;
 };
@@ -139,13 +112,9 @@ const repairExpandedRows = (rows: ImportSeriesRow[]) => {
     if (largest < Math.max(6, smallest * 3)) {
       continue;
     }
-    const combined = [...upper.series, ...lower.series].sort(
-      compareImportSeries,
-    );
+    const combined = [...upper.series, ...lower.series].sort(compareImportSeries);
     // Lower tails should taper; upper rows can be roughly equal in length.
-    const target = Math.round(
-      combined.length * (rank === 'C' || rank === 'D' ? 0.6 : 0.5),
-    );
+    const target = Math.round(combined.length * (rank === 'C' || rank === 'D' ? 0.6 : 0.5));
     const cut = findImportRowSplit({
       scores: combined.map((entry) => entry.score),
       episodes: combined.map((entry) => entry.episodes),
@@ -165,19 +134,14 @@ const repairExpandedRows = (rows: ImportSeriesRow[]) => {
   return rows;
 };
 
-const finishBalancing = (rows: ImportSeriesRow[]) =>
-  repairExpandedRows(repairSparseTopRow(rows));
+const finishBalancing = (rows: ImportSeriesRow[]) => repairExpandedRows(repairSparseTopRow(rows));
 
-export const balanceImportRows = (
-  input: ImportSeriesRow[],
-): ImportSeriesRow[] => {
+export const balanceImportRows = (input: ImportSeriesRow[]): ImportSeriesRow[] => {
   const floor = input.findIndex((row) => row.rank === 'B');
   const rows = input.map((row, index) => ({
     rank: row.rank,
     series:
-      floor >= 0 && index <= floor
-        ? [...row.series].sort(compareImportSeries)
-        : [...row.series],
+      floor >= 0 && index <= floor ? [...row.series].sort(compareImportSeries) : [...row.series],
   }));
   if (floor < 0) {
     return finishBalancing(rows);
@@ -218,10 +182,7 @@ export const balanceImportRows = (
       for (let index = start; index < center; index += 1) {
         const targetSize = Math.max(
           2,
-          Math.round(
-            ((total - peak) * (bellWeights[rows[index].rank] ?? 0)) /
-              upperWeight,
-          ),
+          Math.round(((total - peak) * (bellWeights[rows[index].rank] ?? 0)) / upperWeight),
         );
         splitRowDown(rows, index, targetSize);
       }
@@ -237,9 +198,7 @@ export const balanceImportRows = (
     middle.series.length >= lower.series.length &&
     rows.every(
       (row, index) =>
-        index >= center ||
-        row.rank === 'S+' ||
-        row.series.length <= rows[index + 1].series.length,
+        index >= center || row.rank === 'S+' || row.series.length <= rows[index + 1].series.length,
     )
   ) {
     return finishBalancing(rows);
@@ -254,8 +213,7 @@ export const balanceImportRows = (
     );
 
     return neighbors.some(
-      (neighbor) =>
-        row.series.length >= Math.max(1, neighbor.series.length) * 3,
+      (neighbor) => row.series.length >= Math.max(1, neighbor.series.length) * 3,
     );
   });
   if (first < 0) {
@@ -263,10 +221,7 @@ export const balanceImportRows = (
   }
   const affected = rows.slice(first, floor + 1);
   const total = affected.reduce((sum, row) => sum + row.series.length, 0);
-  const weight = affected.reduce(
-    (sum, row) => sum + (bellWeights[row.rank] ?? 0),
-    0,
-  );
+  const weight = affected.reduce((sum, row) => sum + (bellWeights[row.rank] ?? 0), 0);
   const targets = rows.map((row) =>
     Math.max(2, Math.round((total * (bellWeights[row.rank] ?? 0)) / weight)),
   );

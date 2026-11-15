@@ -15,9 +15,7 @@ export const animeImportCheckpointSchema = animeImportHistorySchema.extend({
       episodes: z.number().nonnegative().nullable(),
       watchedEpisodes: z.number().nonnegative(),
       completed: z.boolean(),
-      status: z
-        .enum(['completed', 'watching', 'dropped', 'skipped'])
-        .optional(),
+      status: z.enum(['completed', 'watching', 'dropped', 'skipped']).optional(),
       score: z.number().min(0).max(10),
     }),
   ),

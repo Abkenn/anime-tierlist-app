@@ -11,14 +11,9 @@ import { TerminalSequenceContext } from '@/app/_components/shell/terminal-sequen
 
 type TerminalTypingInput = { text: string; replaceTail: boolean; line: number };
 
-const durationFor = (text: string) =>
-  Math.min(0.55, Array.from(text).length * 0.025);
+const durationFor = (text: string) => Math.min(0.55, Array.from(text).length * 0.025);
 
-export const useTerminalTyping = ({
-  text,
-  replaceTail,
-  line,
-}: TerminalTypingInput) => {
+export const useTerminalTyping = ({ text, replaceTail, line }: TerminalTypingInput) => {
   const sequence = useContext(TerminalSequenceContext);
   const reducedMotion = useReducedMotion();
   const progress = useMotionValue(0);
@@ -68,13 +63,8 @@ export const useTerminalTyping = ({
             durations.reduce((sum, duration) => sum + duration, 0),
           ),
       );
-      const offset =
-        durations.slice(0, line).reduce((sum, duration) => sum + duration, 0) *
-        scale;
-      delay = Math.max(
-        0,
-        offset - (performance.now() - sequence.startedAt) / 1000,
-      );
+      const offset = durations.slice(0, line).reduce((sum, duration) => sum + duration, 0) * scale;
+      delay = Math.max(0, offset - (performance.now() - sequence.startedAt) / 1000);
     }
 
     if (!replaceTail) {

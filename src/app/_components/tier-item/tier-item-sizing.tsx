@@ -21,15 +21,9 @@ type TierItemSizingProps = {
   onChange: (expansion: number) => void;
 };
 
-export const TierItemSizing = ({
-  image,
-  expansion,
-  onChange,
-}: TierItemSizingProps) => {
+export const TierItemSizing = ({ image, expansion, onChange }: TierItemSizingProps) => {
   const hasImage = Boolean(image);
-  const fullHeightByDefault = Boolean(
-    image && image.width > 0 && image.height >= image.width,
-  );
+  const fullHeightByDefault = Boolean(image && image.width > 0 && image.height >= image.width);
 
   return (
     <div className="w-60 max-w-full px-3">
@@ -44,9 +38,7 @@ export const TierItemSizing = ({
         step={1}
         value={[fullHeightByDefault ? 100 : Math.round(expansion * 100)]}
         disabled={!hasImage || fullHeightByDefault}
-        onValueChange={(values) =>
-          onChange((Array.isArray(values) ? values[0] : values) / 100)
-        }
+        onValueChange={(values) => onChange((Array.isArray(values) ? values[0] : values) / 100)}
         onKeyDown={(event) => {
           if (event.code !== 'Escape' && event.code !== 'Tab') {
             event.stopPropagation();

@@ -81,10 +81,7 @@ const readPublicPoster = async (source: string) => {
         response.on('error', reject);
       },
     );
-    const deadline = setTimeout(
-      () => request.destroy(new Error('Poster timed out.')),
-      8000,
-    );
+    const deadline = setTimeout(() => request.destroy(new Error('Poster timed out.')), 8000);
     request.on('close', () => clearTimeout(deadline));
     request.on('error', reject);
   });

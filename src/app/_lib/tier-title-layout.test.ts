@@ -39,10 +39,7 @@ it('wraps Mushoku Tensei at the space and shrinks long words instead of splittin
     position: 'top' as const,
     wrap: true,
   };
-  expect(getTierTitleLayout(title, 65, 100).lines).toEqual([
-    'Mushoku',
-    'Tensei',
-  ]);
+  expect(getTierTitleLayout(title, 65, 100).lines).toEqual(['Mushoku', 'Tensei']);
   const longWord = getTierTitleLayout(
     { ...title, text: 'Supercalifragilisticexpialidocious' },
     40,

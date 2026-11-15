@@ -5,10 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { useAtom, useAtomValue } from 'jotai';
 import { Plus } from 'lucide-react';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import {
-  animeSearchClientAtom,
-  searchTargetRankAtom,
-} from '@/app/_atoms/tierlist/search.atoms';
+import { animeSearchClientAtom, searchTargetRankAtom } from '@/app/_atoms/tierlist/search.atoms';
 import { rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { AnimeSearchResults } from '@/app/_components/anime-search/anime-search-results';
 import type { TierRank } from '@/app/_types/tierlist.types';
@@ -57,10 +54,7 @@ export const TierRowSearch = ({ rank, position }: TierRowSearchProps) => {
   }
 
   return (
-    <Popover.Root
-      open={target === rank}
-      onOpenChange={(open) => setTarget(open ? rank : null)}
-    >
+    <Popover.Root open={target === rank} onOpenChange={(open) => setTarget(open ? rank : null)}>
       <Popover.Trigger
         aria-label={`Add anime to ${label}`}
         title={`Add anime to ${label}`}

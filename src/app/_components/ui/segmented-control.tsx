@@ -52,9 +52,7 @@ export const SegmentedControl = <Value extends string>({
                 initial={false}
                 className="pointer-events-none absolute inset-0 -z-10 bg-muted shadow-xs"
                 transition={
-                  reducedMotion
-                    ? { duration: 0 }
-                    : { type: 'spring', stiffness: 550, damping: 40 }
+                  reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 550, damping: 40 }
                 }
               />
             )}

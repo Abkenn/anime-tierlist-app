@@ -24,10 +24,7 @@ export const readProjectSession = () => {
 };
 
 export const saveProjectSession = (project: ProjectSession) => {
-  sessionStorage.setItem(
-    projectKey,
-    JSON.stringify(projectSessionSchema.parse(project)),
-  );
+  sessionStorage.setItem(projectKey, JSON.stringify(projectSessionSchema.parse(project)));
 };
 
 export const clearProjectSession = (storage: Storage = sessionStorage) =>
@@ -35,9 +32,7 @@ export const clearProjectSession = (storage: Storage = sessionStorage) =>
 
 export const pendingProjectSeed = () => {
   try {
-    const parsed = userSeedSchema.safeParse(
-      sessionStorage.getItem(pendingProjectKey),
-    );
+    const parsed = userSeedSchema.safeParse(sessionStorage.getItem(pendingProjectKey));
 
     return parsed.success ? parsed.data : null;
   } catch {

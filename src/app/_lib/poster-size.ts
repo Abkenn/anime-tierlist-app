@@ -1,8 +1,4 @@
-import type {
-  PosterSize,
-  TierImageMode,
-  TierItemData,
-} from '@/app/_types/tierlist.types';
+import type { PosterSize, TierImageMode, TierItemData } from '@/app/_types/tierlist.types';
 import { getTierItemSize } from './tier-item-layout';
 
 type PosterSizeInput = {
@@ -14,16 +10,12 @@ type PosterSizeInput = {
 
 const dynamicRowWidthPercent = 68;
 
-export const getAutoPosterWidth = ({
-  imageMode,
-  items,
-}: Omit<PosterSizeInput, 'mode'>) => {
+export const getAutoPosterWidth = ({ imageMode, items }: Omit<PosterSizeInput, 'mode'>) => {
   const rowWidths = new Map<string, number>();
   items.forEach((item) => {
     rowWidths.set(
       item.rank,
-      (rowWidths.get(item.rank) ?? 0) +
-        getTierItemSize({ item, size: 1, mode: imageMode }).width,
+      (rowWidths.get(item.rank) ?? 0) + getTierItemSize({ item, size: 1, mode: imageMode }).width,
     );
   });
   const longest = Math.max(1, ...rowWidths.values());
@@ -34,12 +26,7 @@ export const getAutoPosterWidth = ({
 export const stabilizePosterWidth = (previous: number, current: number) =>
   current > previous * 1.25 || current < previous * 0.75 ? current : previous;
 
-export const getPosterSize = ({
-  mode,
-  imageMode,
-  items,
-  autoWidth,
-}: PosterSizeInput) => {
+export const getPosterSize = ({ mode, imageMode, items, autoWidth }: PosterSizeInput) => {
   if (mode !== 'dynamic') {
     return {
       small: 'var(--tier-small-size, 6rem)',

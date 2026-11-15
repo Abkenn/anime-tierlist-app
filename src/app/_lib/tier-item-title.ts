@@ -7,18 +7,12 @@ export const defaultTierItemTitle: TierItemTitle = {
   color: '#ffffff',
   autoColor: true,
 };
-export const titlePositions: TierItemTitle['position'][] = [
-  'top',
-  'middle',
-  'bottom',
-];
+export const titlePositions: TierItemTitle['position'][] = ['top', 'middle', 'bottom'];
 
 export const usesAutomaticTitleColor = (title: TierItemTitle) =>
   title.autoColor ?? /^#(?:fff|ffffff)$/iu.test(title.color);
 
-export const normalizeTitleColor = (
-  input: string,
-): TierItemTitle['color'] | null => {
+export const normalizeTitleColor = (input: string): TierItemTitle['color'] | null => {
   const hex = input.trim().replace(/^#/, '');
 
   if (/^[\da-f]{3}$/i.test(hex)) {

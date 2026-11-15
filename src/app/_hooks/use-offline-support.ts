@@ -13,17 +13,12 @@ const setupOfflineWorker = async () => {
       const registrations = await navigator.serviceWorker.getRegistrations();
       const scriptURL = new URL('/sw.js', window.location.origin).href;
       const appRegistrations = registrations.filter((registration) => {
-        const worker =
-          registration.active ??
-          registration.waiting ??
-          registration.installing;
+        const worker = registration.active ?? registration.waiting ?? registration.installing;
 
         return worker?.scriptURL === scriptURL;
       });
 
-      await Promise.allSettled(
-        appRegistrations.map((registration) => registration.unregister()),
-      );
+      await Promise.allSettled(appRegistrations.map((registration) => registration.unregister()));
 
       return;
     }

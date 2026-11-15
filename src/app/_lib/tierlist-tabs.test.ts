@@ -25,12 +25,8 @@ it('shares one channel, delivers local and remote notifications, and closes afte
     expect(instances[0].postMessage).toHaveBeenCalledTimes(2);
     expect(first).toHaveBeenCalledTimes(2);
     expect(second).toHaveBeenCalledTimes(2);
-    instances[0].dispatchEvent(
-      new MessageEvent('message', { data: 'changed' }),
-    );
-    instances[0].dispatchEvent(
-      new MessageEvent('message', { data: 'unrecognized' }),
-    );
+    instances[0].dispatchEvent(new MessageEvent('message', { data: 'changed' }));
+    instances[0].dispatchEvent(new MessageEvent('message', { data: 'unrecognized' }));
     expect(first).toHaveBeenCalledTimes(3);
     expect(second).toHaveBeenCalledTimes(3);
 

@@ -25,9 +25,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
 
   useEffect(() => {
     const element = content.current;
-    const viewport = element?.closest<HTMLElement>(
-      '[data-slot="scroll-area-viewport"]',
-    );
+    const viewport = element?.closest<HTMLElement>('[data-slot="scroll-area-viewport"]');
     if (!element || !viewport) {
       setWindow({
         left: 0,
@@ -68,9 +66,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         bottom: Math.ceil(visible.bottom / 128) * 128 + 96,
         visible,
         columns,
-        rem: Number.parseFloat(
-          getComputedStyle(document.documentElement).fontSize,
-        ),
+        rem: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
       };
       startTransition(() =>
         setWindow((previous) =>

@@ -30,11 +30,7 @@ export const TierBoardToolbar = ({
     <>
       <div className="mb-1 flex items-center justify-between gap-4 text-xs">
         <div className="text-muted-foreground">
-          <p>
-            {restoring
-              ? 'Restoring tierlist...'
-              : `${rankCount} tiers · ${itemCount} items`}
-          </p>
+          <p>{restoring ? 'Restoring tierlist...' : `${rankCount} tiers · ${itemCount} items`}</p>
 
           <p role="status" className="mt-1 text-xs">
             {keyboardMode ? (
@@ -45,9 +41,7 @@ export const TierBoardToolbar = ({
                   Drag to arrange · Right-click to edit
                 </span>
 
-                <span className="pointer-fine:hidden">
-                  Drag to arrange · Tap ⋯ to edit
-                </span>
+                <span className="pointer-fine:hidden">Drag to arrange · Tap ⋯ to edit</span>
               </>
             )}
           </p>

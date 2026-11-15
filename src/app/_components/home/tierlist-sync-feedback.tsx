@@ -10,11 +10,7 @@ type SyncFeedbackProps = {
   onReload: () => Promise<unknown>;
 };
 
-export const TierlistSyncFeedback = ({
-  sync,
-  busy,
-  onReload,
-}: SyncFeedbackProps) => (
+export const TierlistSyncFeedback = ({ sync, busy, onReload }: SyncFeedbackProps) => (
   <>
     {sync.status === 'offline' && (
       <div className="mb-3 space-y-1 text-xs text-muted-foreground">

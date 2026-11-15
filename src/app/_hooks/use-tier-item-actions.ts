@@ -5,9 +5,7 @@ import type { TierItemActions } from '@/app/_lib/tier-item-actions-context';
 import { useTierBoardActions } from './use-tier-board-actions';
 
 // Stable commands avoid broadcasting pointer updates through context.
-export const useTierItemActions = (
-  actions: TierItemActions,
-): TierItemActions => {
+export const useTierItemActions = (actions: TierItemActions): TierItemActions => {
   const latest = useRef(actions);
   const { clearEditingItem } = useTierBoardActions();
   const [commands] = useState<TierItemActions>(() => ({

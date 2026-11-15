@@ -17,10 +17,7 @@ const ToastMessage = ({ item, paused }: ToastMessageProps) => {
   const elapsed = useRef(0);
   const timeout = item.timeout ?? 6000;
   const title = typeof item.title === 'string' ? item.title : '';
-  const action =
-    typeof item.actionProps?.children === 'string'
-      ? item.actionProps.children
-      : '';
+  const action = typeof item.actionProps?.children === 'string' ? item.actionProps.children : '';
 
   useEffect(() => {
     if (paused || reducedMotion) {
@@ -100,9 +97,7 @@ const ToastList = () => {
         onPointerLeave={() => setHovered(false)}
         onFocusCapture={() => setFocused(true)}
         onBlurCapture={(event) => {
-          if (
-            !event.currentTarget.contains(event.relatedTarget as Node | null)
-          ) {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
             setFocused(false);
           }
         }}

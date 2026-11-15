@@ -6,11 +6,7 @@ import { createPortal } from 'react-dom';
 import { useTierCropOverlay } from '@/app/_hooks/use-tier-crop-overlay';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { getTrimViewBox } from '@/app/_lib/tier-image-trim';
-import type {
-  TierCrop,
-  TierImage,
-  TierImageTrim,
-} from '@/app/_types/tierlist.types';
+import type { TierCrop, TierImage, TierImageTrim } from '@/app/_types/tierlist.types';
 import { TierItemImage } from './tier-item-image';
 
 type TierCropPreviewProps = {
@@ -20,12 +16,7 @@ type TierCropPreviewProps = {
   anchor?: RefObject<HTMLElement | null>;
 };
 
-export const TierCropPreview = ({
-  image,
-  crop,
-  trim,
-  anchor,
-}: TierCropPreviewProps) => {
+export const TierCropPreview = ({ image, crop, trim, anchor }: TierCropPreviewProps) => {
   const maskId = useId();
   const { frame, selection } = useTierCropOverlay({
     anchor,
@@ -33,8 +24,7 @@ export const TierCropPreview = ({
     crop,
     trim,
   });
-  const ratio =
-    image.width > 0 && image.height > 0 ? image.width / image.height : 1;
+  const ratio = image.width > 0 && image.height > 0 ? image.width / image.height : 1;
   const width = Math.max(1, ratio);
   const height = Math.max(1, 1 / ratio);
 

@@ -36,8 +36,7 @@ export const updateAnimeImportQueue = (input: QueueInput) =>
     }).first();
     if (
       existing &&
-      (existing.ownerKey !== input.ownerKey ||
-        existing.provider !== input.provider)
+      (existing.ownerKey !== input.ownerKey || existing.provider !== input.provider)
     ) {
       throw new Error('Import queue ticket is invalid.');
     }

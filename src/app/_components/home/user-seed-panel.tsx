@@ -15,19 +15,14 @@ import {
   useState,
 } from 'react';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
-import {
-  keyboardBehaviors,
-  matchesKeyboardBehavior,
-} from '@/app/_lib/keybindings';
+import { keyboardBehaviors, matchesKeyboardBehavior } from '@/app/_lib/keybindings';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { userSeedSchema } from '@/app/_lib/tierlist-sync';
 import { ProjectFileImport } from './project-file-import';
 import { SeedReplaceConfirmation } from './seed-replace-confirmation';
 
-const AnimeImport = dynamic(() =>
-  import('./anime-import').then((module) => module.AnimeImport),
-);
+const AnimeImport = dynamic(() => import('./anime-import').then((module) => module.AnimeImport));
 
 export type UserSeedProps = {
   seed: string;
@@ -100,10 +95,7 @@ export const UserSeedPanel = ({
       } catch (failure) {
         return {
           seed: '',
-          error: tierlistErrorMessage(
-            failure,
-            'Unable to prepare a backup. Try again.',
-          ),
+          error: tierlistErrorMessage(failure, 'Unable to prepare a backup. Try again.'),
         };
       }
     },
@@ -118,8 +110,7 @@ export const UserSeedPanel = ({
   if (open && !hasOpened) {
     setHasOpened(true);
   }
-  const validationMessage =
-    importSeed && !validSeed ? 'Enter a valid 64-character seed.' : '';
+  const validationMessage = importSeed && !validSeed ? 'Enter a valid 64-character seed.' : '';
   const [importError, importAction, importPending] = useActionState(
     async (_previous: string, data: FormData) => {
       const parsed = userSeedSchema.safeParse(data.get('seed'));
@@ -161,24 +152,16 @@ export const UserSeedPanel = ({
     setConfirmReplace(false);
   };
 
-  const [projectMessage, saveProject, savingProject] = useActionState(
-    async () => {
-      try {
-        const projectSeed = displayedSeed || (await onBackup());
-        const { downloadTierlistProject } = await import(
-          '@/app/_services/tierlist-download'
-        );
-        downloadTierlistProject(projectSeed);
-        return '';
-      } catch (failure) {
-        return tierlistErrorMessage(
-          failure,
-          'Unable to save the project. Try again.',
-        );
-      }
-    },
-    '',
-  );
+  const [projectMessage, saveProject, savingProject] = useActionState(async () => {
+    try {
+      const projectSeed = displayedSeed || (await onBackup());
+      const { downloadTierlistProject } = await import('@/app/_services/tierlist-download');
+      downloadTierlistProject(projectSeed);
+      return '';
+    } catch (failure) {
+      return tierlistErrorMessage(failure, 'Unable to save the project. Try again.');
+    }
+  }, '');
 
   const saveShortcut = useEffectEvent((event: KeyboardEvent) => {
     if (matchesKeyboardBehavior(event, keyboardBehaviors.save)) {
@@ -243,9 +226,7 @@ export const UserSeedPanel = ({
           <Popover.Popup
             render={
               <motion.div
-                initial={
-                  reducedMotion ? false : { opacity: 0, y: -4, scale: 0.98 }
-                }
+                initial={reducedMotion ? false : { opacity: 0, y: -4, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{
                   duration: reducedMotion ? 0 : 0.16,
@@ -268,9 +249,7 @@ export const UserSeedPanel = ({
                   Sign in with Google
                 </button>
 
-                <p className="mt-2 text-muted-foreground">
-                  Save or restore your list with Google.
-                </p>
+                <p className="mt-2 text-muted-foreground">Save or restore your list with Google.</p>
               </>
             )}
             {googleConnected && (
@@ -303,9 +282,7 @@ export const UserSeedPanel = ({
                 {[
                   { value: 'save', label: 'Save for later' },
                   { value: 'import', label: 'Import' },
-                  ...(animeImport
-                    ? [{ value: 'anime', label: 'MAL/AniList' }]
-                    : []),
+                  ...(animeImport ? [{ value: 'anime', label: 'MAL/AniList' }] : []),
                 ].map(({ value, label }) => (
                   <Tabs.Tab
                     key={value}
@@ -328,9 +305,7 @@ export const UserSeedPanel = ({
               <Tabs.Panel value="save">
                 <section aria-label="Anonymous seed" className="pt-3">
                   <p className="mb-2 font-medium">
-                    {googleConnected
-                      ? 'Save an anonymous copy'
-                      : anonymousHeading}
+                    {googleConnected ? 'Save an anonymous copy' : anonymousHeading}
                   </p>
 
                   {googleConnected && !shareSeed ? (
@@ -346,9 +321,7 @@ export const UserSeedPanel = ({
                   ) : (
                     <div className="group relative">
                       <input
-                        aria-label={
-                          googleConnected ? 'Backup seed' : 'Your user seed'
-                        }
+                        aria-label={googleConnected ? 'Backup seed' : 'Your user seed'}
                         readOnly
                         value={displayedSeed}
                         spellCheck={false}
@@ -363,11 +336,7 @@ export const UserSeedPanel = ({
                         onClick={() => void copySeed()}
                         className="absolute inset-y-1 right-1 flex w-9 cursor-pointer items-center justify-center bg-popover opacity-0 hover:bg-accent focus-visible:opacity-100 focus-visible:outline-2 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100"
                       >
-                        {copied ? (
-                          <Check className="size-4" />
-                        ) : (
-                          <Copy className="size-4" />
-                        )}
+                        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                       </button>
                     </div>
                   )}
@@ -414,9 +383,7 @@ export const UserSeedPanel = ({
               <Tabs.Panel value="import" keepMounted>
                 <form className="mt-4" action={importAction}>
                   <label htmlFor={importId} className="mb-2 block">
-                    {googleConnected
-                      ? 'Replace tierlist from a seed'
-                      : 'Import a seed'}
+                    {googleConnected ? 'Replace tierlist from a seed' : 'Import a seed'}
                   </label>
 
                   <div className="relative">
@@ -432,20 +399,14 @@ export const UserSeedPanel = ({
                       spellCheck={false}
                       value={importSeed}
                       maxLength={64}
-                      disabled={
-                        busy || importPending || (googleConnected && !canSignIn)
-                      }
-                      onChange={(event) =>
-                        setImportSeed(event.currentTarget.value)
-                      }
+                      disabled={busy || importPending || (googleConnected && !canSignIn)}
+                      onChange={(event) => setImportSeed(event.currentTarget.value)}
                       className="h-11 w-full border border-input bg-transparent py-2 pl-3 pr-12 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
                     />
 
                     <FormSubmitButton
                       aria-label={busy ? 'Opening tierlist' : importLabel}
-                      title={
-                        googleConnected ? 'Replace tierlist' : 'Import seed'
-                      }
+                      title={googleConnected ? 'Replace tierlist' : 'Import seed'}
                       disabled={
                         busy ||
                         sharing ||
@@ -463,10 +424,7 @@ export const UserSeedPanel = ({
                   </p>
                 </form>
 
-                <ProjectFileImport
-                  busy={busy}
-                  onOpened={() => onOpenChange(false)}
-                />
+                <ProjectFileImport busy={busy} onOpened={() => onOpenChange(false)} />
               </Tabs.Panel>
 
               <Tabs.Panel value="anime" keepMounted>
@@ -496,9 +454,7 @@ export const UserSeedPanel = ({
                   onClick={() => void onUseDevice()}
                   className="min-h-9 cursor-pointer underline underline-offset-4 hover:text-muted-foreground disabled:opacity-50"
                 >
-                  {projectReturn === 'account'
-                    ? 'Go back to Google tierlist'
-                    : 'Go back to local'}
+                  {projectReturn === 'account' ? 'Go back to Google tierlist' : 'Go back to local'}
                 </button>
                 <button
                   type="button"

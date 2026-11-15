@@ -4,20 +4,14 @@ type SaveQueueOptions = {
   onError: (error: unknown) => void;
 };
 
-export const createSaveQueue = ({
-  onSaving,
-  onSettled,
-  onError,
-}: SaveQueueOptions) => {
+export const createSaveQueue = ({ onSaving, onSettled, onError }: SaveQueueOptions) => {
   let tail = Promise.resolve();
   let pending = 0;
   let failed = false;
 
   const enqueue = (operation: () => Promise<void>, saving = true) => {
     if (failed) {
-      return Promise.reject(
-        new Error('Local saving is paused. Reload before editing further.'),
-      );
+      return Promise.reject(new Error('Local saving is paused. Reload before editing further.'));
     }
 
     pending += 1;
@@ -28,9 +22,7 @@ export const createSaveQueue = ({
     const run = async () => {
       await previous;
       if (failed) {
-        throw new Error(
-          'Local saving is paused. Reload before editing further.',
-        );
+        throw new Error('Local saving is paused. Reload before editing further.');
       }
 
       await operation();
@@ -61,9 +53,7 @@ export const createSaveQueue = ({
     flush: async () => {
       await tail;
       if (failed) {
-        throw new Error(
-          'Local saving is paused. Reload before switching tierlists.',
-        );
+        throw new Error('Local saving is paused. Reload before switching tierlists.');
       }
     },
   };

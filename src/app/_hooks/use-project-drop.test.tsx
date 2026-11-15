@@ -1,9 +1,6 @@
 import { fireEvent, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
-import {
-  pendingProjectKey,
-  projectDropEvent,
-} from '@/app/_lib/project-session';
+import { pendingProjectKey, projectDropEvent } from '@/app/_lib/project-session';
 import { useProjectDrop } from './use-project-drop';
 
 const mocks = vi.hoisted(() => ({
@@ -75,9 +72,7 @@ it('reserves a tab during the drop gesture and hands the seed to that tab only',
   expect(window.open).toHaveBeenCalledWith('about:blank', '_blank');
   deferred.resolve('d'.repeat(64));
   await waitFor(() =>
-    expect(tab.location.replace).toHaveBeenCalledWith(
-      new URL('/', window.location.origin).href,
-    ),
+    expect(tab.location.replace).toHaveBeenCalledWith(new URL('/', window.location.origin).href),
   );
   expect(tabStorage.get(pendingProjectKey)).toBe('d'.repeat(64));
   expect(sessionStorage.getItem(pendingProjectKey)).toBeNull();

@@ -11,9 +11,7 @@ const responseSchema = z.object({
       title: z.string().nullish(),
       title_english: z.string().nullish(),
       title_synonyms: z.array(z.string()).optional(),
-      titles: z
-        .array(z.object({ type: z.string().optional(), title: z.string() }))
-        .optional(),
+      titles: z.array(z.object({ type: z.string().optional(), title: z.string() })).optional(),
     }),
   ),
 });

@@ -77,15 +77,15 @@ export const SquareFill: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
-    fireEvent.contextMenu(
-      canvas.getByRole('button', { name: 'Right click for image options' }),
+    fireEvent.contextMenu(canvas.getByRole('button', { name: 'Right click for image options' }));
+    await expect(await page.findByRole('menuitem', { name: 'Edit crop' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
     );
-    await expect(
-      await page.findByRole('menuitem', { name: 'Edit crop' }),
-    ).toHaveAttribute('aria-disabled', 'true');
-    await expect(
-      page.getByRole('menuitem', { name: 'Reset crop' }),
-    ).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByRole('menuitem', { name: 'Reset crop' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   },
 };
 
@@ -101,9 +101,7 @@ export const InlineLabel: Story = {
     const label = await page.findByRole('menuitem', {
       name: `Edit label: ${args.label}`,
     });
-    await expect(
-      page.queryByRole('textbox', { name: 'Item label' }),
-    ).not.toBeInTheDocument();
+    await expect(page.queryByRole('textbox', { name: 'Item label' })).not.toBeInTheDocument();
     await userEvent.click(label);
     const input = await page.findByRole('textbox', { name: 'Item label' });
     await expect(input).toHaveFocus();
@@ -112,8 +110,7 @@ export const InlineLabel: Story = {
     await userEvent.type(input, 'Cancelled');
     await userEvent.hover(page.getByRole('menuitem', { name: 'Edit crop' }));
     await expect(
-      getComputedStyle(page.getByRole('menuitem', { name: 'Edit crop' }))
-        .backgroundColor,
+      getComputedStyle(page.getByRole('menuitem', { name: 'Edit crop' })).backgroundColor,
     ).not.toBe('rgba(0, 0, 0, 0)');
     await expect(input).toHaveFocus();
     await expect(input).toHaveValue('Cancelled');
@@ -123,27 +120,17 @@ export const InlineLabel: Story = {
       await page.findByRole('menuitem', { name: `Edit label: ${args.label}` }),
     ).toBeVisible();
     await expect(args.onLabelChange).not.toHaveBeenCalled();
-    await userEvent.click(
-      page.getByRole('menuitem', { name: `Edit label: ${args.label}` }),
-    );
+    await userEvent.click(page.getByRole('menuitem', { name: `Edit label: ${args.label}` }));
     await userEvent.clear(page.getByRole('textbox', { name: 'Item label' }));
-    await userEvent.type(
-      page.getByRole('textbox', { name: 'Item label' }),
-      'New label',
-    );
+    await userEvent.type(page.getByRole('textbox', { name: 'Item label' }), 'New label');
     await userEvent.keyboard('{Enter}');
     await expect(
       await page.findByRole('menuitem', { name: 'Edit label: New label' }),
     ).toBeVisible();
     await expect(args.onLabelChange).toHaveBeenCalledWith('New label');
-    await userEvent.click(
-      page.getByRole('menuitem', { name: 'Edit label: New label' }),
-    );
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit label: New label' }));
     await userEvent.clear(page.getByRole('textbox', { name: 'Item label' }));
-    await userEvent.type(
-      page.getByRole('textbox', { name: 'Item label' }),
-      'Saved on dismissal',
-    );
+    await userEvent.type(page.getByRole('textbox', { name: 'Item label' }), 'Saved on dismissal');
     await userEvent.click(trigger);
     await expect(args.onLabelChange).toHaveBeenCalledWith('Saved on dismissal');
   },
@@ -161,9 +148,7 @@ export const TouchLabel: Story = {
     const label = await page.findByRole('menuitem', {
       name: `Edit label: ${args.label}`,
     });
-    await expect(label.getBoundingClientRect().height).toBeGreaterThanOrEqual(
-      44,
-    );
+    await expect(label.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
     await userEvent.click(label);
     const input = await page.findByRole('textbox', { name: 'Item label' });
     await expect(getComputedStyle(input).fontSize).toBe('16px');

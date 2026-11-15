@@ -1,9 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { atom } from 'jotai';
-import type {
-  AnimeSearchSeed,
-  CuratedAnimeImage,
-} from '@/app/_types/anime-search.types';
+import type { AnimeSearchSeed, CuratedAnimeImage } from '@/app/_types/anime-search.types';
 import type { TierItemData, TierRank } from '@/app/_types/tierlist.types';
 import { enabledTierRanksAtom, rankDetailsAtom } from './settings.atoms';
 

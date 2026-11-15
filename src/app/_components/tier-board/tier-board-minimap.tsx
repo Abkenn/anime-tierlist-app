@@ -4,10 +4,7 @@ import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
-import {
-  imageModeAtom,
-  rankDetailsAtom,
-} from '@/app/_atoms/tierlist/settings.atoms';
+import { imageModeAtom, rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { TierItemImage } from '@/app/_components/tier-item/tier-item-image';
 import { TierItemTitle } from '@/app/_components/tier-item/tier-item-title';
 import type { OverviewRow } from '@/app/_hooks/use-tier-overview';
@@ -87,10 +84,7 @@ export const TierBoardMinimap = ({
       )}
 
       {posters
-        .filter(
-          (_, index) =>
-            index % Math.max(1, Math.ceil(posters.length / 400)) === 0,
-        )
+        .filter((_, index) => index % Math.max(1, Math.ceil(posters.length / 400)) === 0)
         .map((poster) => {
           const item = byId.get(poster.id);
           if (!item) {
@@ -123,12 +117,7 @@ export const TierBoardMinimap = ({
               )}
 
               {item.title?.text && (
-                <TierItemTitle
-                  title={item.title}
-                  image={item.image}
-                  mode={mode}
-                  trim={item.trim}
-                />
+                <TierItemTitle title={item.title} image={item.image} mode={mode} trim={item.trim} />
               )}
             </div>
           );

@@ -43,12 +43,8 @@ export const Online: Story = {
 export const Light: Story = { globals: { theme: 'light' } };
 export const DismissAndReopen: Story = {
   play: async ({ canvas, userEvent }) => {
-    await expect(
-      canvas.getByRole('complementary', { name: 'Offline connection' }),
-    ).toBeVisible();
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Dismiss offline notice' }),
-    );
+    await expect(canvas.getByRole('complementary', { name: 'Offline connection' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss offline notice' }));
     await expect(canvas.queryByRole('complementary')).not.toBeInTheDocument();
     await userEvent.click(canvas.getByRole('button', { name: 'offline' }));
     await expect(canvas.getByRole('complementary')).toBeVisible();
@@ -66,9 +62,7 @@ export const Retry: Story = {
     });
   },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Retry connection' }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Retry connection' }));
     await expect(retry).toHaveBeenCalledOnce();
   },
 };

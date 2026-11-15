@@ -60,10 +60,7 @@ export const ContextMenuContent = ({
         <Popup
           render={
             spawnFrom ? (
-              <motion.div
-                ref={surface}
-                initial={{ opacity: reducedMotion ? 1 : 0 }}
-              />
+              <motion.div ref={surface} initial={{ opacity: reducedMotion ? 1 : 0 }} />
             ) : undefined
           }
           data-slot="context-menu-content"

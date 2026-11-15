@@ -41,10 +41,7 @@ describe('tierlist sync decisions', () => {
 
     expect(sameTierlistDocument(first, second)).toBe(true);
     expect(
-      sameTierlistDocument(
-        { ...first, updatedAt: 1000 },
-        { ...second, updatedAt: 2000 },
-      ),
+      sameTierlistDocument({ ...first, updatedAt: 1000 }, { ...second, updatedAt: 2000 }),
     ).toBe(true);
     expect(
       sameTierlistDocument(first, {
@@ -52,9 +49,7 @@ describe('tierlist sync decisions', () => {
         items: [...second.items].reverse(),
       }),
     ).toBe(false);
-    expect(sameTierlistDocument(first, { ...second, imageMode: 'cover' })).toBe(
-      false,
-    );
+    expect(sameTierlistDocument(first, { ...second, imageMode: 'cover' })).toBe(false);
   });
 
   const local: LocalTierlist = {
@@ -75,15 +70,11 @@ describe('tierlist sync decisions', () => {
   it('downloads new online data only when this device has no unsynced changes', () => {
     expect(getSyncDecision(local, remote)).toBe('download');
     expect(getSyncDecision({ ...local, revision: 5 }, remote)).toBe('conflict');
-    expect(getSyncDecision({ ...local, sync: undefined }, remote)).toBe(
-      'conflict',
-    );
+    expect(getSyncDecision({ ...local, sync: undefined }, remote)).toBe('conflict');
   });
 
   it('uploads against a known revision and recognizes equal documents without exposing the seed', () => {
-    expect(
-      getSyncDecision({ ...local, revision: 5 }, { ...remote, revision: 2 }),
-    ).toBe('upload');
+    expect(getSyncDecision({ ...local, revision: 5 }, { ...remote, revision: 2 })).toBe('upload');
     expect(
       getSyncDecision(local, {
         ...remote,

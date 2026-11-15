@@ -9,10 +9,7 @@ const refreshSubscribers = () => {
 };
 
 const getChannel = () => {
-  if (
-    typeof window === 'undefined' ||
-    typeof BroadcastChannel === 'undefined'
-  ) {
+  if (typeof window === 'undefined' || typeof BroadcastChannel === 'undefined') {
     return;
   }
 

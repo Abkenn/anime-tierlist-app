@@ -1,9 +1,5 @@
 import { type PointerEvent, useLayoutEffect, useRef, useState } from 'react';
-import type {
-  TierCrop,
-  TierImage,
-  TierImageMode,
-} from '@/app/_types/tierlist.types';
+import type { TierCrop, TierImage, TierImageMode } from '@/app/_types/tierlist.types';
 
 type TierCropInput = {
   image?: TierImage;
@@ -81,22 +77,14 @@ export const useTierCrop = ({
           overflowX > 0.01
             ? Math.max(
                 0,
-                Math.min(
-                  1,
-                  activeCrop.crop.x -
-                    (event.clientX - activeCrop.x) / overflowX,
-                ),
+                Math.min(1, activeCrop.crop.x - (event.clientX - activeCrop.x) / overflowX),
               )
             : 0.5,
         y:
           overflowY > 0.01
             ? Math.max(
                 0,
-                Math.min(
-                  1,
-                  activeCrop.crop.y -
-                    (event.clientY - activeCrop.y) / overflowY,
-                ),
+                Math.min(1, activeCrop.crop.y - (event.clientY - activeCrop.y) / overflowY),
               )
             : 0.5,
       });

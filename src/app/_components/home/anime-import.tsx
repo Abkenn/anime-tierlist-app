@@ -57,9 +57,9 @@ export const AnimeImport = ({
   const [error, generate, generating] = useActionState(
     async (_previous: string, form: FormData) => {
       setErrorProvider(provider);
-      const parsed = (
-        provider === 'mal' ? malUsernameSchema : anilistUsernameSchema
-      ).safeParse(form.get('username'));
+      const parsed = (provider === 'mal' ? malUsernameSchema : anilistUsernameSchema).safeParse(
+        form.get('username'),
+      );
       if (!parsed.success) {
         return `Enter a valid ${providerLabel} username (2–${provider === 'mal' ? 16 : 20} letters, numbers, underscores or hyphens).`;
       }
@@ -73,9 +73,7 @@ export const AnimeImport = ({
         const { runAnimeImport: generateTierlist } = await import(
           '@/app/_services/run-anime-import'
         );
-        const { readLocalTierlist } = await import(
-          '@/app/_services/local-tierlist'
-        );
+        const { readLocalTierlist } = await import('@/app/_services/local-tierlist');
         const profile = await readLocalTierlist(seed);
         const result = await generateTierlist({
           seed,
@@ -94,10 +92,7 @@ export const AnimeImport = ({
       } catch (failure) {
         return request.signal.aborted
           ? 'Generation cancelled. Your tierlist is unchanged.'
-          : tierlistErrorMessage(
-              failure,
-              'Unable to generate this tierlist. Try again.',
-            );
+          : tierlistErrorMessage(failure, 'Unable to generate this tierlist. Try again.');
       } finally {
         setProgress(null);
         controller.current = null;
@@ -150,11 +145,7 @@ export const AnimeImport = ({
           anilist: current.anilist || anilist?.username || '',
         }));
         if (mal || anilist) {
-          setProvider(
-            anilist && (!mal || anilist.importedAt > mal.importedAt)
-              ? 'anilist'
-              : 'mal',
-          );
+          setProvider(anilist && (!mal || anilist.importedAt > mal.importedAt) ? 'anilist' : 'mal');
         }
       })
       .catch(() => {});
@@ -172,9 +163,7 @@ export const AnimeImport = ({
           setResumable(!!saved && !saved.complete);
           if (saved) {
             setUsernames((current) =>
-              current[provider]
-                ? current
-                : { ...current, [provider]: saved.username },
+              current[provider] ? current : { ...current, [provider]: saved.username },
             );
           }
         }
@@ -187,9 +176,7 @@ export const AnimeImport = ({
 
   return (
     <section
-      aria-label={
-        provider === 'mal' ? 'Import from MyAnimeList' : 'Import from AniList'
-      }
+      aria-label={provider === 'mal' ? 'Import from MyAnimeList' : 'Import from AniList'}
       className="mt-3 border-t border-divider pt-3"
     >
       <p className="font-medium">Generate a series tierlist</p>
@@ -262,9 +249,7 @@ export const AnimeImport = ({
                 (progress.percent === null ? '...' : `${progress.percent}%`)}
             </span>
           </div>
-          {progress.detail && (
-            <p className="mb-2 text-muted-foreground">{progress.detail}</p>
-          )}
+          {progress.detail && <p className="mb-2 text-muted-foreground">{progress.detail}</p>}
           {progress.percent === null ? (
             <progress
               aria-label={progress.phase}
@@ -311,12 +296,7 @@ export const AnimeImport = ({
               <div key={rank} className="contents">
                 <dt>{rank}</dt>
                 <dd>
-                  {
-                    generated.document.items.filter(
-                      (item) => item.rank === rank,
-                    ).length
-                  }{' '}
-                  series
+                  {generated.document.items.filter((item) => item.rank === rank).length} series
                 </dd>
               </div>
             ))}
@@ -328,9 +308,7 @@ export const AnimeImport = ({
                   type="checkbox"
                   checked={confirmed}
                   disabled={disabled}
-                  onChange={(event) =>
-                    setConfirmed(event.currentTarget.checked)
-                  }
+                  onChange={(event) => setConfirmed(event.currentTarget.checked)}
                   className="mt-1"
                 />
                 Replace my current tierlist with this generated starting point.

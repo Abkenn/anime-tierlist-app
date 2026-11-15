@@ -10,8 +10,7 @@ type ExportIdentity = { shareId: string; fingerprint: string; token: string };
 export const claimTierlistPng = async (input: ExportIdentity) =>
   db.transaction(async (tx) => {
     await tx.query(
-      db.raw
-        .sql`SELECT id FROM "TierlistShare" WHERE id = ${input.shareId} FOR UPDATE`
+      db.raw.sql`SELECT id FROM "TierlistShare" WHERE id = ${input.shareId} FOR UPDATE`
         .returnsRow({ id: 'pg/text@1' })
         .build(),
     );
@@ -47,9 +46,7 @@ export const releaseTierlistPng = (input: ExportIdentity) =>
     leaseToken: input.token,
   }).update({ leaseToken: null, leaseUntil: null });
 
-export const storeTierlistPng = async (
-  input: ExportIdentity & { png: Buffer },
-) => {
+export const storeTierlistPng = async (input: ExportIdentity & { png: Buffer }) => {
   if (input.png.length > maxStoredPngBytes) {
     throw new Error('PNG exceeds the storage limit.');
   }
@@ -66,8 +63,7 @@ export const storeTierlistPng = async (
           .build(),
       );
       await tx.query(
-        db.raw
-          .sql`SELECT id FROM "TierlistShare" WHERE id = ${input.shareId} FOR SHARE`
+        db.raw.sql`SELECT id FROM "TierlistShare" WHERE id = ${input.shareId} FOR SHARE`
           .returnsRow({ id: 'pg/text@1' })
           .build(),
       );

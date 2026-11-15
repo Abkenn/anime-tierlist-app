@@ -5,15 +5,7 @@ import type { useTierItems } from '@/app/_hooks/use-tier-items';
 
 export type TierItemActions = Pick<
   ReturnType<typeof useTierItems>,
-  | 'boardRef'
-  | 'updateItem'
-  | 'start'
-  | 'move'
-  | 'drop'
-  | 'cancel'
-  | 'keyboardMove'
+  'boardRef' | 'updateItem' | 'start' | 'move' | 'drop' | 'cancel' | 'keyboardMove'
 >;
 
-export const TierItemActionsContext = createContext<TierItemActions | null>(
-  null,
-);
+export const TierItemActionsContext = createContext<TierItemActions | null>(null);
