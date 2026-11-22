@@ -74,7 +74,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
           : undefined
       }
       className={cn(
-        'group relative flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-graphite',
+        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
         tierColorClasses[color],
         label.length > 4
           ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'

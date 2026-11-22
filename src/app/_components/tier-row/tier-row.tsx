@@ -36,7 +36,7 @@ export const TierRow = ({
   const placeholder = (
     <div
       className={cn(
-        'relative flex aspect-square self-start items-center justify-center border-r border-ink p-2 text-graphite',
+        'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
         tierColorClasses[tierColors[rank] ?? 'stone'],
         rank.length > 4
           ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'
