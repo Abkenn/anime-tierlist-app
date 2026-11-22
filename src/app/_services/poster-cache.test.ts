@@ -45,3 +45,27 @@ it('saves the entire poster list once and reuses saved responses on subsequent o
     vi.unstubAllGlobals();
   }
 });
+
+it('downloads display thumbnails before full-resolution originals', async () => {
+  vi.stubGlobal('caches', {
+    open: async () => ({ match: async () => undefined, put: async () => {} }),
+  });
+  const urls: string[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: URL) => {
+      urls.push(url.pathname);
+      return new Response('poster');
+    }),
+  );
+  try {
+    await cacheTierlistPosters(
+      ['/curated/a.jpg', '/curated/b.jpg'],
+      new AbortController().signal,
+      vi.fn(),
+    );
+    expect(urls).toEqual(['/_next/image', '/_next/image', '/curated/a.jpg', '/curated/b.jpg']);
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});

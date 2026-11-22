@@ -6,6 +6,7 @@ import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.a
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
+import { TierRankOverview } from './tier-rank-overview';
 import { TierRowSearch } from './tier-row-search';
 
 const TierRankLabel = lazy(async () => ({
@@ -14,6 +15,7 @@ const TierRankLabel = lazy(async () => ({
 
 type TierRowProps = {
   rank: TierRank;
+  compact?: boolean;
   active?: boolean;
   itemCount?: number;
   skeletonCount?: number;
@@ -24,6 +26,7 @@ type TierRowProps = {
 
 export const TierRow = ({
   rank,
+  compact = false,
   active = false,
   itemCount = 0,
   skeletonCount,
@@ -36,7 +39,7 @@ export const TierRow = ({
   const placeholder = (
     <div
       className={cn(
-        'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
+        'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite in-data-compact-auto:p-0',
         rank.length > 4 && 'min-h-[max(6rem,var(--tier-size,5rem))]',
         tierColorClasses[tierColors[rank] ?? 'stone'],
         rank.length > 4
@@ -62,9 +65,11 @@ export const TierRow = ({
       data-tier-count={itemCount}
       aria-label={itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`}
     >
-      {skeletonCount !== undefined ? (
-        placeholder
-      ) : (
+      {skeletonCount !== undefined && placeholder}
+
+      {skeletonCount === undefined && compact && <TierRankOverview rank={rank} />}
+
+      {skeletonCount === undefined && !compact && (
         <Suspense fallback={placeholder}>
           <TierRankLabel rank={rank} />
         </Suspense>
@@ -106,7 +111,9 @@ export const TierRow = ({
             <span key={slot} aria-hidden="true" />
           ))}
 
-        {skeletonCount === undefined && <TierRowSearch rank={rank} position={searchPosition} />}
+        {skeletonCount === undefined && !compact && (
+          <TierRowSearch rank={rank} position={searchPosition} />
+        )}
       </div>
     </motion.li>
   );

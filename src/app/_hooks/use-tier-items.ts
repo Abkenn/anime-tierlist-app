@@ -15,6 +15,7 @@ import {
   searchDragPointAtom,
   searchDropSlotAtom,
 } from '@/app/_atoms/tierlist/search.atoms';
+import { posterSizeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { getCrowdedPosterMinimum } from '@/app/_lib/poster-size';
 import {
   type TierDropSlot as DropSlot,
@@ -58,6 +59,7 @@ export const useTierItems = ({
   imageMode = 'natural',
 }: TierItemsInput) => {
   const locked = useAtomValue(positionsLockedAtom);
+  const posterSize = useAtomValue(posterSizeAtom);
   const feedback = useSetAtom(lockFeedbackAtom);
   const externalItem = useAtomValue(draggedSearchItemAtom);
   const externalPoint = useAtomValue(searchDragPointAtom);
@@ -107,16 +109,18 @@ export const useTierItems = ({
     viewportWidth / rem.current - labelWidth - itemGapRem * 2 - actionSpaceRem - 1 / rem.current,
   );
   const capacity = availableWidth;
+  const compactAuto = viewportWidth / rem.current < 40 && posterSize === 'dynamic';
   const crowdedMinimum = useMemo(
     () =>
       getCrowdedPosterMinimum({
         imageMode,
         items,
-        capacity: Math.max(1, viewportWidth / rem.current - 6 - itemGapRem * 2 - actionSpaceRem),
+        capacity: Math.max(1, availableWidth),
         ranks,
         gap: itemGapRem,
+        compact: viewportWidth / rem.current < 40,
       }),
-    [imageMode, items, viewportWidth, ranks, itemGapRem, actionSpaceRem],
+    [imageMode, items, viewportWidth, ranks, itemGapRem, availableWidth],
   );
   const viewportRef = useCallback((element: HTMLElement | null) => setViewportElement(element), []);
 
@@ -412,6 +416,9 @@ export const useTierItems = ({
     viewportRef,
     canvasWidth: `${getCanvasWidth()}rem`,
     crowdedMinimum,
+    compactAuto,
+    crowdedMaximum:
+      viewportWidth / rem.current < 40 ? Math.max(1, Math.min(3, availableWidth / 8)) : undefined,
     lines: (rank: TierRank) => (previewBoxes.get(rank)?.at(-1)?.line ?? 0) + 1,
     updateItem: (
       id: string,

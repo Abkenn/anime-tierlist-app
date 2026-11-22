@@ -22,6 +22,10 @@ const TierBoardItems = dynamic(() =>
   import('./tier-board-items').then((module) => module.TierBoardItems),
 );
 
+const TierBoardOverview = dynamic(() =>
+  import('./tier-board-overview').then((module) => module.TierBoardOverview),
+);
+
 type TierBoardProps = {
   ranks?: TierRank[];
   initialItemCount?: number;
@@ -68,6 +72,7 @@ export const TierBoard = ({
         rankCount={ranks.length}
         itemCount={interaction.items.length}
         restoring={restoring}
+        compactOverview={interaction.compactAuto}
         keyboardMode={keyboardMode}
         imageMode={imageMode}
         onImageModeChange={changeImageMode}
@@ -83,14 +88,19 @@ export const TierBoard = ({
         <motion.div
           ref={interaction.boardRef}
           data-tier-canvas=""
+          data-compact-auto={interaction.compactAuto || undefined}
           animate={scrollable ? { width: interaction.canvasWidth } : undefined}
           transition={{ duration: 0 }}
           className={cn('relative', scrollable && 'min-w-full')}
           aria-busy={restoring}
           inert={restoring}
         >
-          {!restoring && interaction.items.length > 0 && (
+          {!restoring && interaction.items.length > 0 && !interaction.compactAuto && (
             <TierBoardItems interaction={interaction} />
+          )}
+
+          {!restoring && interaction.items.length > 0 && interaction.compactAuto && (
+            <TierBoardOverview interaction={interaction} />
           )}
 
           <TierBoardRows

@@ -17,6 +17,7 @@ it('renders a prioritized custom-ratio poster without React DOM warnings', () =>
     );
 
     expect(markup).toContain('fetchPriority="high"');
+    expect(markup).not.toContain('invisible');
     expect(error).not.toHaveBeenCalled();
   } finally {
     error.mockRestore();
@@ -36,11 +37,11 @@ it('uses anonymous CORS on CDN posters while preserving custom URLs', () => {
 
   const cdn = render('https://cdn.myanimelist.net/images/anime/poster.jpg');
   const document = new DOMParser().parseFromString(cdn, 'text/html');
-  const poster = document.querySelector('svg image');
+  const poster = document.querySelector('img');
   const preload = document.querySelector('link[rel="preload"][as="image"]');
 
   expect(poster?.getAttribute('crossorigin')).toBe('anonymous');
-  expect(preload?.getAttribute('href')).toBe(poster?.getAttribute('href'));
+  expect(preload?.getAttribute('href')).toBe(poster?.getAttribute('src'));
   expect(preload?.getAttribute('crossorigin')).toBe('');
   expect(preload?.getAttribute('fetchpriority')).toBe('high');
   expect(poster?.getAttribute('fetchpriority')).toBe('high');

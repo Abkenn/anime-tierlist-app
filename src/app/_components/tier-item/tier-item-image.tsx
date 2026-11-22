@@ -37,6 +37,7 @@ export const TierItemImage = ({
   const [loadedSource, setLoadedSource] = useState<string | null>(null);
   const loading = loadedSource !== image.src;
   const source = posterDisplaySource(image.src);
+  const trimmed = trim.left !== 0 || trim.top !== 0 || trim.right !== 1 || trim.bottom !== 1;
   const notifyReady = useEffectEvent(() => onReady?.());
 
   if (priority && mode === 'natural') {
@@ -100,15 +101,12 @@ export const TierItemImage = ({
     return <span className="px-1 text-xs">{image.alt}</span>;
   }
 
-  if (mode === 'natural') {
+  if (mode === 'natural' && trimmed) {
     return (
       <span className={placeholderClass} aria-busy={loading}>
         <svg
           viewBox={getTrimViewBox(image, trim)}
-          className={cn(
-            'pointer-events-none size-full overflow-hidden object-contain select-none',
-            loading && 'invisible',
-          )}
+          className="pointer-events-none size-full overflow-hidden object-contain select-none"
           role="img"
           aria-label={image.alt}
         >
@@ -143,7 +141,6 @@ export const TierItemImage = ({
         className={cn(
           'pointer-events-none select-none',
           mode === 'cover' ? 'object-cover' : 'object-contain',
-          loading && 'invisible',
         )}
         style={{
           objectPosition: mode === 'cover' ? `${crop.x * 100}% ${crop.y * 100}%` : '50% 50%',

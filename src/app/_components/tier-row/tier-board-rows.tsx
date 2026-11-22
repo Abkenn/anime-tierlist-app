@@ -16,7 +16,14 @@ type TierBoardRowsProps = {
   restoring?: boolean;
   interaction: Pick<
     ReturnType<typeof useTierItems>,
-    'items' | 'targetRank' | 'visibleRank' | 'lines' | 'searchPosition' | 'crowdedMinimum'
+    | 'items'
+    | 'targetRank'
+    | 'visibleRank'
+    | 'lines'
+    | 'searchPosition'
+    | 'crowdedMinimum'
+    | 'crowdedMaximum'
+    | 'compactAuto'
   >;
 };
 
@@ -58,13 +65,14 @@ export const TierBoardRows = ({
     setAutoFit({ mode, imageMode, restoring, width: autoWidth });
   }
   const size = restoring
-    ? '6rem'
+    ? 'var(--tier-restoring-size, 2rem)'
     : getPosterSize({
-        mode: mode === 'dynamic' && interaction.items.length === 0 ? 'small' : mode,
+        mode,
         imageMode,
         items: interaction.items,
         autoWidth,
         autoMinimum: interaction.crowdedMinimum,
+        autoMaximum: interaction.crowdedMaximum,
       });
 
   useLayoutEffect(() => {
@@ -94,13 +102,14 @@ export const TierBoardRows = ({
             '--tier-small-fit': `max(2.75rem, min(6rem, calc((var(--tier-available-height, 100cqh) - ${ranks.length + 16}px) / ${ranks.length})))`,
           } as React.CSSProperties
         }
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-restoring-size:2rem] @min-[40rem]:[--tier-restoring-size:6rem] [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank, index) => (
           <TierRow
             key={rank}
             rank={rank}
+            compact={interaction.compactAuto}
             active={interaction.targetRank === rank}
             fixedItemSize={layout === 'two-line' && !restoring}
             skeletonCount={

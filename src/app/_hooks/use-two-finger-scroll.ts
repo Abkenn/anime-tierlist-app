@@ -24,6 +24,7 @@ export const useTwoFingerScroll = () => {
     onTouchStartCapture: (event: TouchEvent<HTMLElement>) => {
       const root = event.currentTarget;
       if (
+        (event.target instanceof Element && event.target.closest('[data-compact-auto]')) ||
         stop.current ||
         event.touches.length !== 2 ||
         Array.from(event.touches).some(

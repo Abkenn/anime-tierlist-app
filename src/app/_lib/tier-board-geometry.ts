@@ -50,7 +50,9 @@ export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: num
       x: (cells?.left ?? rect.left) - bounds.left - translation.x,
       y: (cells?.top ?? rect.top) - bounds.top - translation.y,
       gap,
-      actionSpace: (search?.getBoundingClientRect().width ?? rem * 1.75) / rem + 0.5,
+      actionSpace: board.hasAttribute('data-compact-auto')
+        ? 0
+        : (search?.getBoundingClientRect().width ?? rem * 1.75) / rem + 0.5,
       size: wrapItems
         ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect().height ?? rem * 4.125)
         : Math.max(0, (cells?.height ?? rect.height) - rem * gap * 2),

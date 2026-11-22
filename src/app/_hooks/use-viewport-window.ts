@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, startTransition, useLayoutEffect, useState } from 'react';
+import { type RefObject, useLayoutEffect, useState } from 'react';
 
 type ViewportWindow = {
   left: number;
@@ -46,7 +46,6 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     }
 
     let frame = 0;
-    let initializing = true;
 
     const measure = () => {
       const view = viewport.getBoundingClientRect();
@@ -68,8 +67,14 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
       const next = {
         left: Math.floor(visible.left / 128) * 128 - 96,
         right: Math.ceil(visible.right / 128) * 128 + 96,
-        top: Math.max(0, Math.floor(visible.top / 128) * 128 - 96),
-        bottom: Math.ceil(visible.bottom / 128) * 128 + 96,
+        top: Math.max(
+          0,
+          Math.floor(visible.top / 128) * 128 -
+            (element.hasAttribute('data-compact-auto') ? 96 : 256),
+        ),
+        bottom:
+          Math.ceil(visible.bottom / 128) * 128 +
+          (element.hasAttribute('data-compact-auto') ? 96 : 256),
         visible,
         columns,
         rem: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
@@ -83,11 +88,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
             : next,
         );
 
-      if (initializing) {
-        update();
-      } else {
-        startTransition(update);
-      }
+      update();
     };
 
     const schedule = () => {
@@ -104,7 +105,6 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     });
     window.addEventListener('resize', schedule);
     measure();
-    initializing = false;
 
     return () => {
       cancelAnimationFrame(frame);

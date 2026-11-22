@@ -7,6 +7,7 @@ type PosterSizeInput = {
   items: TierItemData[];
   autoWidth?: number;
   autoMinimum?: number;
+  autoMaximum?: number;
 };
 
 const dynamicRowWidthPercent = 68;
@@ -15,6 +16,7 @@ type CrowdedPosterInput = Pick<PosterSizeInput, 'imageMode' | 'items'> & {
   capacity: number;
   ranks: string[];
   gap?: number;
+  compact?: boolean;
 };
 
 export const getCrowdedPosterMinimum = ({
@@ -23,7 +25,9 @@ export const getCrowdedPosterMinimum = ({
   capacity,
   ranks,
   gap,
+  compact = false,
 }: CrowdedPosterInput) => {
+  const baseline = compact ? Math.max(1, Math.min(3, capacity / 8)) : 6;
   const groups = new Map<string, TierItemData[]>();
   items.forEach((item) => {
     const rank = ranks.includes(item.rank) ? item.rank : ranks[0];
@@ -35,13 +39,21 @@ export const getCrowdedPosterMinimum = ({
     1,
     ...[...groups.values()].map(
       (group) =>
-        (layoutTierItems({ items: group, size: 6, mode: imageMode, capacity, wrap: true, gap }).at(
-          -1,
-        )?.line ?? 0) + 1,
+        (layoutTierItems({
+          items: group,
+          size: baseline,
+          mode: imageMode,
+          capacity,
+          wrap: true,
+          gap,
+        }).at(-1)?.line ?? 0) + 1,
     ),
   );
 
-  return Math.max(2.75, Math.floor(Math.min(6, 6 * Math.sqrt(2 / lines)) * 4) / 4);
+  return Math.max(
+    compact ? 1 : 2.75,
+    Math.floor(Math.min(baseline, baseline * Math.sqrt(2 / lines)) * 4) / 4,
+  );
 };
 
 export const getAutoPosterWidth = ({ imageMode, items }: Omit<PosterSizeInput, 'mode'>) => {
@@ -66,6 +78,7 @@ export const getPosterSize = ({
   items,
   autoWidth,
   autoMinimum,
+  autoMaximum,
 }: PosterSizeInput) => {
   if (mode !== 'dynamic') {
     return {
@@ -76,5 +89,6 @@ export const getPosterSize = ({
   }
   const width = autoWidth ?? getAutoPosterWidth({ imageMode, items });
   const minimum = autoMinimum === undefined ? '6rem' : `${autoMinimum}rem`;
-  return `clamp(${minimum}, calc(${dynamicRowWidthPercent}cqw / ${width}), var(--tier-max-size, 7rem))`;
+  const maximum = autoMaximum === undefined ? 'var(--tier-max-size, 7rem)' : `${autoMaximum}rem`;
+  return `clamp(${minimum}, calc(${dynamicRowWidthPercent}cqw / ${width}), ${maximum})`;
 };

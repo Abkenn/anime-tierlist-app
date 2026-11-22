@@ -11,6 +11,8 @@ const meta = {
     layout: 'single-line',
     interaction: {
       crowdedMinimum: 6,
+      crowdedMaximum: undefined,
+      compactAuto: false,
       items: aspectRatioTierItems,
       targetRank: null,
       visibleRank: (item) => item.rank,

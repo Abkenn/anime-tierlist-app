@@ -100,7 +100,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
           : undefined
       }
       className={cn(
-        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
+        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite in-data-compact-auto:p-0 in-data-compact-auto:[&_button]:hidden',
         label.length > 4 && 'min-h-[max(6rem,var(--tier-size,5rem))]',
         tierColorClasses[color],
         label.length > 4
@@ -137,7 +137,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
       <div
         data-tier-label=""
         style={{ fontSize: textLayout.fontSize }}
-        className="min-w-0 w-full p-1 text-center leading-tight"
+        className="min-w-0 w-full p-1 text-center leading-tight in-data-compact-auto:p-0"
       >
         {editing ? (
           <Input

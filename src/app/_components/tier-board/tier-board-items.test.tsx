@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { expect, it, vi } from 'vitest';
 import { TierBoardProvider } from '@/app/_providers/tier-board-provider';
 import { TierBoardItems } from './tier-board-items';
+import { TierBoardOverview } from './tier-board-overview';
 
 const viewport = vi.hoisted(() => ({
   left: 0,
@@ -76,6 +77,24 @@ it('retains every small-board poster across viewport and geometry changes', () =
   expect(screen.getAllByRole('button')).toHaveLength(32);
   viewport.top = 0;
   viewport.bottom = 500;
+});
+
+it('shows a non-draggable compact overview and restores editing controls at an explicit size', () => {
+  const interaction = fixture(3);
+  const board = (compactAuto: boolean) => (
+    <TierBoardProvider>
+      {compactAuto ? (
+        <TierBoardOverview interaction={interaction} />
+      ) : (
+        <TierBoardItems interaction={interaction} />
+      )}
+    </TierBoardProvider>
+  );
+  const result = render(board(true));
+  expect(screen.queryAllByRole('button')).toHaveLength(0);
+  expect(screen.getByText('Poster 0')).toBeInTheDocument();
+  result.rerender(board(false));
+  expect(screen.getAllByRole('button')).toHaveLength(3);
 });
 
 it.each([56, 5000])(

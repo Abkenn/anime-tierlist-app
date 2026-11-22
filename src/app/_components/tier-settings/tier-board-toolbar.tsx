@@ -14,6 +14,7 @@ type TierBoardToolbarProps = {
   itemCount: number;
   restoring?: boolean;
   keyboardMode: boolean;
+  compactOverview?: boolean;
   imageMode: TierImageMode;
   onImageModeChange: (mode: TierImageMode) => void;
 };
@@ -23,6 +24,7 @@ export const TierBoardToolbar = ({
   itemCount,
   restoring = false,
   keyboardMode,
+  compactOverview = false,
   imageMode,
   onImageModeChange,
 }: TierBoardToolbarProps) => {
@@ -34,6 +36,7 @@ export const TierBoardToolbar = ({
   const interactionHint = locked
     ? 'Positions locked · Unlock to arrange'
     : 'Keyboard · Arrows/WASD · Esc exit';
+  const hint = compactOverview ? 'Pinch to zoom · Choose a size to edit' : interactionHint;
 
   useEffect(() => {
     if (
@@ -63,8 +66,8 @@ export const TierBoardToolbar = ({
           <p>{restoring ? 'Restoring tierlist...' : `${rankCount} tiers · ${itemCount} items`}</p>
 
           <p role="status" className="mt-1 text-xs">
-            {locked || keyboardMode ? (
-              interactionHint
+            {compactOverview || locked || keyboardMode ? (
+              hint
             ) : (
               <>
                 <span className="hidden pointer-fine:inline">

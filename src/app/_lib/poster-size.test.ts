@@ -33,6 +33,24 @@ it('holds Auto size through small edits and resizes only beyond its buffer', () 
   expect(stabilizePosterWidth(width, 9)).toBe(9);
 });
 
+it('uses thumbnail-sized Auto cells on narrow boards and keeps a bounded floor for huge lists', () => {
+  const minimum = (count: number) =>
+    getCrowdedPosterMinimum({
+      imageMode: 'cover',
+      capacity: 16,
+      ranks: ['A'],
+      compact: true,
+      gap: 0,
+      items: Array.from({ length: count }, (_, index) => ({
+        id: String(index),
+        label: String(index),
+        rank: 'A',
+      })),
+    });
+  expect(minimum(8)).toBe(2);
+  expect(minimum(5000)).toBe(1);
+});
+
 it('does not bounce back after crossing a resizing threshold', () => {
   const smaller = stabilizePosterWidth(13, 17);
   expect(stabilizePosterWidth(smaller, 16)).toBe(17);

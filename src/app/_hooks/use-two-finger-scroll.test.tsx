@@ -2,12 +2,20 @@ import { fireEvent, render } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { useTwoFingerScroll } from './use-two-finger-scroll';
 
-const Area = ({ cancel, click }: { cancel: () => void; click: () => void }) => {
+const Area = ({
+  cancel,
+  click,
+  compact = false,
+}: {
+  cancel: () => void;
+  click: () => void;
+  compact?: boolean;
+}) => {
   const handlers = useTwoFingerScroll();
 
   return (
     <div data-slot="scroll-area" {...handlers}>
-      <section data-slot="scroll-area-viewport">
+      <section data-slot="scroll-area-viewport" data-compact-auto={compact || undefined}>
         <button type="button" onPointerCancel={cancel} onClick={click}>
           Poster
         </button>
@@ -50,4 +58,17 @@ it('cancels a poster drag, scrolls with two fingers, and suppresses the trailing
     view.unmount();
     vi.unstubAllGlobals();
   }
+});
+
+it('leaves two-finger gestures to the browser in the compact overview', () => {
+  const cancel = vi.fn();
+  const view = render(<Area cancel={cancel} click={vi.fn()} compact />);
+  const button = view.getByRole('button');
+  const touches = [
+    { target: button, clientX: 20, clientY: 100 },
+    { target: button, clientX: 40, clientY: 100 },
+  ];
+  fireEvent.touchStart(button, { touches });
+  expect(fireEvent.touchMove(button, { touches, cancelable: true })).toBe(true);
+  expect(cancel).not.toHaveBeenCalled();
 });
