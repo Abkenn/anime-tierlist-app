@@ -57,13 +57,15 @@ export const TierBoardRows = ({
   ) {
     setAutoFit({ mode, imageMode, restoring, width: autoWidth });
   }
-  const size = getPosterSize({
-    mode: restoring || (mode === 'dynamic' && interaction.items.length === 0) ? 'small' : mode,
-    imageMode,
-    items: interaction.items,
-    autoWidth,
-    autoMinimum: interaction.crowdedMinimum,
-  });
+  const size = restoring
+    ? '6rem'
+    : getPosterSize({
+        mode: mode === 'dynamic' && interaction.items.length === 0 ? 'small' : mode,
+        imageMode,
+        items: interaction.items,
+        autoWidth,
+        autoMinimum: interaction.crowdedMinimum,
+      });
 
   useLayoutEffect(() => {
     const reordered = previousOrder.current !== rankKey;

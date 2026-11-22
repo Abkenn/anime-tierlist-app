@@ -1,8 +1,7 @@
 'use client';
 
-import { Popover } from '@base-ui/react/popover';
 import { cn } from 'cn';
-import { type PropsWithChildren, type ReactNode, useState } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { SaveShare } from '@/app/_components/sharing/save-share';
 import { TerminalSequence } from '@/app/_components/shell/terminal-sequence';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
@@ -31,7 +30,6 @@ export const LocalTierlist = ({
     status,
     actions,
   } = useTierlistAccount(initialAccount);
-  const [accountHandle] = useState(() => Popover.createHandle());
   const projectTarget = project?.returnAccount ? 'account' : 'device';
 
   return (
@@ -89,7 +87,6 @@ export const LocalTierlist = ({
             <UserSeed
               seed={googleConnected || storage.snapshot?.accountOwnerId ? '' : storage.seed}
               open={accountOpen}
-              handle={accountHandle}
               onOpenChange={setAccountOpen}
               imported={storage.imported}
               projectReturn={project ? projectTarget : undefined}

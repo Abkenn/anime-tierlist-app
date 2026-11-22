@@ -49,6 +49,7 @@ const nextConfig: NextConfig = {
     },
   ],
   experimental: {
+    inlineCss: true,
     exposeTestingApiInProductionBuild: env.EXPOSE_TESTING_API,
     serverActions: { bodySizeLimit: '4mb' },
     turbopackRustReactCompiler: true,

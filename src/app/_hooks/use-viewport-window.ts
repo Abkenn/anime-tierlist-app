@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, startTransition, useEffect, useState } from 'react';
+import { type RefObject, startTransition, useLayoutEffect, useState } from 'react';
 
 type ViewportWindow = {
   left: number;
@@ -15,15 +15,15 @@ type ViewportWindow = {
 export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
   const [viewportWindow, setWindow] = useState<ViewportWindow>({
     left: 0,
-    right: 1600,
+    right: 0,
     top: 0,
-    bottom: 1000,
+    bottom: 0,
     visible: { left: 0, right: 0, top: 0, bottom: 0 },
     columns: 3,
     rem: 16,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = content.current;
     const viewport = element?.closest<HTMLElement>('[data-slot="scroll-area-viewport"]');
     if (!element || !viewport) {
@@ -46,6 +46,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     }
 
     let frame = 0;
+    let initializing = true;
 
     const measure = () => {
       const view = viewport.getBoundingClientRect();
@@ -73,15 +74,20 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
         columns,
         rem: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
       };
-      startTransition(() =>
+      const update = () =>
         setWindow((previous) =>
           (['left', 'right', 'top', 'bottom', 'columns', 'rem'] as const).every(
             (key) => previous[key] === next[key],
           )
             ? previous
             : next,
-        ),
-      );
+        );
+
+      if (initializing) {
+        update();
+      } else {
+        startTransition(update);
+      }
     };
 
     const schedule = () => {
@@ -98,6 +104,7 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     });
     window.addEventListener('resize', schedule);
     measure();
+    initializing = false;
 
     return () => {
       cancelAnimationFrame(frame);

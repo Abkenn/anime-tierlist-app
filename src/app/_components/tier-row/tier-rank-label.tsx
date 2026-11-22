@@ -100,7 +100,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
           : undefined
       }
       className={cn(
-        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite pointer-coarse:min-h-[max(6rem,var(--tier-size,5rem))]',
+        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
         label.length > 4 && 'min-h-[max(6rem,var(--tier-size,5rem))]',
         tierColorClasses[color],
         label.length > 4

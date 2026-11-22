@@ -32,7 +32,7 @@ export type UserSeedProps = {
   busy: boolean;
   error?: string;
   open: boolean;
-  handle: ReturnType<typeof Popover.createHandle>;
+  handle?: ReturnType<typeof Popover.createHandle>;
   onOpenChange: (open: boolean) => void;
   onImport: (seed: string) => Promise<boolean>;
   onBackup: () => Promise<string>;

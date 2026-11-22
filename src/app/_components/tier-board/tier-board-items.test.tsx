@@ -48,7 +48,7 @@ const fixture = (count: number): ComponentProps<typeof TierBoardItems>['interact
 });
 
 it('retains every small-board poster across viewport and geometry changes', () => {
-  const interaction = fixture(56);
+  const interaction = fixture(32);
   const board = (input: typeof interaction) => (
     <TierBoardProvider>
       <TierBoardItems interaction={input} />
@@ -56,8 +56,8 @@ it('retains every small-board poster across viewport and geometry changes', () =
   );
   const result = render(board(interaction));
   const first = screen.getByTestId('poster-0');
-  const last = screen.getByTestId('poster-55');
-  expect(screen.getAllByRole('button')).toHaveLength(56);
+  const last = screen.getByTestId('poster-31');
+  expect(screen.getAllByRole('button')).toHaveLength(32);
 
   viewport.top = 4000;
   viewport.bottom = 4500;
@@ -72,35 +72,38 @@ it('retains every small-board poster across viewport and geometry changes', () =
     }),
   );
   expect(screen.getByTestId('poster-0')).toBe(first);
-  expect(screen.getByTestId('poster-55')).toBe(last);
-  expect(screen.getAllByRole('button')).toHaveLength(56);
+  expect(screen.getByTestId('poster-31')).toBe(last);
+  expect(screen.getAllByRole('button')).toHaveLength(32);
   viewport.top = 0;
   viewport.bottom = 500;
 });
 
-it('keeps skeleton geometry for every culled poster without mounting its controls', () => {
-  const interaction = fixture(5000);
-  const board = () => (
-    <TierBoardProvider>
-      <TierBoardItems interaction={interaction} />
-    </TierBoardProvider>
-  );
-  const result = render(board());
-  expect(screen.getByTestId('poster-0')).toBeInTheDocument();
-  expect(screen.queryByTestId('poster-4999')).not.toBeInTheDocument();
-  expect(screen.getAllByRole('button')).toHaveLength(6);
-  const path = result.container.querySelector('[data-placeholder-rank="A"]');
-  expect(path).toHaveAttribute('d', expect.stringContaining('M0,600h60v100h-60Z'));
-  expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
-  expect(result.container.querySelectorAll('[data-placeholder-rank]')).toHaveLength(1);
+it.each([56, 5000])(
+  'keeps culled poster geometry without mounting controls on a %i-item board',
+  (count) => {
+    const interaction = fixture(count);
+    const board = () => (
+      <TierBoardProvider>
+        <TierBoardItems interaction={interaction} />
+      </TierBoardProvider>
+    );
+    const result = render(board());
+    expect(screen.getByTestId('poster-0')).toBeInTheDocument();
+    expect(screen.queryByTestId(`poster-${count - 1}`)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(6);
+    const path = result.container.querySelector('[data-placeholder-rank="A"]');
+    expect(path).toHaveAttribute('d', expect.stringContaining('M0,600h60v100h-60Z'));
+    expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
+    expect(result.container.querySelectorAll('[data-placeholder-rank]')).toHaveLength(1);
 
-  viewport.top = 4000;
-  viewport.bottom = 4500;
-  result.rerender(board());
-  expect(screen.queryByTestId('poster-0')).not.toBeInTheDocument();
-  expect(screen.getByTestId('poster-40')).toBeInTheDocument();
-  expect(path).toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
-  expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,4000h60v100h-60Z'));
-  viewport.top = 0;
-  viewport.bottom = 500;
-});
+    viewport.top = 4000;
+    viewport.bottom = 4500;
+    result.rerender(board());
+    expect(screen.queryByTestId('poster-0')).not.toBeInTheDocument();
+    expect(screen.getByTestId('poster-40')).toBeInTheDocument();
+    expect(path).toHaveAttribute('d', expect.stringContaining('M0,0h60v100h-60Z'));
+    expect(path).not.toHaveAttribute('d', expect.stringContaining('M0,4000h60v100h-60Z'));
+    viewport.top = 0;
+    viewport.bottom = 500;
+  },
+);

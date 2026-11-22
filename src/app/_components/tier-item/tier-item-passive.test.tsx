@@ -119,3 +119,24 @@ it('closes the shared popup when its active poster is removed and leaves other p
   expect(menuRoots.size).toBe(1);
   result.unmount();
 });
+
+it('opens a passive poster menu on its first pointer press', async () => {
+  const result = render(
+    <TierBoardProvider>
+      <TierItemInteractionHost>
+        <TierItemPassive
+          id="poster"
+          label="Poster"
+          rank="S"
+          position={{ x: '0rem', y: '0rem', width: '4rem', height: '6rem' }}
+        />
+      </TierItemInteractionHost>
+    </TierBoardProvider>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Edit poster', hidden: true });
+  fireEvent.pointerDown(trigger, { button: 0, pointerType: 'mouse' });
+  await waitFor(() =>
+    expect(document.querySelector('[data-slot="context-menu-content"]')).not.toBeNull(),
+  );
+  result.unmount();
+});

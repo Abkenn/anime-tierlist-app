@@ -2,13 +2,13 @@
 
 import { useAtomValue } from 'jotai';
 import { motion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import { useDeferredValue, useState } from 'react';
 import { renamingItemIdAtom, tierFindQueryAtom } from '@/app/_atoms/tierlist/find.atoms';
 import { editingItemIdAtom, menuItemIdAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { TierItemInteractionHost } from '@/app/_components/tier-item/tier-item-interaction-host';
 import { TierItemPassive } from '@/app/_components/tier-item/tier-item-passive';
-import { TierItemSizing } from '@/app/_components/tier-item/tier-item-sizing';
 import { useTierItemActions } from '@/app/_hooks/use-tier-item-actions';
 import type { useTierItems } from '@/app/_hooks/use-tier-items';
 import { useViewportWindow } from '@/app/_hooks/use-viewport-window';
@@ -17,6 +17,10 @@ import { TierItemActionsContext } from '@/app/_lib/tier-item-actions-context';
 import { getTierItemLabel, matchesTierItemLabel } from '@/app/_lib/tier-item-label';
 import { getRankOffset } from '@/app/_lib/tier-rank-drag';
 import type { TierRank } from '@/app/_types/tierlist.types';
+
+const TierItemSizing = dynamic(() =>
+  import('@/app/_components/tier-item/tier-item-sizing').then((module) => module.TierItemSizing),
+);
 
 type TierBoardItemsProps = {
   interaction: Pick<
@@ -49,7 +53,7 @@ export const TierBoardItems = ({ interaction }: TierBoardItemsProps) => {
   const editingItemId = useAtomValue(editingItemIdAtom);
   const query = useDeferredValue(useAtomValue(tierFindQueryAtom));
   const actions = useTierItemActions(interaction);
-  const virtualized = interaction.items.length > 200;
+  const virtualized = interaction.items.length > 40;
   const visiblePosters = interaction.items.filter((item) => {
     const poster = geometry.get(item.id);
 

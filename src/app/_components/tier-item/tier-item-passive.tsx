@@ -29,6 +29,7 @@ export const TierItemPassive = (props: TierItemProps) => {
   const [active, setActive] = useState(false);
   const activeRef = useRef(false);
   const reducedMotion = useReducedMotion();
+  const MenuTrigger = active ? Menu.Trigger : 'button';
   // Handlers stay current without repainting when only callback identities change.
   const publish = useCallback((next: TierItemButtonProps) => {
     viewRef.current = next;
@@ -89,7 +90,16 @@ export const TierItemPassive = (props: TierItemProps) => {
     <>
       <div
         className="group/item contents"
-        onPointerDownCapture={origin}
+        onPointerDownCapture={(event) => {
+          const openingMenu =
+            event.target instanceof Element && event.target.closest('[data-passive-menu-trigger]');
+          if (openingMenu) {
+            event.preventDefault();
+          }
+          if (origin(event) && openingMenu) {
+            host?.show();
+          }
+        }}
         onContextMenuCapture={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -168,10 +178,19 @@ export const TierItemPassive = (props: TierItemProps) => {
             animate={props.position}
             className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:group-focus-within/item:visible`}
           >
-            <Menu.Trigger
+            <MenuTrigger
+              type="button"
               id={triggerId}
               aria-label="Edit poster"
+              aria-haspopup="menu"
+              aria-expanded={open}
+              data-passive-menu-trigger={!active || undefined}
               tabIndex={-1}
+              onClick={() => {
+                if (!active && activate()) {
+                  host?.show();
+                }
+              }}
               onContextMenu={(event) => {
                 event.preventDefault();
                 if (activate()) {
@@ -181,7 +200,7 @@ export const TierItemPassive = (props: TierItemProps) => {
               className="pointer-events-auto absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center border border-white/20 bg-black/65 text-white hover:bg-black/90 focus-visible:outline-2 focus-visible:outline-white"
             >
               <Ellipsis aria-hidden="true" className="size-4" />
-            </Menu.Trigger>
+            </MenuTrigger>
           </motion.div>
         )}
       </div>
