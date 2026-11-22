@@ -32,7 +32,7 @@ export const TierBoardOverview = ({ interaction }: TierBoardOverviewProps) => {
   });
 
   return (
-    <div className="pointer-events-none absolute inset-0">
+    <div className="pointer-events-none absolute inset-0 z-10">
       {visible.map((item, index) => {
         const position = interaction.position(item);
         return position ? (

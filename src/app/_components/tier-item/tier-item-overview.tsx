@@ -55,7 +55,7 @@ export const TierItemOverview = ({
 
       {image && !trimmed ? (
         <Image
-          src={posterDisplaySource(image.src)}
+          src={posterDisplaySource(image.src, 'compact')}
           alt={label}
           fill
           unoptimized

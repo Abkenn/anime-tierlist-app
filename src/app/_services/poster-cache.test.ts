@@ -30,15 +30,15 @@ it('saves the entire poster list once and reuses saved responses on subsequent o
   try {
     await cacheTierlistPosters(urls, new AbortController().signal, progress);
     await cacheTierlistPosters(urls, new AbortController().signal, progress);
-    expect(fetch).toHaveBeenCalledTimes(14);
-    expect(entries.size).toBe(14);
+    expect(fetch).toHaveBeenCalledTimes(15);
+    expect(entries.size).toBe(15);
     expect(entries.has(new URL('/curated/86.jpg', window.location.origin).href)).toBe(true);
     expect([...entries.keys()].some((url) => url.includes('/_next/image?'))).toBe(true);
     expect(peak).toBe(1);
     expect(progress).toHaveBeenCalledTimes(2);
     expect(progress).toHaveBeenLastCalledWith({
-      total: 14,
-      saved: 14,
+      total: 15,
+      saved: 15,
       failed: 0,
     });
   } finally {
@@ -64,7 +64,14 @@ it('downloads display thumbnails before full-resolution originals', async () => 
       new AbortController().signal,
       vi.fn(),
     );
-    expect(urls).toEqual(['/_next/image', '/_next/image', '/curated/a.jpg', '/curated/b.jpg']);
+    expect(urls).toEqual([
+      '/_next/image',
+      '/_next/image',
+      '/_next/image',
+      '/_next/image',
+      '/curated/a.jpg',
+      '/curated/b.jpg',
+    ]);
   } finally {
     vi.unstubAllGlobals();
   }

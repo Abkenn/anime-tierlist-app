@@ -12,7 +12,13 @@ export const cacheTierlistPosters = async (
   signal: AbortSignal,
   publish: (progress: PosterCacheProgress) => void,
 ) => {
-  urls = [...new Set([...urls.map(posterDisplaySource), ...urls])];
+  urls = [
+    ...new Set([
+      ...urls.map((url) => posterDisplaySource(url)),
+      ...urls.map((url) => posterDisplaySource(url, 'compact')),
+      ...urls,
+    ]),
+  ];
   const run = async () => {
     const cache = await caches.open(posterCacheName);
     const progress = { total: urls.length, saved: 0, failed: 0 };
