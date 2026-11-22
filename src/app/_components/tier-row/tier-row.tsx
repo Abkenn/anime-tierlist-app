@@ -36,7 +36,8 @@ export const TierRow = ({
   const placeholder = (
     <div
       className={cn(
-        'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
+        'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite pointer-coarse:min-h-[max(6rem,var(--tier-size,5rem))]',
+        rank.length > 4 && 'min-h-[max(6rem,var(--tier-size,5rem))]',
         tierColorClasses[tierColors[rank] ?? 'stone'],
         rank.length > 4
           ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'
@@ -56,7 +57,7 @@ export const TierRow = ({
       animate={{
         boxShadow: dragged ? '0 8px 24px rgb(0 0 0 / 0.3)' : '0 0 0 rgb(0 0 0 / 0)',
       }}
-      className="group/row relative grid grid-cols-[var(--tier-size,5rem)_minmax(0,1fr)] border-ink bg-charcoal not-first:border-t"
+      className="group/row relative grid grid-cols-[max(6rem,var(--tier-size,5rem))_minmax(0,1fr)] border-ink bg-charcoal not-first:border-t"
       data-tier-rank={rank}
       data-tier-count={itemCount}
       aria-label={itemCount ? `${rank} tier, ${itemCount} items` : `${rank} tier, empty`}

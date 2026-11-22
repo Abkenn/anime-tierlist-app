@@ -166,7 +166,7 @@ export const TierItemPassive = (props: TierItemProps) => {
           <motion.div
             initial={false}
             animate={props.position}
-            className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:visible`}
+            className={`pointer-events-none absolute left-0 top-0 z-20 ${open ? 'visible' : 'invisible'} group-hover/item:visible group-has-focus-visible/item:visible pointer-coarse:group-focus-within/item:visible`}
           >
             <Menu.Trigger
               id={triggerId}

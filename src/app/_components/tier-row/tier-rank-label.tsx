@@ -3,10 +3,10 @@
 import { Input } from '@base-ui/react/input';
 import { cn } from 'cn';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Plus, Trash2 } from 'lucide-react';
+import { Ellipsis, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import dynamic from 'next/dynamic';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom, rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ColorPicker } from '@/app/_components/ui/color-picker';
@@ -20,6 +20,10 @@ const TierRankDeleteDialog = dynamic(() =>
   import('./tier-rank-delete-dialog').then((module) => module.TierRankDeleteDialog),
 );
 
+const TierRankOptions = lazy(async () => ({
+  default: (await import('./tier-rank-options')).TierRankOptions,
+}));
+
 export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const [details, setDetails] = useAtom(rankDetailsAtom);
   const ranks = useAtomValue(enabledTierRanksAtom);
@@ -29,12 +33,34 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const [draft, setDraft] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [presetColor, setPresetColor] = useState<HexColor>('#aaaaaa');
+  const [optionsActivated, setOptionsActivated] = useState(false);
   const labelRef = useRef<HTMLDivElement>(null);
   const label = details[rank]?.label ?? rank;
   const textLayout = useTierLabelLayout({ ref: labelRef, label, editing });
   const color = tierColors[rank] ?? 'stone';
   const addRankButtonClass =
-    'absolute left-1/2 z-20 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
+    'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:hidden';
+  const labelLines = textLayout.lines.map((line, index) => (
+    <span key={textLayout.lines.slice(0, index + 1).join(' ')} className="block whitespace-nowrap">
+      {line}
+    </span>
+  ));
+  const optionsTrigger = (
+    <button
+      type="button"
+      aria-label={`Edit ${label} tier`}
+      aria-haspopup="dialog"
+      onClick={() => setOptionsActivated(true)}
+      className="absolute right-0 top-0 z-30 hidden size-11 cursor-pointer items-center justify-center focus-visible:outline-2 pointer-coarse:flex"
+    >
+      <Ellipsis aria-hidden="true" className="size-4" />
+    </button>
+  );
+
+  const beginRename = () => {
+    setDraft(label);
+    setEditing(true);
+  };
 
   const readPresetColor = () => {
     if (!labelRef.current || !color) {
@@ -74,7 +100,8 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
           : undefined
       }
       className={cn(
-        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite',
+        'group relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink p-2 text-graphite pointer-coarse:min-h-[max(6rem,var(--tier-size,5rem))]',
+        label.length > 4 && 'min-h-[max(6rem,var(--tier-size,5rem))]',
         tierColorClasses[color],
         label.length > 4
           ? 'text-[clamp(0.875rem,calc(var(--tier-size,6rem)*0.1),1.25rem)]'
@@ -97,7 +124,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         type="button"
         aria-label={`Delete ${label}`}
         onClick={() => setConfirming(true)}
-        className="absolute top-0 right-0 z-30 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+        className="absolute top-0 right-0 z-30 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:hidden"
       >
         <Trash2
           aria-hidden="true"
@@ -107,55 +134,72 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
 
       <TierRankMove rank={rank} label={label} />
 
-      {editing ? (
-        <Input
-          autoFocus
-          aria-label="Tier name"
-          name="tierName"
-          value={draft}
-          maxLength={100}
-          onChange={(event) => setDraft(event.target.value)}
-          onBlur={commit}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              commit();
-            }
-            if (event.key === 'Escape') {
-              setEditing(false);
-            }
-          }}
-          className="min-w-0 w-full px-3 border-b border-current bg-transparent text-center text-xs outline-none"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(label);
-            setEditing(true);
-          }}
-          data-tier-label=""
-          style={{ fontSize: textLayout.fontSize }}
-          className="min-w-0 w-full cursor-text p-1 text-center leading-tight hover:underline"
-          aria-label={`Rename ${label}`}
-        >
-          {textLayout.lines.map((line, index) => (
-            <span
-              key={textLayout.lines.slice(0, index + 1).join(' ')}
-              className="block whitespace-nowrap"
+      <div
+        data-tier-label=""
+        style={{ fontSize: textLayout.fontSize }}
+        className="min-w-0 w-full p-1 text-center leading-tight"
+      >
+        {editing ? (
+          <Input
+            autoFocus
+            aria-label="Tier name"
+            name="tierName"
+            value={draft}
+            maxLength={100}
+            onChange={(event) => setDraft(event.target.value)}
+            onBlur={commit}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                commit();
+              }
+              if (event.key === 'Escape') {
+                setEditing(false);
+              }
+            }}
+            className="min-w-0 w-full border-b border-current bg-transparent text-center text-sm outline-none pointer-coarse:min-h-11"
+          />
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={beginRename}
+              className="hidden min-h-6 min-w-0 w-full cursor-text text-center hover:underline pointer-fine:block"
+              aria-label={`Rename ${label}`}
             >
-              {line}
-            </span>
-          ))}
-        </button>
-      )}
+              {labelLines}
+            </button>
 
-      <ColorPicker
-        label={`Color for ${label}`}
-        color={details[rank]?.color ?? presetColor}
-        onOpen={readPresetColor}
-        onChange={(next) => setDetails({ ...details, [rank]: { label, color: next } })}
-      />
+            <span className="block pointer-fine:hidden">{labelLines}</span>
+          </>
+        )}
+      </div>
+
+      <div className="contents pointer-coarse:hidden">
+        <ColorPicker
+          label={`Color for ${label}`}
+          color={details[rank]?.color ?? presetColor}
+          onOpen={readPresetColor}
+          onChange={(next) => setDetails({ ...details, [rank]: { label, color: next } })}
+        />
+      </div>
+
+      {optionsActivated ? (
+        <Suspense fallback={optionsTrigger}>
+          <TierRankOptions
+            trigger={optionsTrigger}
+            rank={rank}
+            label={label}
+            color={details[rank]?.color ?? presetColor}
+            onColorOpen={readPresetColor}
+            onColorChange={(next) => setDetails({ ...details, [rank]: { label, color: next } })}
+            onRename={beginRename}
+            onDelete={() => setConfirming(true)}
+          />
+        </Suspense>
+      ) : (
+        optionsTrigger
+      )}
 
       {rank === ranks.at(-1) && (
         <button

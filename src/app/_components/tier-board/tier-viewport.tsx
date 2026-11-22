@@ -56,7 +56,10 @@ export const TierViewport = ({ children, ref, scrollable }: TierViewportProps) =
   }
 
   return (
-    <div ref={containerRef} className="relative min-h-0 min-w-0 flex-1 @container-size">
+    <div
+      ref={containerRef}
+      className="relative min-h-0 min-w-0 @container lg:flex-1 lg:@container-size"
+    >
       <ScrollArea
         orientation="vertical"
         style={
@@ -65,7 +68,7 @@ export const TierViewport = ({ children, ref, scrollable }: TierViewportProps) =
             '--tier-available-height': availableHeight ? `${availableHeight}px` : undefined,
           } as CSSProperties
         }
-        className="h-full min-h-0 min-w-0 pr-3.5"
+        className="h-auto min-h-0 min-w-0 lg:h-full lg:pr-3.5 *:data-[slot=scroll-area-scrollbar]:hidden lg:*:data-[slot=scroll-area-scrollbar]:flex"
         viewportProps={{
           render: (
             <section
@@ -75,7 +78,7 @@ export const TierViewport = ({ children, ref, scrollable }: TierViewportProps) =
               aria-label="Tierlist board scroll"
             />
           ),
-          className: '@container lg:overscroll-contain',
+          className: '@container overflow-visible! lg:overflow-scroll! lg:overscroll-contain',
           tabIndex: 0,
         }}
       >

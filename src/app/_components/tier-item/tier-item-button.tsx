@@ -131,7 +131,7 @@ export const TierItemButton = ({
         <span
           aria-hidden="true"
           data-tier-drag-surface=""
-          className="pointer-events-auto absolute inset-1 hidden touch-none pointer-coarse:block"
+          className="pointer-events-auto absolute inset-y-1 inset-x-[min(0.25rem,max(0px,calc((100%-1.5rem)/2)))] hidden touch-none pointer-coarse:block"
         />
       )}
     </motion.button>

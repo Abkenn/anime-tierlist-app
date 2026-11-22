@@ -27,7 +27,7 @@ const publicDocument = (input: unknown): TierlistDocument => {
   return document;
 };
 
-const previewFormat = 6;
+const previewFormat = 7;
 
 const previewFingerprint = (revision: number, document: TierlistDocument) => {
   const { updatedAt: _updatedAt, ...content } = document;

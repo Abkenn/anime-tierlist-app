@@ -21,6 +21,7 @@ export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) =
       return;
     }
     const desktop = window.matchMedia('(min-width: 64rem) and (hover: hover) and (pointer: fine)');
+    const constrained = window.matchMedia('(min-width: 64rem)');
     let geometry: BoardWheelGeometry | undefined;
     let listening = false;
     const wheel = (event: WheelEvent) => {
@@ -29,6 +30,12 @@ export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) =
       }
     };
     const measure = () => {
+      if (!constrained.matches) {
+        setSize((current) =>
+          current.height === undefined && current.availableHeight === undefined ? current : {},
+        );
+        return;
+      }
       geometry = {
         clientWidth: viewport.clientWidth,
         clientHeight: viewport.clientHeight,
@@ -75,6 +82,7 @@ export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) =
     scheduleMeasure();
 
     desktop.addEventListener('change', scheduleMeasure);
+    constrained.addEventListener('change', scheduleMeasure);
     return () => {
       observer.disconnect();
       if (frame !== undefined) {
@@ -82,6 +90,7 @@ export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) =
       }
       viewport.removeEventListener('wheel', wheel);
       desktop.removeEventListener('change', scheduleMeasure);
+      constrained.removeEventListener('change', scheduleMeasure);
     };
   }, [viewport, containerRef]);
 

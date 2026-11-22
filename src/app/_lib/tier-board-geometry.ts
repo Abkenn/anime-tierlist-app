@@ -8,7 +8,14 @@ export type TierItemPosition = {
   width: string;
   height: string;
 };
-export type TierRow = { rank: TierRank; x: number; y: number; size: number; gap?: number };
+export type TierRow = {
+  rank: TierRank;
+  x: number;
+  y: number;
+  size: number;
+  gap?: number;
+  actionSpace?: number;
+};
 export type TierDropSlot = { id: string; rank: TierRank; index: number };
 const itemGapRem = tierItemGap;
 
@@ -33,6 +40,7 @@ export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: num
     const content = row.lastElementChild;
     const measuredGap = content ? Number.parseFloat(getComputedStyle(content).rowGap) : Number.NaN;
     const gap = Number.isFinite(measuredGap) ? measuredGap / rem : itemGapRem;
+    const search = content?.querySelector<HTMLElement>('button[aria-label^="Add anime to "]');
     const cells = row.lastElementChild?.getBoundingClientRect();
     const rect = row.getBoundingClientRect();
     const translation = readTierRowTranslation(row);
@@ -42,6 +50,7 @@ export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: num
       x: (cells?.left ?? rect.left) - bounds.left - translation.x,
       y: (cells?.top ?? rect.top) - bounds.top - translation.y,
       gap,
+      actionSpace: (search?.getBoundingClientRect().width ?? rem * 1.75) / rem + 0.5,
       size: wrapItems
         ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect().height ?? rem * 4.125)
         : Math.max(0, (cells?.height ?? rect.height) - rem * gap * 2),

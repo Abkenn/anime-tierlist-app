@@ -75,9 +75,6 @@ export const getPosterSize = ({
     }[mode];
   }
   const width = autoWidth ?? getAutoPosterWidth({ imageMode, items });
-  const minimum =
-    autoMinimum === undefined
-      ? 'var(--tier-small-size, 6rem)'
-      : `min(var(--tier-small-size, 6rem), ${autoMinimum}rem)`;
-  return `clamp(${minimum}, calc(${dynamicRowWidthPercent}cqw / ${width}), var(--tier-max-size, 10rem))`;
+  const minimum = autoMinimum === undefined ? '6rem' : `${autoMinimum}rem`;
+  return `clamp(${minimum}, calc(${dynamicRowWidthPercent}cqw / ${width}), var(--tier-max-size, 7rem))`;
 };

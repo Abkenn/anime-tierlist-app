@@ -68,6 +68,12 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
     let frame = 0;
     let scrollFrame = 0;
     const media = window.matchMedia('(min-width: 64rem) and (hover: hover) and (pointer: fine)');
+    if (!media.matches || !previewEnabled) {
+      setPreviewEnabled(media.matches);
+      const update = () => setPreviewEnabled(media.matches);
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
     const pageBoard = Boolean(viewport.closest('main'));
 
     const measure = () => {
@@ -265,7 +271,7 @@ export const useTierOverview = (viewport: HTMLElement | null) => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [viewport]);
+  }, [viewport, previewEnabled]);
 
   return {
     ...overview,

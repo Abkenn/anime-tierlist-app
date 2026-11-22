@@ -17,13 +17,14 @@ export const getTierLabelLayout = ({
       0,
     ),
 }: TierLabelInput) => {
-  const words = text.trim().split(/\s+/u);
+  const words = text.trim().split(/\s+|(?<=\/)(?=\S)/u);
   let fontSize = Math.max(1, Math.min(maximum, width / Math.max(1, ...words.map(measure))));
   const wrap = () => {
     const lines: string[] = [];
     let line = '';
     for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
+      const separator = line.endsWith('/') ? '' : ' ';
+      const candidate = line ? `${line}${separator}${word}` : word;
       if (line && measure(candidate) * fontSize > width) {
         lines.push(line);
         line = word;

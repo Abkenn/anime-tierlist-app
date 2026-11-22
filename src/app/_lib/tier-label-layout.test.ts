@@ -1,6 +1,21 @@
 import { expect, it } from 'vitest';
 import { getTierLabelLayout } from './tier-label-layout';
 
+it('wraps combined status labels after the slash without shrinking whole words', () => {
+  const input = { width: 72, height: 72, fontSize: 14 };
+  expect(getTierLabelLayout({ ...input, text: 'Dropped/On-Hold' })).toEqual({
+    fontSize: 14,
+    lines: ['Dropped/', 'On-Hold'],
+  });
+  expect(getTierLabelLayout({ ...input, text: 'Watching' })).toEqual({
+    fontSize: 14,
+    lines: ['Watching'],
+  });
+  expect(getTierLabelLayout({ ...input, width: 200, text: 'Dropped/On-Hold' }).lines).toEqual([
+    'Dropped/On-Hold',
+  ]);
+});
+
 it('shrinks single words rather than splitting them', () => {
   const dropped = getTierLabelLayout({
     text: 'Dropped',

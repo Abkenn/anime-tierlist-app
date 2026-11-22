@@ -91,6 +91,7 @@ export const useTierItems = ({
   const [announcement, setAnnouncement] = useState('');
   const rem = useRef(16);
   const itemGapRem = rows[0]?.gap ?? tierItemGap;
+  const actionSpaceRem = rows[0]?.actionSpace ?? 2.25;
 
   const rankKey = ranks.join(',');
   const activeSlot = locked ? null : (slot ?? (externalItem ? externalSlot : null));
@@ -103,7 +104,7 @@ export const useTierItems = ({
   const labelWidth = rows[0] ? rows[0].x / rem.current : 4.5625;
   const availableWidth = Math.max(
     0,
-    viewportWidth / rem.current - labelWidth - itemGapRem * 2 - 2.25 - 1 / rem.current,
+    viewportWidth / rem.current - labelWidth - itemGapRem * 2 - actionSpaceRem - 1 / rem.current,
   );
   const capacity = availableWidth;
   const crowdedMinimum = useMemo(
@@ -111,11 +112,11 @@ export const useTierItems = ({
       getCrowdedPosterMinimum({
         imageMode,
         items,
-        capacity: Math.max(1, viewportWidth / rem.current - 6 - itemGapRem * 2 - 2.25),
+        capacity: Math.max(1, viewportWidth / rem.current - 6 - itemGapRem * 2 - actionSpaceRem),
         ranks,
         gap: itemGapRem,
       }),
-    [imageMode, items, viewportWidth, ranks, itemGapRem],
+    [imageMode, items, viewportWidth, ranks, itemGapRem, actionSpaceRem],
   );
   const viewportRef = useCallback((element: HTMLElement | null) => setViewportElement(element), []);
 
@@ -239,7 +240,7 @@ export const useTierItems = ({
               row.x / rem.current +
               Math.max(right, wrapItems ? capacity : 0) +
               itemGapRem * 2 +
-              2.25 +
+              actionSpaceRem +
               1 / rem.current
             );
           }),
@@ -372,6 +373,7 @@ export const useTierItems = ({
           row.x === candidate.x &&
           row.y === candidate.y &&
           row.gap === candidate.gap &&
+          row.actionSpace === candidate.actionSpace &&
           row.size === candidate.size
         );
       })

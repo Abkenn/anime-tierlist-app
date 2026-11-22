@@ -137,7 +137,7 @@ export const TierBoardToolbar = ({
           aria-pressed={locked}
           title={locked ? 'Unlock to arrange anime and tiers' : 'Lock positions for scrolling'}
           onClick={() => setLocked((current) => !current)}
-          className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+          className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:size-11"
         >
           {locked ? (
             <LockKeyhole aria-hidden="true" className="size-4" />

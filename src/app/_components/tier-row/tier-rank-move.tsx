@@ -16,7 +16,7 @@ export const TierRankMove = ({ rank, label }: { rank: TierRank; label: string })
       title="Drag to move tier · Arrow keys to move"
       {...gestureProps}
       style={{ touchAction: locked ? 'pan-y' : 'none', cursor: locked ? 'default' : undefined }}
-      className="absolute left-0 top-1/2 z-40 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] -translate-y-1/2 touch-none cursor-grab items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing max-lg:opacity-60"
+      className="absolute left-0 top-0 z-40 flex size-6 touch-none cursor-grab items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing pointer-coarse:size-11 pointer-coarse:opacity-60"
     >
       <GripVertical
         aria-hidden="true"

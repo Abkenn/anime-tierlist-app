@@ -23,7 +23,9 @@ export const scrollTierDrag = ({ board, x, y, delta }: ScrollTierDragInput) => {
   };
 
   document
-    .querySelectorAll<HTMLElement>('[data-slot="scroll-area-viewport"]')
+    .querySelectorAll<HTMLElement>(
+      '[data-slot="scroll-area-viewport"], [data-tier-workspace-scroll]',
+    )
     .forEach((viewport) => {
       if (!viewport.contains(board)) {
         return;

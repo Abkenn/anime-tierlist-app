@@ -90,10 +90,9 @@ export const TierBoardRows = ({
           {
             '--tier-base-size': size,
             '--tier-small-fit': `max(2.75rem, min(6rem, calc((var(--tier-available-height, 100cqh) - ${ranks.length + 16}px) / ${ranks.length})))`,
-            '--tier-auto-fit': `max(2.75rem, min(10rem, calc((var(--tier-available-height, 100cqh) - ${ranks.length + 16}px) / ${ranks.length})))`,
           } as React.CSSProperties
         }
-        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:10rem] lg:[--tier-max-size:var(--tier-auto-fit)] max-sm:[--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
+        className="grid auto-rows-auto overflow-hidden border border-ink bg-charcoal text-cloud [--tier-small-size:6rem] lg:[--tier-small-size:var(--tier-small-fit)] [--tier-max-size:7rem] [--tier-size:var(--tier-base-size,7rem)] [--tier-item-size:var(--tier-base-size,7rem)]"
         aria-label="Ranked tiers"
       >
         {ranks.map((rank, index) => (

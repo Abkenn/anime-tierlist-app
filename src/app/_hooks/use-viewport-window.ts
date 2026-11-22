@@ -50,14 +50,19 @@ export const useViewportWindow = (content: RefObject<HTMLElement | null>) => {
     const measure = () => {
       const view = viewport.getBoundingClientRect();
       const bounds = element.getBoundingClientRect();
+      const workspace = element.closest('[data-tier-workspace-scroll]')?.getBoundingClientRect();
       const columns = getComputedStyle(element)
         .gridTemplateColumns.split(' ')
         .filter(Boolean).length;
       const visible = {
-        left: Math.max(0, view.left) - bounds.left,
-        right: Math.min(window.innerWidth, view.right) - bounds.left,
-        top: Math.max(0, view.top) - bounds.top,
-        bottom: Math.min(window.innerHeight, view.bottom) - bounds.top,
+        left: Math.max(0, view.left, workspace?.left ?? 0) - bounds.left,
+        right:
+          Math.min(window.innerWidth, view.right, workspace?.right ?? window.innerWidth) -
+          bounds.left,
+        top: Math.max(0, view.top, workspace?.top ?? 0) - bounds.top,
+        bottom:
+          Math.min(window.innerHeight, view.bottom, workspace?.bottom ?? window.innerHeight) -
+          bounds.top,
       };
       const next = {
         left: Math.floor(visible.left / 128) * 128 - 96,
