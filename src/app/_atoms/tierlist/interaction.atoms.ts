@@ -1,6 +1,8 @@
 import { atom } from 'jotai/vanilla';
 
 export const keyboardModeAtom = atom(false);
+export const positionsLockedAtom = atom(false);
+export const lockFeedbackAtom = atom(0);
 export const editingItemIdAtom = atom<string | null>(null);
 
 type EditingChange = { id: string; editing: boolean };

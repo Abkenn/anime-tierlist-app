@@ -1,6 +1,14 @@
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { cancelFrame, frame, useAnimationControls, useReducedMotion } from 'motion/react';
-import { type PointerEvent, type RefObject, useLayoutEffect, useRef, useState } from 'react';
+import {
+  type PointerEvent,
+  type RefObject,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { lockFeedbackAtom, positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { draggedRankAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import type { TierItemPosition } from '@/app/_hooks/use-tier-items';
 import { scrollTierDrag } from '@/app/_lib/scroll-tier-drag';
@@ -36,6 +44,8 @@ export const useTierItemDrag = ({
   onCancel,
 }: TierItemDragInput) => {
   const controls = useAnimationControls();
+  const locked = useAtomValue(positionsLockedAtom);
+  const feedback = useSetAtom(lockFeedbackAtom);
   const rowDragging = useAtomValue(draggedRankAtom) !== null;
   const reducedMotion = useReducedMotion();
   const session = useRef<DragSession | null>(null);
@@ -96,6 +106,12 @@ export const useTierItemDrag = ({
   };
 
   const start = (event: PointerEvent<HTMLButtonElement>) => {
+    if (locked) {
+      if (event.pointerType === 'mouse' && event.button === 0) {
+        feedback((current) => current + 1);
+      }
+      return;
+    }
     if (!event.isPrimary || event.button !== 0 || session.current) {
       return;
     }
@@ -204,6 +220,14 @@ export const useTierItemDrag = ({
     reducedMotion,
     rowDragging,
   ]);
+
+  const cancelLockedDrag = useEffectEvent(cancel);
+
+  useLayoutEffect(() => {
+    if (locked) {
+      cancelLockedDrag();
+    }
+  }, [locked]);
 
   useLayoutEffect(() => () => session.current?.stopFrame?.(), []);
 

@@ -6,6 +6,7 @@ import { Ellipsis } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { memo, useCallback, useContext, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { draggedRankAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { fullImageTrim } from '@/app/_lib/tier-image-trim';
@@ -19,6 +20,7 @@ export const TierItemPassive = (props: TierItemProps) => {
   const triggerId = useId();
   const [open, setOpen] = useState(false);
   const imageMode = useAtomValue(imageModeAtom);
+  const locked = useAtomValue(positionsLockedAtom);
   const rowDragging = useAtomValue(draggedRankAtom) !== null;
   const host = useContext(TierItemInteractionContext);
   const itemRef = useRef<HTMLButtonElement>(null);
@@ -95,8 +97,16 @@ export const TierItemPassive = (props: TierItemProps) => {
             host?.contextMenu({ x: event.clientX, y: event.clientY });
           }
         }}
-        onTouchStart={(event) => host?.touchStart(event)}
-        onTouchMove={(event) => host?.touchMove(event)}
+        onTouchStart={(event) => {
+          if (!locked) {
+            host?.touchStart(event);
+          }
+        }}
+        onTouchMove={(event) => {
+          if (!locked) {
+            host?.touchMove(event);
+          }
+        }}
         onTouchEnd={() => host?.touchEnd()}
         onTouchCancel={() => host?.touchEnd()}
       >
@@ -152,7 +162,7 @@ export const TierItemPassive = (props: TierItemProps) => {
           }}
           onBlur={(event) => viewRef.current?.onBlur?.(event)}
         />
-        {!editing && !dragging && (
+        {!locked && !editing && !dragging && (
           <motion.div
             initial={false}
             animate={props.position}

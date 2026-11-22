@@ -3,7 +3,11 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import { useCallback, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { tierDragRegionAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import {
+  lockFeedbackAtom,
+  positionsLockedAtom,
+  tierDragRegionAtom,
+} from '@/app/_atoms/tierlist/interaction.atoms';
 import { availableRanksAtom, tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { posterLayoutAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import {
@@ -11,6 +15,7 @@ import {
   searchDragPointAtom,
   searchDropSlotAtom,
 } from '@/app/_atoms/tierlist/search.atoms';
+import { getCrowdedPosterMinimum } from '@/app/_lib/poster-size';
 import {
   type TierDropSlot as DropSlot,
   findTierDropSlot,
@@ -21,7 +26,7 @@ import {
   type TierRow as Row,
   type TierItemPosition,
 } from '@/app/_lib/tier-board-geometry';
-import { getTwoLineCapacity, layoutTierItems, tierItemGap } from '@/app/_lib/tier-item-layout';
+import { layoutTierItems, tierItemGap } from '@/app/_lib/tier-item-layout';
 
 export type { TierItemPosition } from '@/app/_lib/tier-board-geometry';
 
@@ -34,8 +39,6 @@ import type {
 } from '@/app/_types/tierlist.types';
 
 type Item = TierItemData;
-
-const itemGapRem = tierItemGap;
 
 type TierItemsInput = {
   restoring?: boolean;
@@ -54,6 +57,8 @@ export const useTierItems = ({
   initialItems,
   imageMode = 'natural',
 }: TierItemsInput) => {
+  const locked = useAtomValue(positionsLockedAtom);
+  const feedback = useSetAtom(lockFeedbackAtom);
   const externalItem = useAtomValue(draggedSearchItemAtom);
   const externalPoint = useAtomValue(searchDragPointAtom);
   const [externalSlot, setExternalSlot] = useAtom(searchDropSlotAtom);
@@ -85,9 +90,10 @@ export const useTierItems = ({
   const [slot, setSlot] = useState<DropSlot | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const rem = useRef(16);
+  const itemGapRem = rows[0]?.gap ?? tierItemGap;
 
   const rankKey = ranks.join(',');
-  const activeSlot = slot ?? (externalItem ? externalSlot : null);
+  const activeSlot = locked ? null : (slot ?? (externalItem ? externalSlot : null));
   const layoutItems = externalItem && externalSlot ? [...items, externalItem] : items;
   const previewItems = activeSlot ? projectTierItems(layoutItems, activeSlot, ranks) : items;
   const previewItem = activeSlot
@@ -97,17 +103,19 @@ export const useTierItems = ({
   const labelWidth = rows[0] ? rows[0].x / rem.current : 4.5625;
   const availableWidth = Math.max(
     0,
-    viewportWidth / rem.current - labelWidth - itemGapRem * 2 - 1 / rem.current,
+    viewportWidth / rem.current - labelWidth - itemGapRem * 2 - 2.25 - 1 / rem.current,
   );
-  const capacity = Math.max(
-    availableWidth,
-    ...ranks.map((rank) =>
-      getTwoLineCapacity({
-        items: previewItems.filter((item) => getVisibleRank(item, ranks) === rank),
-        size: 3.75,
-        mode: imageMode,
+  const capacity = availableWidth;
+  const crowdedMinimum = useMemo(
+    () =>
+      getCrowdedPosterMinimum({
+        imageMode,
+        items,
+        capacity: Math.max(1, viewportWidth / rem.current - 6 - itemGapRem * 2 - 2.25),
+        ranks,
+        gap: itemGapRem,
       }),
-    ),
+    [imageMode, items, viewportWidth, ranks, itemGapRem],
   );
   const viewportRef = useCallback((element: HTMLElement | null) => setViewportElement(element), []);
 
@@ -134,6 +142,7 @@ export const useTierItems = ({
       mode: imageMode,
       capacity,
       wrap: wrapItems,
+      gap: itemGapRem,
     });
   };
 
@@ -155,10 +164,11 @@ export const useTierItems = ({
           mode: imageMode,
           capacity,
           wrap: wrapItems,
+          gap: itemGapRem,
         }),
       ]),
     );
-  }, [previewItems, ranks, rows, imageMode, capacity, wrapItems]);
+  }, [previewItems, ranks, rows, imageMode, capacity, wrapItems, itemGapRem]);
   const previewBoxById = useMemo(
     () => new Map([...previewBoxes.values()].flat().map((box) => [box.id, box])),
     [previewBoxes],
@@ -209,7 +219,7 @@ export const useTierItems = ({
             ]
           : [];
       }),
-    [previewItems, rows, ranks, previewBoxById],
+    [previewItems, rows, ranks, previewBoxById, itemGapRem],
   );
 
   useLayoutEffect(() => {
@@ -217,21 +227,23 @@ export const useTierItems = ({
   }, [posterLayout, setPosterLayout]);
 
   const getCanvasWidth = () =>
-    Math.max(
-      viewportWidth / rem.current,
-      ...rows.map((row) => {
-        const boxes = previewBoxes.get(row.rank) ?? [];
-        const right = Math.max(0, ...boxes.map((box) => box.x + box.width));
+    wrapItems
+      ? viewportWidth / rem.current
+      : Math.max(
+          viewportWidth / rem.current,
+          ...rows.map((row) => {
+            const boxes = previewBoxes.get(row.rank) ?? [];
+            const right = Math.max(0, ...boxes.map((box) => box.x + box.width));
 
-        return (
-          row.x / rem.current +
-          Math.max(right, wrapItems ? capacity : 0) +
-          itemGapRem * 2 +
-          2.25 +
-          1 / rem.current
+            return (
+              row.x / rem.current +
+              Math.max(right, wrapItems ? capacity : 0) +
+              itemGapRem * 2 +
+              2.25 +
+              1 / rem.current
+            );
+          }),
         );
-      }),
-    );
 
   const slotAt = (id: string, clientX: number, clientY: number): DropSlot | null => {
     return findTierDropSlot({
@@ -263,6 +275,10 @@ export const useTierItems = ({
   };
 
   const commit = (next: DropSlot) => {
+    if (locked) {
+      feedback((current) => current + 1);
+      return null;
+    }
     const nextItems = projectTierItems(items, next, ranks);
     const item = nextItems.find((value) => value.id === next.id);
 
@@ -311,7 +327,7 @@ export const useTierItems = ({
   const updateExternalSlot = useEffectEvent(
     (candidate: TierItemData | null, point: { x: number; y: number } | null) => {
       const next =
-        candidate && point && !outsideBoard(point.x, point.y)
+        !locked && candidate && point && !outsideBoard(point.x, point.y)
           ? slotAt(candidate.id, point.x, point.y)
           : null;
       setExternalSlot((current) =>
@@ -323,8 +339,8 @@ export const useTierItems = ({
   );
 
   useLayoutEffect(() => {
-    updateExternalSlot(externalItem, externalPoint);
-  }, [externalItem, externalPoint]);
+    updateExternalSlot(locked ? null : externalItem, externalPoint);
+  }, [externalItem, externalPoint, locked]);
 
   useLayoutEffect(() => {
     setAvailableRanks(ranks);
@@ -345,30 +361,55 @@ export const useTierItems = ({
     return () => observer.disconnect();
   }, [viewportElement]);
 
+  const updateRows = useCallback(() => {
+    const next = measure();
+    setRows((current) =>
+      current.length === next.length &&
+      current.every((row, index) => {
+        const candidate = next[index];
+        return (
+          row.rank === candidate.rank &&
+          row.x === candidate.x &&
+          row.y === candidate.y &&
+          row.gap === candidate.gap &&
+          row.size === candidate.size
+        );
+      })
+        ? current
+        : next,
+    );
+  }, [measure]);
+
+  useLayoutEffect(() => {
+    if (!restoring && previewBoxes.size) {
+      updateRows();
+    }
+  }, [previewBoxes, restoring, updateRows]);
+
   useLayoutEffect(() => {
     const board = boardRef.current;
 
     if (!board || !rankKey || restoring) {
-      setRows([]);
+      setRows((current) => (current.length ? [] : current));
 
       return;
     }
 
-    const update = () => setRows(measure());
-    update();
-    const observer = new ResizeObserver(update);
+    updateRows();
+    const observer = new ResizeObserver(updateRows);
     observer.observe(board);
     board.querySelectorAll('[data-tier-rank]').forEach((row) => {
       observer.observe(row);
     });
 
     return () => observer.disconnect();
-  }, [rankKey, measure, restoring]);
+  }, [rankKey, updateRows, restoring]);
 
   return {
     boardRef,
     viewportRef,
     canvasWidth: `${getCanvasWidth()}rem`,
+    crowdedMinimum,
     lines: (rank: TierRank) => (previewBoxes.get(rank)?.at(-1)?.line ?? 0) + 1,
     updateItem: (
       id: string,
@@ -401,11 +442,17 @@ export const useTierItems = ({
     dropPosition: previewItem ? positionFor(previewItem, previewItems, rows) : null,
     position: (item: Item) => positionFor(item, item.id === slot?.id ? items : previewItems, rows),
     start: (id: string, x: number, y: number) => {
+      if (locked) {
+        return;
+      }
       setDraggingId(id);
       hover(id, x, y);
     },
     move: hover,
     drop: (id: string, clientX: number, clientY: number) => {
+      if (locked) {
+        return null;
+      }
       setDraggingId(null);
       setDragRegion(null);
       if (inDiscardZone(clientX, clientY)) {

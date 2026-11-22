@@ -1,7 +1,10 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { LockKeyhole, LockKeyholeOpen } from 'lucide-react';
+import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
+import { useEffect, useRef } from 'react';
+import { lockFeedbackAtom, positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { posterSizeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { SegmentedControl } from '@/app/_components/ui/segmented-control';
 import type { PosterSize, TierImageMode } from '@/app/_types/tierlist.types';
@@ -24,7 +27,34 @@ export const TierBoardToolbar = ({
   onImageModeChange,
 }: TierBoardToolbarProps) => {
   const [posterSize, setPosterSize] = useAtom(posterSizeAtom);
+  const [locked, setLocked] = useAtom(positionsLockedAtom);
+  const [feedback] = useAtom(lockFeedbackAtom);
+  const lockRef = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
+  const interactionHint = locked
+    ? 'Positions locked · Unlock to arrange'
+    : 'Keyboard · Arrows/WASD · Esc exit';
+
+  useEffect(() => {
+    if (
+      !feedback ||
+      !locked ||
+      reducedMotion ||
+      !matchMedia('(hover: hover) and (pointer: fine)').matches
+    ) {
+      return;
+    }
+
+    const element = lockRef.current;
+    if (!element) {
+      return;
+    }
+    const animation = animate(element, { x: [0, -3, 3, -2, 0] }, { duration: 0.22 });
+
+    return () => {
+      animation.stop();
+    };
+  }, [feedback, locked, reducedMotion]);
 
   return (
     <>
@@ -33,8 +63,8 @@ export const TierBoardToolbar = ({
           <p>{restoring ? 'Restoring tierlist...' : `${rankCount} tiers · ${itemCount} items`}</p>
 
           <p role="status" className="mt-1 text-xs">
-            {keyboardMode ? (
-              'Keyboard mode · ↑↓ / W S tier · ←→ / A D order · Esc exit'
+            {locked || keyboardMode ? (
+              interactionHint
             ) : (
               <>
                 <span className="hidden pointer-fine:inline">
@@ -99,6 +129,23 @@ export const TierBoardToolbar = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        <button
+          ref={lockRef}
+          type="button"
+          aria-label="Lock positions"
+          aria-pressed={locked}
+          title={locked ? 'Unlock to arrange anime and tiers' : 'Lock positions for scrolling'}
+          onClick={() => setLocked((current) => !current)}
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 border border-border px-2 text-xs hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          {locked ? (
+            <LockKeyhole aria-hidden="true" className="size-3.5" />
+          ) : (
+            <LockKeyholeOpen aria-hidden="true" className="size-3.5" />
+          )}
+          {locked ? 'Locked' : 'Unlocked'}
+        </button>
       </div>
     </>
   );

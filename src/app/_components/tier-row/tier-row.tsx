@@ -71,20 +71,21 @@ export const TierRow = ({
 
       <div
         tabIndex={-1}
+        style={
+          fixedItemSize
+            ? { gridTemplateRows: `repeat(${lines}, var(--tier-item-size,4.125rem))` }
+            : undefined
+        }
         className={cn(
           'relative min-w-0 transition-colors duration-150 motion-reduce:transition-none',
           active && 'bg-white/10 ring-1 ring-inset ring-white/40',
-          fixedItemSize && 'grid gap-0.5 p-0.5',
-          fixedItemSize &&
-            (lines === 2
-              ? 'grid-rows-[repeat(2,var(--tier-item-size,4.125rem))]'
-              : 'grid-rows-(--tier-item-size,4.125rem)'),
+          fixedItemSize && 'grid gap-0.5 p-0.5 pointer-coarse:gap-0 pointer-coarse:p-0',
         )}
       >
         {skeletonCount !== undefined && (
           <div
             aria-hidden="true"
-            className="flex gap-0.5 overflow-hidden p-0.5 motion-safe:animate-pulse"
+            className="flex gap-0.5 overflow-hidden p-0.5 pointer-coarse:gap-0 pointer-coarse:p-0 motion-safe:animate-pulse"
             style={{ height: 'var(--tier-item-size, 7rem)' }}
           >
             {Array.from({ length: skeletonCount }, (_, index) => `placeholder-${index}`).map(

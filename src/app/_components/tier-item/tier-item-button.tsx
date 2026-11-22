@@ -4,6 +4,7 @@ import { cn } from 'cn';
 import { useAtomValue } from 'jotai';
 import { type HTMLMotionProps, motion } from 'motion/react';
 import { type Ref, type RefObject, useState } from 'react';
+import { positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { posterPreviewsAtom } from '@/app/_atoms/tierlist/poster-preview.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import type {
@@ -49,9 +50,14 @@ export const TierItemButton = ({
   ...buttonProps
 }: TierItemButtonProps) => {
   const imageMode = useAtomValue(imageModeAtom);
+  const locked = useAtomValue(positionsLockedAtom);
   const previews = useAtomValue(posterPreviewsAtom);
   const [readySource, setReadySource] = useState('');
   const preview = image && readySource !== image.src ? previews.get(image.src) : undefined;
+  const insetTouchTarget = !locked && !editing && !dragging && !positioning;
+  const arrangementDescription = locked
+    ? 'Positions locked. Use Unlock in the toolbar to arrange anime.'
+    : 'Tab to select, or press Enter after clicking. Up/Down or W/S move between tiers; Left/Right or A/D reorder within a tier. Shift+F10 opens image options. Escape exits keyboard mode or cancels a drag.';
 
   return (
     <motion.button
@@ -60,7 +66,7 @@ export const TierItemButton = ({
       aria-description={
         editing
           ? 'Crop editing. Drag the image or use arrows/WASD. Enter saves; Escape cancels.'
-          : 'Tab to select, or press Enter after clicking. Up/Down or W/S move between tiers; Left/Right or A/D reorder within a tier. Shift+F10 opens image options. Escape exits keyboard mode or cancels a drag.'
+          : arrangementDescription
       }
       data-image-mode={imageMode}
       data-crop-editing={editing || undefined}
@@ -68,9 +74,10 @@ export const TierItemButton = ({
       data-tier-item={label}
       className={cn(
         'pointer-events-auto absolute left-0 top-0 flex items-center justify-center border border-silver text-xs text-white select-none focus-visible:outline-white',
-        'touch-none [-webkit-touch-callout:none]',
-        image && !editing && !dragging && !positioning && 'pointer-coarse:[clip-path:inset(4px)]',
-        dragging ? 'z-30 cursor-grabbing' : 'z-10 cursor-grab',
+        locked && !editing ? 'touch-pan-y' : 'touch-none [-webkit-touch-callout:none]',
+        insetTouchTarget && 'pointer-coarse:pointer-events-none',
+        dragging ? 'z-30 cursor-grabbing' : 'z-10',
+        !dragging && (locked ? 'cursor-default' : 'cursor-grab'),
         editing && 'z-30 cursor-move ring-2 ring-white',
         image ? 'border-0 bg-transparent' : 'bg-gray',
         pointerFocus && 'focus-visible:outline-none!',
@@ -118,6 +125,14 @@ export const TierItemButton = ({
 
       {itemTitle?.text && !preview && (!image || readySource === image.src) && (
         <TierItemTitle title={itemTitle} image={image} mode={imageMode} trim={trim} crop={crop} />
+      )}
+
+      {insetTouchTarget && (
+        <span
+          aria-hidden="true"
+          data-tier-drag-surface=""
+          className="pointer-events-auto absolute inset-1 hidden touch-none pointer-coarse:block"
+        />
       )}
     </motion.button>
   );

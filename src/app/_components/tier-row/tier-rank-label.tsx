@@ -34,7 +34,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
   const textLayout = useTierLabelLayout({ ref: labelRef, label, editing });
   const color = tierColors[rank] ?? 'stone';
   const addRankButtonClass =
-    'absolute left-1/2 z-20 flex size-6 -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
+    'absolute left-1/2 z-20 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] -translate-x-1/2 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60';
 
   const readPresetColor = () => {
     if (!labelRef.current || !color) {
@@ -97,7 +97,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         type="button"
         aria-label={`Delete ${label}`}
         onClick={() => setConfirming(true)}
-        className="absolute top-0 right-0 z-30 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+        className="absolute top-0 right-0 z-30 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
       >
         <Trash2
           aria-hidden="true"

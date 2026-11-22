@@ -8,7 +8,7 @@ export type TierItemPosition = {
   width: string;
   height: string;
 };
-export type TierRow = { rank: TierRank; x: number; y: number; size: number };
+export type TierRow = { rank: TierRank; x: number; y: number; size: number; gap?: number };
 export type TierDropSlot = { id: string; rank: TierRank; index: number };
 const itemGapRem = tierItemGap;
 
@@ -30,6 +30,9 @@ export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: num
   const bounds = board.getBoundingClientRect();
 
   return Array.from(board.querySelectorAll<HTMLElement>('[data-tier-rank]')).map((row) => {
+    const content = row.lastElementChild;
+    const measuredGap = content ? Number.parseFloat(getComputedStyle(content).rowGap) : Number.NaN;
+    const gap = Number.isFinite(measuredGap) ? measuredGap / rem : itemGapRem;
     const cells = row.lastElementChild?.getBoundingClientRect();
     const rect = row.getBoundingClientRect();
     const translation = readTierRowTranslation(row);
@@ -38,9 +41,10 @@ export const measureTierRows = (board: HTMLElement, wrapItems: boolean, rem: num
       rank: row.dataset.tierRank as TierRank,
       x: (cells?.left ?? rect.left) - bounds.left - translation.x,
       y: (cells?.top ?? rect.top) - bounds.top - translation.y,
+      gap,
       size: wrapItems
         ? (row.lastElementChild?.firstElementChild?.getBoundingClientRect().height ?? rem * 4.125)
-        : Math.max(0, (cells?.height ?? rect.height) - rem * itemGapRem * 2),
+        : Math.max(0, (cells?.height ?? rect.height) - rem * gap * 2),
     };
   });
 };
@@ -120,15 +124,14 @@ export const findTierDropSlot = ({
     return null;
   }
 
-  const x = clientX - board.getBoundingClientRect().left - row.x - rem * itemGapRem;
+  const gap = row.gap ?? itemGapRem;
+  const x = clientX - board.getBoundingClientRect().left - row.x - rem * gap;
   const line = wrapItems
     ? Math.max(
         0,
-        Math.min(
-          1,
-          Math.floor(
-            (clientY - board.getBoundingClientRect().top - row.y) / (row.size + rem * itemGapRem),
-          ),
+        Math.floor(
+          (clientY - board.getBoundingClientRect().top - row.y - rem * gap) /
+            (row.size + rem * gap),
         ),
       )
     : 0;

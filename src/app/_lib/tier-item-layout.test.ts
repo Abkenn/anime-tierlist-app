@@ -29,6 +29,46 @@ const pack = (items: TierItemData[], capacity = 100, wrap = false) =>
   layoutTierItems({ items, size: 4, mode: 'natural', capacity, wrap });
 
 describe('tier item layout', () => {
+  it('packs touch posters edge to edge across columns and wrapped lines', () => {
+    const items = Array.from({ length: 8 }, (_, index) => ({ ...portrait, id: String(index) }));
+    const boxes = layoutTierItems({
+      items,
+      size: 4,
+      mode: 'cover',
+      capacity: 12,
+      wrap: true,
+      gap: 0,
+    });
+    expect(boxes.map(({ line, x, y }) => ({ line, x, y }))).toEqual([
+      { line: 0, x: 0, y: 0 },
+      { line: 0, x: 4, y: 0 },
+      { line: 0, x: 8, y: 0 },
+      { line: 1, x: 0, y: 4 },
+      { line: 1, x: 4, y: 4 },
+      { line: 1, x: 8, y: 4 },
+      { line: 2, x: 0, y: 8 },
+      { line: 2, x: 4, y: 8 },
+    ]);
+  });
+
+  it('wraps thousands of items into as many lines as needed in order', () => {
+    const items = Array.from({ length: 5000 }, (_, index) => ({ ...portrait, id: String(index) }));
+    const boxes = pack(items, 10, true);
+    expect(boxes.at(-1)?.line).toBeGreaterThan(6);
+    expect(boxes.every((box) => box.x >= 0 && box.x + box.width <= 10.001)).toBe(true);
+    expect(boxes.map((box) => box.id)).toEqual(items.map((item) => item.id));
+    const fifthLine = boxes.find((box) => box.line === 4);
+    expect(getTierDropIndex(boxes, -1, 4)).toBe(fifthLine?.index);
+    expect(getTierDropIndex(boxes, 100, 4)).toBe((fifthLine?.index ?? 0) + 4);
+  });
+
+  it('fits an oversized panorama within a wrapped line', () => {
+    const [box] = pack([panorama], 2, true);
+    expect(box.width).toBe(2);
+    expect(box.height).toBeCloseTo(2 / 3);
+    expect(box.line).toBe(0);
+  });
+
   it('keeps both square modes in square slots', () => {
     expect(getTierItemSize({ item: portrait, size: 4, mode: 'contain' })).toEqual({
       width: 4,

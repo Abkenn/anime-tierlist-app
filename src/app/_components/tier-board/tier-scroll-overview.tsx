@@ -1,9 +1,13 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
 import type { useTierOverview } from '@/app/_hooks/use-tier-overview';
-import { TierBoardMinimap } from './tier-board-minimap';
+
+const TierBoardMinimap = dynamic(() =>
+  import('./tier-board-minimap').then((module) => module.TierBoardMinimap),
+);
 
 type TierScrollOverviewProps = { overview: ReturnType<typeof useTierOverview> };
 

@@ -72,15 +72,24 @@ export const getTwoLineCapacity = ({ items, size, mode }: CapacityInput) => {
   );
 };
 
-type LayoutInput = CapacityInput & { capacity: number; wrap: boolean };
+type LayoutInput = CapacityInput & { capacity: number; wrap: boolean; gap?: number };
 
-export const layoutTierItems = ({ items, size, mode, capacity, wrap }: LayoutInput) =>
+export const layoutTierItems = ({
+  items,
+  size,
+  mode,
+  capacity,
+  wrap,
+  gap = tierItemGap,
+}: LayoutInput) =>
   items.reduce<TierItemBox[]>((boxes, item, index) => {
-    const { width, height } = getTierItemSize({ item, size, mode });
+    const dimensions = getTierItemSize({ item, size, mode });
+    const width = wrap ? Math.min(dimensions.width, Math.max(0, capacity)) : dimensions.width;
+    const height = dimensions.height * (width / dimensions.width);
     const previous = boxes.at(-1);
-    const nextX = previous ? previous.x + previous.width + tierItemGap : 0;
-    const newLine = wrap && previous?.line === 0 && nextX + width > capacity + 0.001;
-    const line = newLine ? 1 : (previous?.line ?? 0);
+    const nextX = previous ? previous.x + previous.width + gap : 0;
+    const newLine = wrap && previous !== undefined && nextX + width > capacity + 0.001;
+    const line = (previous?.line ?? 0) + (newLine ? 1 : 0);
     const x = newLine ? 0 : nextX;
 
     boxes.push({
@@ -88,7 +97,7 @@ export const layoutTierItems = ({ items, size, mode, capacity, wrap }: LayoutInp
       index,
       line,
       x,
-      y: line * (size + tierItemGap) + (size - height) / 2,
+      y: line * (size + gap) + (size - height) / 2,
       width,
       height,
     });

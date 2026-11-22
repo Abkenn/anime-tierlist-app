@@ -58,14 +58,14 @@ export const TierViewport = ({ children, ref, scrollable }: TierViewportProps) =
   return (
     <div ref={containerRef} className="relative min-h-0 min-w-0 flex-1 @container-size">
       <ScrollArea
-        orientation="both"
+        orientation="vertical"
         style={
           {
             height,
             '--tier-available-height': availableHeight ? `${availableHeight}px` : undefined,
           } as CSSProperties
         }
-        className="h-full min-h-0 min-w-0 pr-3.5 pb-2.5"
+        className="h-full min-h-0 min-w-0 pr-3.5"
         viewportProps={{
           render: (
             <section

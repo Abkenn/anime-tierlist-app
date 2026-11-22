@@ -1,5 +1,26 @@
 import { expect, it } from 'vitest';
-import { stabilizePosterWidth } from './poster-size';
+import { getCrowdedPosterMinimum, stabilizePosterWidth } from './poster-size';
+
+it('progressively reduces Auto below Small for crowded rows with a readable floor', () => {
+  const minimum = (count: number) =>
+    getCrowdedPosterMinimum({
+      imageMode: 'cover',
+      capacity: 24.5,
+      ranks: ['A'],
+      items: Array.from({ length: count }, (_, index) => ({
+        id: String(index),
+        label: String(index),
+        rank: 'A',
+      })),
+    });
+  expect(minimum(8)).toBe(6);
+  const sizes = [12, 16, 20, 24].map(minimum);
+  expect(sizes[0]).toBeLessThan(6);
+  sizes.slice(1).forEach((size, index) => {
+    expect(size).toBeLessThan(sizes[index]);
+  });
+  expect(minimum(5000)).toBe(2.75);
+});
 
 it('holds Auto size through small edits and resizes only beyond its buffer', () => {
   // Twelve square posters plus the rank label initially fit to 68%.

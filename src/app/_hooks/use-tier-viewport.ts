@@ -47,8 +47,7 @@ export const useTierViewport = ({ viewport, containerRef }: TierViewportInput) =
         listening = intercept;
       }
       const available = container.clientHeight;
-      const gutter = 10;
-      const content = Math.ceil(canvas.getBoundingClientRect().height) + gutter;
+      const content = Math.ceil(canvas.getBoundingClientRect().height);
       if (available > 0 && content > 0) {
         setSize((current) =>
           current.height === Math.min(available, content) && current.availableHeight === available

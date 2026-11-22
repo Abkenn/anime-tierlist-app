@@ -34,7 +34,7 @@ type TierBoardProps = {
 export const TierBoard = ({
   ranks: initialRanks,
   initialItemCount = 2,
-  layout = 'single-line',
+  layout = 'two-line',
   initialItems,
   imageMode: controlledImageMode,
   onImageModeChange,

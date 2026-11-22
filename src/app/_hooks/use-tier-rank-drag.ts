@@ -3,6 +3,7 @@
 import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { animate, cancelFrame, frame, type HTMLMotionProps, useReducedMotion } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { lockFeedbackAtom, positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { draggedRankAtom, rankOffsetsAtom } from '@/app/_atoms/tierlist/layout.atoms';
 import { moveRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom } from '@/app/_atoms/tierlist/settings.atoms';
@@ -27,6 +28,8 @@ export const useTierRankDrag = (rank: TierRank) => {
   const setDragged = useSetAtom(draggedRankAtom);
   const move = useSetAtom(moveRankAtom);
   const store = useStore();
+  const locked = useAtomValue(positionsLockedAtom);
+  const feedback = useSetAtom(lockFeedbackAtom);
   const reducedMotion = useReducedMotion();
   const [dragging, setDragging] = useState(false);
   const handle = useRef<HTMLButtonElement>(null);
@@ -80,7 +83,7 @@ export const useTierRankDrag = (rank: TierRank) => {
 
     drag.current = null;
     setDragging(false);
-    if (commit) {
+    if (commit && !store.get(positionsLockedAtom)) {
       await animate(getRankOffset(offsets, rank), current.targetOffset, {
         duration: reducedMotion ? 0 : 0.16,
         ease: 'easeOut',
@@ -96,7 +99,7 @@ export const useTierRankDrag = (rank: TierRank) => {
       return;
     }
 
-    if (commit) {
+    if (commit && !store.get(positionsLockedAtom)) {
       const original = current.rows.map((row) => row.rank).join();
       if (
         store.get(enabledTierRanksAtom).join() === original &&
@@ -117,6 +120,12 @@ export const useTierRankDrag = (rank: TierRank) => {
   });
   const cancel = useEffectEvent(() => void settle(false));
   const rankKey = ranks.join();
+
+  useEffect(() => {
+    if (locked) {
+      cancel();
+    }
+  }, [locked]);
 
   useEffect(() => {
     if (drag.current && drag.current.rows.map((row) => row.rank).join() !== rankKey) {
@@ -159,6 +168,10 @@ export const useTierRankDrag = (rank: TierRank) => {
 
   const gestureProps: HTMLMotionProps<'button'> = {
     onPanStart: (_, info) => {
+      if (store.get(positionsLockedAtom)) {
+        feedback((current) => current + 1);
+        return;
+      }
       if (store.get(draggedRankAtom)) {
         return;
       }
@@ -197,6 +210,13 @@ export const useTierRankDrag = (rank: TierRank) => {
     onPanEnd: (event) => void settle(event.type !== 'pointercancel'),
     onPointerCancel: () => void settle(false),
     onKeyDown: (event) => {
+      if (locked) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          feedback((current) => current + 1);
+        }
+        return;
+      }
       const offset = Number(event.key === 'ArrowDown') - Number(event.key === 'ArrowUp');
       const target = ranks[ranks.indexOf(rank) + offset];
       if (offset && target && !drag.current) {
@@ -206,5 +226,5 @@ export const useTierRankDrag = (rank: TierRank) => {
     },
   };
 
-  return { handle, gestureProps };
+  return { handle, gestureProps, locked };
 };

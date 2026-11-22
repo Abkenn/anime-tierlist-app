@@ -10,6 +10,7 @@ const meta = {
     ranks: defaultTierRanks,
     layout: 'single-line',
     interaction: {
+      crowdedMinimum: 6,
       items: aspectRatioTierItems,
       targetRank: null,
       visibleRank: (item) => item.rank,

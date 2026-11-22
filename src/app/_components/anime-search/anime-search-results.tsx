@@ -2,6 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { motion, useReducedMotion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import { type Ref, useActionState, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { preconnect } from 'react-dom';
 import { importedItemIdsAtom } from '@/app/_atoms/tierlist/items.atoms';
@@ -19,8 +20,11 @@ import { searchCuratedAnime } from '@/app/_lib/curated-anime-search';
 import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
 import type { AnimeSearchResult } from '@/app/_types/anime-search.types';
 import type { TierImage } from '@/app/_types/tierlist.types';
-import { AnimeSearchResultCard } from './anime-search-result';
 import { AnimeSearchSkeleton } from './anime-search-skeleton';
+
+const AnimeSearchResultCard = dynamic(() =>
+  import('./anime-search-result').then((module) => module.AnimeSearchResultCard),
+);
 
 type ImageDimensions = Record<string, TierImage | null>;
 

@@ -25,7 +25,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
         props.onOpen?.();
         setActivated(true);
       }}
-      className="absolute right-0 bottom-0 flex size-6 cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
+      className="absolute right-0 bottom-0 flex size-[min(1.5rem,calc(var(--tier-size,6rem)*0.3))] cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-lg:opacity-60"
     >
       <SwatchBook
         aria-hidden="true"
