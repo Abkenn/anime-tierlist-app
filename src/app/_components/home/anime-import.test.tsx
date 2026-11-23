@@ -3,15 +3,17 @@ import { expect, it, vi } from 'vitest';
 import { AnimeImport } from './anime-import';
 
 const generate = vi.hoisted(() => vi.fn());
-const metric = vi.hoisted(() => vi.fn(async (_input: unknown) => ({ ok: true })));
+const metric = vi.hoisted(() =>
+  vi.fn(async (_input: unknown) => ({ ok: true, value: { position: 1 } })),
+);
 
 vi.mock('@/app/_services/anime-import-queue.actions', () => ({
   pollAnimeImportQueue: metric,
 }));
 
 const readProfile = vi.hoisted(() => vi.fn(async () => ({})));
-vi.mock('@/app/_services/run-anime-import', () => ({
-  runAnimeImport: generate,
+vi.mock('@/app/_services/generate-anime-tierlist', () => ({
+  generateAnimeTierlist: generate,
 }));
 
 it('reviews generated results before applying and requires explicit replacement confirmation', async () => {
@@ -47,7 +49,7 @@ it('reviews generated results before applying and requires explicit replacement 
     name: 'Use generated tierlist',
   });
   expect(onApply).not.toHaveBeenCalled();
-  expect(metric).not.toHaveBeenCalled();
+  expect(metric).not.toHaveBeenCalledWith(expect.objectContaining({ event: 'applied' }));
   expect(apply).toBeDisabled();
   fireEvent.click(screen.getByRole('checkbox', { name: /Replace my current tierlist/u }));
   fireEvent.click(apply);

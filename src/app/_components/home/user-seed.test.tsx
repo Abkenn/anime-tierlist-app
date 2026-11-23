@@ -9,12 +9,12 @@ const malGeneration = vi.hoisted(() => vi.fn());
 vi.mock('@/app/_services/anime-import-queue.actions', () => ({
   pollAnimeImportQueue: vi.fn(async () => ({
     ok: true,
-    value: { position: 0 },
+    value: { position: 1 },
   })),
 }));
 
-vi.mock('@/app/_services/run-anime-import', () => ({
-  runAnimeImport: malGeneration,
+vi.mock('@/app/_services/generate-anime-tierlist', () => ({
+  generateAnimeTierlist: malGeneration,
 }));
 
 const projectDownload = vi.hoisted(() => vi.fn());

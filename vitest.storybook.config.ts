@@ -18,7 +18,7 @@ export default defineConfig({
     }),
   ],
   test: {
-    name: 'storybook',
+    name: `storybook:${fileURLToPath(new URL('./.storybook', import.meta.url)).replaceAll('\\', '/')}`,
     browser: {
       enabled: true,
       headless: true,

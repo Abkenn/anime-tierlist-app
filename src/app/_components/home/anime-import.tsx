@@ -1,20 +1,13 @@
 'use client';
 
+import { useMachine } from '@xstate/react';
 import { motion, useReducedMotion } from 'motion/react';
-import { useActionState, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { TerminalText } from '@/app/_components/shell/terminal-text';
-import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { SegmentedControl } from '@/app/_components/ui/segmented-control';
-import { anilistUsernameSchema } from '@/app/_lib/anilist-import';
 import type { ImportProvider } from '@/app/_lib/anime-import';
-import { malUsernameSchema } from '@/app/_lib/mal-import';
-import { tierlistErrorMessage } from '@/app/_lib/tierlist-error';
+import { animeImportMachine } from '@/app/_lib/anime-import-machine';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
-import { pollAnimeImportQueue } from '@/app/_services/anime-import-queue.actions';
-import type {
-  AnimeImportProgress,
-  generateAnimeTierlist,
-} from '@/app/_services/generate-anime-tierlist';
 
 type AnimeImportProps = {
   busy: boolean;
@@ -28,12 +21,6 @@ type AnimeImportProps = {
   onApplied: () => void;
 };
 
-type Generated = Awaited<ReturnType<typeof generateAnimeTierlist>> & {
-  expected: { seed: string; revision: number };
-  ticket: string;
-  provider: ImportProvider;
-};
-
 export const AnimeImport = ({
   busy,
   seed,
@@ -44,100 +31,52 @@ export const AnimeImport = ({
 }: AnimeImportProps) => {
   const id = useId();
   const reducedMotion = useReducedMotion();
-  const controller = useRef<AbortController | null>(null);
-  const [progress, setProgress] = useState<AnimeImportProgress | null>(null);
+  const [state, send] = useMachine(animeImportMachine);
   const [provider, setProvider] = useState<ImportProvider>('mal');
   const [usernames, setUsernames] = useState({ mal: '', anilist: '' });
   const username = usernames[provider];
   const providerLabel = provider === 'mal' ? 'MAL' : 'AniList';
-  const [resumable, setResumable] = useState(false);
-  const [generated, setGenerated] = useState<Generated | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [errorProvider, setErrorProvider] = useState<ImportProvider>('mal');
-  const [error, generate, generating] = useActionState(
-    async (_previous: string, form: FormData) => {
-      setErrorProvider(provider);
-      const parsed = (provider === 'mal' ? malUsernameSchema : anilistUsernameSchema).safeParse(
-        form.get('username'),
-      );
-      if (!parsed.success) {
-        return `Enter a valid ${providerLabel} username (2–${provider === 'mal' ? 16 : 20} letters, numbers, underscores or hyphens).`;
-      }
-      const request = new AbortController();
-      const ticket = crypto.randomUUID();
-      controller.current = request;
-      const expected = { seed, revision };
-      setGenerated(null);
-      setConfirmed(false);
-      try {
-        const { runAnimeImport: generateTierlist } = await import(
-          '@/app/_services/run-anime-import'
-        );
-        const { readLocalTierlist } = await import('@/app/_services/local-tierlist');
-        const profile = await readLocalTierlist(seed);
-        const result = await generateTierlist({
-          seed,
-          ticket,
-          onSavedProgress: () => setResumable(true),
-          provider,
-          histories: profile.animeImports,
-          history: profile.malImport,
-          username: parsed.data,
-          signal: request.signal,
-          onProgress: setProgress,
-        });
-        setGenerated({ ...result, expected, ticket, provider });
-
-        return '';
-      } catch (failure) {
-        return request.signal.aborted
-          ? 'Generation cancelled. Your tierlist is unchanged.'
-          : tierlistErrorMessage(failure, 'Unable to generate this tierlist. Try again.');
-      } finally {
-        setProgress(null);
-        controller.current = null;
-      }
-    },
-    '',
-  );
-  const [applyError, apply, applying] = useActionState(async () => {
-    if (!generated || (hasItems && !confirmed)) {
-      return '';
-    }
-    try {
-      await onApply(generated.document, generated.expected);
-      void pollAnimeImportQueue({
-        seed: generated.expected.seed,
-        ticket: generated.ticket,
-        provider: generated.provider,
-        event: 'applied',
-      }).catch(() => {});
-      const { clearAnimeImportCheckpoint } = await import(
-        '@/app/_services/anime-import-checkpoint'
-      );
-      await clearAnimeImportCheckpoint(seed, provider).catch(() => {});
-      setResumable(false);
-      onApplied();
-
-      return '';
-    } catch (failure) {
-      return tierlistErrorMessage(
-        failure,
-        'Your tierlist changed. Generate again before applying.',
-      );
-    }
-  }, '');
+  const {
+    progress,
+    result: generated,
+    resumeAvailable: resumable,
+    error,
+    applyError,
+  } = state.context;
+  const generating = state.hasTag('generating');
+  const applying = state.hasTag('applying');
+  const confirmed = state.matches({ reviewing: 'confirmed' });
   const disabled = busy || generating || applying;
+  const generateLabel = resumable && !generated ? 'Resume import' : 'Generate tierlist';
+  const generationError = !generating && state.context.request?.provider === provider ? error : '';
 
-  useEffect(() => () => controller.current?.abort(), []);
+  const generate = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    send({ type: 'GENERATE', request: { seed, revision, provider, username }, busy });
+  };
+
+  const apply = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    send({
+      type: 'APPLY',
+      busy,
+      hasItems,
+      apply: (result) => onApply(result.document, result.expected),
+      onApplied,
+    });
+  };
+
   useEffect(() => {
     let active = true;
-    import('@/app/_services/local-tierlist')
-      .then(async ({ readLocalTierlist }) => {
+
+    const restore = async () => {
+      try {
+        const { readLocalTierlist } = await import('@/app/_services/local-tierlist');
         const profile = await readLocalTierlist(seed);
         if (!active) {
           return;
         }
+
         const mal = profile.animeImports?.mal ?? profile.malImport;
         const anilist = profile.animeImports?.anilist;
         setUsernames((current) => ({
@@ -147,8 +86,13 @@ export const AnimeImport = ({
         if (mal || anilist) {
           setProvider(anilist && (!mal || anilist.importedAt > mal.importedAt) ? 'anilist' : 'mal');
         }
-      })
-      .catch(() => {});
+      } catch {
+        // History is optional; a fresh import still works without it.
+      }
+    };
+
+    void restore();
+
     return () => {
       active = false;
     };
@@ -156,23 +100,32 @@ export const AnimeImport = ({
 
   useEffect(() => {
     let active = true;
-    import('@/app/_services/anime-import-checkpoint')
-      .then(async ({ readAnimeImportCheckpoint }) => {
+
+    const restore = async () => {
+      try {
+        const { readAnimeImportCheckpoint } = await import(
+          '@/app/_services/anime-import-checkpoint'
+        );
         const saved = await readAnimeImportCheckpoint(seed, provider);
         if (active) {
-          setResumable(!!saved && !saved.complete);
+          send({ type: 'RESUME_AVAILABLE', available: !!saved && !saved.complete });
           if (saved) {
             setUsernames((current) =>
               current[provider] ? current : { ...current, [provider]: saved.username },
             );
           }
         }
-      })
-      .catch(() => {});
+      } catch {
+        // An unreadable checkpoint does not prevent a fresh import.
+      }
+    };
+
+    void restore();
+
     return () => {
       active = false;
     };
-  }, [seed, provider]);
+  }, [seed, provider, send]);
 
   return (
     <section
@@ -192,15 +145,16 @@ export const AnimeImport = ({
           ]}
           onChange={(next) => {
             setProvider(next);
-            setGenerated(null);
-            setConfirmed(false);
+            send({ type: 'RESET' });
           }}
         />
       </div>
-      <form action={generate} className="mt-3">
+
+      <form onSubmit={generate} aria-label={`Generate from ${providerLabel}`} className="mt-3">
         <label htmlFor={id} className="mb-2 block">
           Public {providerLabel} username
         </label>
+
         <input
           id={id}
           name="username"
@@ -208,6 +162,8 @@ export const AnimeImport = ({
           minLength={2}
           maxLength={provider === 'mal' ? 16 : 20}
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           spellCheck={false}
           placeholder={`Your ${providerLabel} username`}
           value={username}
@@ -220,18 +176,20 @@ export const AnimeImport = ({
           disabled={disabled}
           className="h-11 w-full border border-input bg-transparent px-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
         />
+
         <div className="mt-2 flex items-center gap-4">
-          <FormSubmitButton
+          <button
+            type="submit"
             disabled={disabled}
-            pendingLabel="Generating..."
+            aria-busy={generating}
             className="min-h-9 cursor-pointer border border-divider px-3 hover:bg-accent disabled:opacity-50"
           >
-            {resumable && !generated ? 'Resume import' : 'Generate tierlist'}
-          </FormSubmitButton>
+            {generating ? 'Generating...' : generateLabel}
+          </button>
           {generating && (
             <button
               type="button"
-              onClick={() => controller.current?.abort()}
+              onClick={() => send({ type: 'CANCEL' })}
               className="min-h-9 cursor-pointer underline underline-offset-4"
             >
               Cancel
@@ -279,9 +237,9 @@ export const AnimeImport = ({
           )}
         </div>
       )}
-      {!generating && errorProvider === provider && error && (
+      {generationError && (
         <p role="status" className="mt-2">
-          <TerminalText text={error} />
+          <TerminalText text={generationError} pending={false} />
         </p>
       )}
       {!generating && generated && (
@@ -291,6 +249,7 @@ export const AnimeImport = ({
               {generated.unavailablePosters} posters unavailable.
             </p>
           )}
+
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
             {generated.document.ranks.map((rank) => (
               <div key={rank} className="contents">
@@ -301,30 +260,35 @@ export const AnimeImport = ({
               </div>
             ))}
           </dl>
-          <form action={apply} className="mt-3">
+
+          <form onSubmit={apply} aria-label="Apply generated tierlist" className="mt-3">
             {hasItems && (
               <label className="mb-3 flex items-start gap-2">
                 <input
                   type="checkbox"
                   checked={confirmed}
                   disabled={disabled}
-                  onChange={(event) => setConfirmed(event.currentTarget.checked)}
+                  onChange={(event) =>
+                    send({ type: event.currentTarget.checked ? 'CONFIRM' : 'UNCONFIRM' })
+                  }
                   className="mt-1"
                 />
                 Replace my current tierlist with this generated starting point.
               </label>
             )}
-            <FormSubmitButton
-              disabled={disabled || (hasItems && !confirmed)}
-              pendingLabel="Applying..."
+
+            <button
+              type="submit"
+              disabled={disabled || state.matches('applied') || (hasItems && !confirmed)}
+              aria-busy={applying}
               className="min-h-9 cursor-pointer border border-foreground px-3 hover:bg-accent disabled:opacity-50"
             >
-              Use generated tierlist
-            </FormSubmitButton>
+              {applying ? 'Applying...' : 'Use generated tierlist'}
+            </button>
           </form>
           {applyError && (
             <p role="status" className="mt-2">
-              <TerminalText text={applyError} />
+              <TerminalText text={applyError} pending={false} />
             </p>
           )}
         </div>

@@ -18,6 +18,9 @@ const config: StorybookConfig = {
       plugins: [tailwindcss()],
       optimizeDeps: {
         include: [
+          '@statelyai/inspect',
+          'xstate',
+          '@xstate/react',
           'next/dynamic',
           'motion/react',
           'jotai',
