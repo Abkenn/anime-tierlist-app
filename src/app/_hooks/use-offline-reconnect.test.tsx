@@ -30,7 +30,7 @@ describe('offline recovery', () => {
       }),
     );
     vi.stubGlobal('fetch', fetch);
-    const { result } = renderHook(useOfflineReconnect);
+    const { result, rerender } = renderHook(useOfflineReconnect);
 
     await act(async () => {
       await Promise.resolve();
@@ -40,6 +40,28 @@ describe('offline recovery', () => {
     expect(router.replace).toHaveBeenCalledOnce();
     expect(router.replace.mock.calls[0]?.[0]).not.toContain('offline');
     expect(result.current.retryAt).toBeUndefined();
+    expect(router.refresh).not.toHaveBeenCalled();
+
+    preview.mode = null;
+    rerender();
+    rerender();
+    expect(router.refresh).toHaveBeenCalledOnce();
+  });
+
+  it('aborts a stalled probe and ignores retry clicks while it is running', async () => {
+    const fetch = vi.fn((_url: string, _options: RequestInit) => new Promise<Response>(() => {}));
+    vi.stubGlobal('fetch', fetch);
+    const { result } = renderHook(useOfflineReconnect);
+
+    act(() => result.current.reconnect());
+    expect(fetch).toHaveBeenCalledOnce();
+    const signal = fetch.mock.calls[0]?.[1].signal;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(signal?.aborted).toBe(true);
+    expect(result.current.retryAt).toBe(Date.now() + 30_000);
   });
 
   it('uses the visible deadline for retries and resets it after a failed manual check', async () => {
