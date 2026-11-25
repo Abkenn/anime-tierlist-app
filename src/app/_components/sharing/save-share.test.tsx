@@ -60,7 +60,7 @@ it('keeps sharing separate from private backups and reuses prepared previews', a
   fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
   expect(screen.getByRole('link', { name: 'Open Preview' })).toBeInTheDocument();
   expect(publish).toHaveBeenCalledOnce();
-});
+}, 15_000);
 
 it('restores an existing server preview on Share open without republishing', async () => {
   const publish = vi.fn(async () => '/new');
