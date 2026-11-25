@@ -2,6 +2,7 @@
 
 import { useMachine } from '@xstate/react';
 import { useEffect, useEffectEvent, useLayoutEffect } from 'react';
+import { match, P } from 'ts-pattern';
 import { type SnapshotFrom, waitFor } from 'xstate';
 import { tierlistUpdateMessage } from '@/app/_lib/tierlist-error';
 import { tierlistSyncMachine } from '@/app/_lib/tierlist-sync-machine';
@@ -21,34 +22,22 @@ const syncStatus = (
   state: SnapshotFrom<typeof tierlistSyncMachine>,
   current: boolean,
 ): SyncStatus => {
-  if (!current) {
-    return { status: 'connecting' as const };
-  }
-
   const { conflict, remote, message, retryAt, command, input } = state.context;
-  if (state.matches('offline')) {
-    return { status: 'offline' as const, message, retryAt };
-  }
-  if (state.matches('outdated')) {
-    return { status: 'outdated' as const, message: tierlistUpdateMessage };
-  }
-  if (state.matches('unauthorized')) {
-    return { status: 'unauthorized' as const, message };
-  }
-  if (conflict) {
-    return { status: 'conflict' as const, conflict };
-  }
-  if (!remote && !command) {
-    return { status: 'connecting' as const };
-  }
-  if (
-    (state.matches('working') || state.matches('debouncing')) &&
-    (command || input.local?.sync?.syncedLocalRevision !== input.local?.revision)
-  ) {
-    return { status: 'saving' as const };
-  }
+  const needsSave =
+    Boolean(command) || input.local?.sync?.syncedLocalRevision !== input.local?.revision;
 
-  return { status: 'saved' as const };
+  return match({ current, value: state.value, conflict, remote, command, needsSave })
+    .returnType<SyncStatus>()
+    .with({ current: false }, () => ({ status: 'connecting' }))
+    .with({ value: { offline: P._ } }, () => ({ status: 'offline', message, retryAt }))
+    .with({ value: 'outdated' }, () => ({ status: 'outdated', message: tierlistUpdateMessage }))
+    .with({ value: 'unauthorized' }, () => ({ status: 'unauthorized', message }))
+    .with({ conflict: P.nonNullable }, ({ conflict }) => ({ status: 'conflict', conflict }))
+    .with({ remote: undefined, command: undefined }, () => ({ status: 'connecting' }))
+    .with({ value: P.union('working', 'debouncing'), needsSave: true }, () => ({
+      status: 'saving',
+    }))
+    .otherwise(() => ({ status: 'saved' }));
 };
 
 export const useTierlistSync = (
