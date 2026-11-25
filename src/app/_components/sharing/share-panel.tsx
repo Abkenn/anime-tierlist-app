@@ -1,16 +1,18 @@
 'use client';
 
 import { Dialog } from '@base-ui/react/dialog';
+import { useMachine } from '@xstate/react';
 import { Share2, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { startTransition, useActionState, useEffect, useEffectEvent, useState } from 'react';
+import { useActionState, useEffect, useEffectEvent, useLayoutEffect, useState } from 'react';
 import { TerminalPending } from '@/app/_components/shell/terminal-pending';
 import { FormSubmitButton } from '@/app/_components/ui/form-submit-button';
 import { isError } from '@/app/_lib/is-error';
 import { keyboardBehaviors, matchesKeyboardBehavior } from '@/app/_lib/keybindings';
 import { copyPendingPreviewLink, copyPreviewLink } from '@/app/_lib/preview-clipboard';
+import { sharePreviewMachine } from '@/app/_lib/share-preview-machine';
 import { createSharingCache } from '@/app/_lib/sharing-cache';
 import { previewLeaveEvent } from '@/app/_lib/tierlist-share-id';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -33,74 +35,49 @@ export const SharePanel = ({
   initialOpen = false,
 }: SaveShareProps) => {
   const [open, setOpen] = useState(initialOpen);
-  const [phase, setPhase] = useState<'idle' | 'generating' | 'opening'>('idle');
   const [cache] = useState(createSharingCache);
   const router = useRouter();
   const pathname = usePathname();
   const reducedMotion = useReducedMotion();
   const input = { revision, onPublish, onFindPreview };
-  const [prepared, prepare, preparing] = useActionState(
-    async (
-      _previous: { url: string; error: string; revision: number },
-      mode: 'find' | 'generate',
-    ) => {
-      try {
-        const url = mode === 'find' ? await cache.find(input) : await cache.preview(input);
-        return { url: url ?? '', error: '', revision };
-      } catch (error) {
-        return {
-          url: '',
-          revision,
-          error: isError(error) ? error.message : 'Unable to prepare sharing.',
-        };
-      }
-    },
-    { url: '', error: '', revision: -1 },
+  const [preview, send] = useMachine(
+    sharePreviewMachine.provide({
+      actions: { openPreview: (_args, url) => router.push(url, { scroll: false }) },
+    }),
   );
-  const current = prepared.revision === revision;
-  const publishedUrl = current ? prepared.url : '';
+  const current = preview.context.revision === revision;
+  const publishedUrl = current ? preview.context.url : '';
+  const generating = current && preview.matches('generating');
+  const opening = current && preview.matches('opening');
+  const busy = generating || opening;
 
-  const findPreview = useEffectEvent((localRevision: number) => {
-    if (localRevision !== prepared.revision || !prepared.url) {
-      startTransition(() => prepare('find'));
+  const syncPreview = useEffectEvent((isOpen: boolean, revision: number) => {
+    if (isOpen) {
+      send({ type: 'lookup', revision, task: () => cache.find({ ...input, revision }) });
+    } else {
+      send({ type: 'close' });
     }
   });
 
-  useEffect(() => {
-    if (open) {
-      findPreview(revision);
-    }
+  useLayoutEffect(() => {
+    syncPreview(open, revision);
   }, [open, revision]);
 
   useEffect(() => {
-    if (open && phase === 'generating' && publishedUrl) {
-      setPhase('opening');
-      router.push(publishedUrl, { scroll: false });
-    } else if (phase === 'generating' && !preparing && prepared.error) {
-      setPhase('idle');
-    }
-  }, [open, phase, publishedUrl, preparing, prepared.error, router]);
-
-  useEffect(() => {
     if (pathname !== '/') {
-      setPhase('idle');
+      send({ type: 'arrived' });
     }
-  }, [pathname]);
 
-  useEffect(() => {
-    const close = () => {
-      setOpen(false);
-      setPhase('idle');
-    };
+    const close = () => setOpen(false);
     window.addEventListener(previewLeaveEvent, close);
 
     return () => window.removeEventListener(previewLeaveEvent, close);
-  }, []);
+  }, [pathname, send]);
 
   const openPreview = () => {
-    setPhase('generating');
-    void copyPendingPreviewLink(cache.preview(input));
-    startTransition(() => prepare('generate'));
+    const pending = cache.preview(input);
+    void copyPendingPreviewLink(pending);
+    send({ type: 'generate', task: () => pending });
   };
 
   const [download, downloadAction, downloading] = useActionState(async () => {
@@ -124,9 +101,6 @@ export const SharePanel = ({
       return;
     }
     setOpen(value);
-    if (!value) {
-      setPhase('idle');
-    }
   };
 
   return (
@@ -172,16 +146,15 @@ export const SharePanel = ({
                 Share a read-only preview or PNG.
               </Dialog.Description>
 
-              {current && prepared.error && <p role="status">{prepared.error}</p>}
+              {current && preview.context.error && <p role="status">{preview.context.error}</p>}
 
               <div className="mt-4 border-t border-divider pt-3">
-                {publishedUrl && phase === 'idle' ? (
+                {publishedUrl && !busy ? (
                   <Link
                     href={publishedUrl}
                     prefetch={true}
                     scroll={false}
                     onClick={(event) => {
-                      setPhase('idle');
                       void copyPreviewLink(
                         publishedUrl,
                         !(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey),
@@ -199,14 +172,12 @@ export const SharePanel = ({
                 ) : (
                   <button
                     type="button"
-                    disabled={phase !== 'idle'}
+                    disabled={busy}
                     onClick={openPreview}
                     className="inline-flex min-h-9 cursor-pointer items-center underline underline-offset-4 disabled:cursor-wait disabled:opacity-70"
                   >
-                    {phase !== 'idle' ? (
-                      <TerminalPending
-                        text={phase === 'opening' ? 'Opening preview' : 'Generating preview'}
-                      />
+                    {busy ? (
+                      <TerminalPending text={opening ? 'Opening preview' : 'Generating preview'} />
                     ) : (
                       'Open Preview'
                     )}

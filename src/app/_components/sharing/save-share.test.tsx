@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { SaveShare } from './save-share';
 
@@ -14,8 +14,9 @@ vi.mock('next/link', () => ({
   useLinkStatus: () => ({ pending: false }),
 }));
 
+const router = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => router,
   usePathname: () => '/',
 }));
 
@@ -71,4 +72,29 @@ it('restores an existing server preview on Share open without republishing', asy
   ).toHaveAttribute('href', 'https://example.com/existing.v3.4');
   expect(find).toHaveBeenCalledOnce();
   expect(publish).not.toHaveBeenCalled();
+});
+
+it('does not open a preview that finishes after the tierlist changes', async () => {
+  router.push.mockClear();
+  const pending = Promise.withResolvers<string>();
+  const publish = vi.fn(() => pending.promise);
+  const find = vi.fn(async () => 'https://example.com/current.v2');
+  const { rerender } = render(<SaveShare disabled={false} revision={1} onPublish={publish} />);
+
+  fireEvent.click(screen.getByRole('button', { name: /^Share$/ }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Open Preview' }));
+  rerender(<SaveShare disabled={false} revision={2} onPublish={publish} onFindPreview={find} />);
+  expect(await screen.findByRole('link', { name: 'Open Preview' })).toHaveAttribute(
+    'href',
+    'https://example.com/current.v2',
+  );
+
+  await act(async () => {
+    pending.resolve('https://example.com/obsolete.v1');
+  });
+  expect(router.push).not.toHaveBeenCalled();
+  expect(screen.getByRole('link', { name: 'Open Preview' })).toHaveAttribute(
+    'href',
+    'https://example.com/current.v2',
+  );
 });
