@@ -5,11 +5,17 @@ import { Provider } from 'jotai';
 import { createStore } from 'jotai/vanilla';
 import type { PropsWithChildren } from 'react';
 import { expect, it, vi } from 'vitest';
+import { createActor, waitFor as waitForState } from 'xstate';
 import { z } from 'zod';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
-import { createUserSeed } from '@/app/_lib/local-tierlist';
-import { type RemoteTierlist, tierlistDocumentSchema } from '@/app/_lib/tierlist-sync';
+import { createUserSeed, type LocalTierlist } from '@/app/_lib/local-tierlist';
+import {
+  getTierlistDocument,
+  type RemoteTierlist,
+  tierlistDocumentSchema,
+} from '@/app/_lib/tierlist-sync';
+import { tierlistSyncMachine } from '@/app/_lib/tierlist-sync-machine';
 import { loadLocalTierlist } from '@/app/_services/local-tierlist';
 import { connectTierlist, syncTierlist } from '@/app/_services/tierlist.actions';
 import { useLocalTierlist } from './use-local-tierlist';
@@ -19,6 +25,45 @@ vi.mock('@/app/_services/tierlist.actions', () => ({
   connectTierlist: vi.fn(),
   syncTierlist: vi.fn(),
 }));
+
+it('discards a connection result from the previous profile', async () => {
+  const local: LocalTierlist = {
+    version: 1,
+    seed: createUserSeed(),
+    revision: 0,
+    items: [],
+    ranks: ['Watching'],
+    imageMode: 'natural',
+  };
+  const pending = Promise.withResolvers<Awaited<ReturnType<typeof connectTierlist>>>();
+  vi.mocked(connectTierlist).mockClear();
+  vi.mocked(connectTierlist).mockReturnValueOnce(pending.promise);
+  const storage = {
+    refresh: vi.fn(async () => local),
+    updateSync: vi.fn(async () => {}),
+    replaceRemote: vi.fn(async () => {}),
+  };
+  const actor = createActor(tierlistSyncMachine, {
+    input: { storage, local, paused: false, account: false },
+  }).start();
+
+  try {
+    await waitFor(() => expect(connectTierlist).toHaveBeenCalledOnce());
+    const next = { ...local, seed: createUserSeed() };
+    actor.send({ type: 'update', input: { storage, local: next, paused: true, account: false } });
+    pending.resolve({
+      ok: true,
+      value: { ownerId: 'previous', revision: 0, document: getTierlistDocument(local) },
+    });
+    await waitForState(actor, (snapshot) => snapshot.matches('ready'));
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(actor.getSnapshot().context.remote).toBeUndefined();
+    expect(storage.updateSync).not.toHaveBeenCalled();
+    expect(storage.replaceRemote).not.toHaveBeenCalled();
+  } finally {
+    actor.stop();
+  }
+});
 
 it('serializes online saves and reads the newest shared draft before another tab uploads', async () => {
   await clear(createDatabaseStore('anime-tierlist', 'drafts'));
