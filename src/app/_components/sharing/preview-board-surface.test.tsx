@@ -5,6 +5,23 @@ import { layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { PreviewBoardSurface } from './preview-board-surface';
 
+it('overlays branding on the last row without repeating it on dragged fragments', () => {
+  const board = layoutExportBoard({ version: 1, imageMode: 'natural', ranks: ['S'], items: [] });
+  const { container, rerender } = render(<PreviewBoardSurface {...board} mode="natural" />);
+  const label = container.querySelector('svg > g:last-child text');
+  expect(label?.textContent).toBe('anime-tierlist.com');
+  expect(Number(label?.getAttribute('y'))).toBeLessThan(board.height);
+  expect(label?.parentElement?.getAttribute('pointer-events')).toBe('none');
+  rerender(
+    <PreviewBoardSurface
+      {...board}
+      mode="natural"
+      frame={{ x: 0, y: 0, width: 100, height: 100 }}
+    />,
+  );
+  expect(container.textContent).not.toContain('anime-tierlist.com');
+});
+
 it('keeps a visible poster and its clipping identity stable when earlier posters leave the viewport', () => {
   const document: TierlistDocument = {
     version: 1,

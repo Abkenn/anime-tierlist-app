@@ -60,6 +60,7 @@ vi.mock('@/app/_data/mutations/tierlist-share', () => ({
 import {
   copyPublicTierlistSeed,
   prepareTierlistShare,
+  previewFormat,
   publishTierlist,
   readExistingTierlistPreview,
   readPublicTierlist,
@@ -94,7 +95,7 @@ it('creates public snapshots with independent IDs and strips every secret from p
     ownerId: 'owner',
     revision: 4,
   });
-  expect(version).toBe('v4.7');
+  expect(version).toBe(`v4.${previewFormat}`);
   expect(id).toMatch(/^[A-Za-z0-9_-]{16}$/u);
   mocks.share.mockResolvedValue({
     id,

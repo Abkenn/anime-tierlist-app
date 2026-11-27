@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   exportCanvasSize,
@@ -184,6 +185,23 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
 
   try {
     await Promise.all(Array.from({ length: Math.min(6, posters.length) }, worker));
+    context.save();
+    await document.fonts.load(`${mark.fontWeight} ${mark.fontSize}px Geist`);
+    context.globalAlpha = mark.backgroundOpacity;
+    context.fillStyle = mark.background;
+    context.beginPath();
+    context.roundRect(mark.x, board.height - mark.bottom - mark.height, mark.width, mark.height, 2);
+    context.fill();
+    context.globalAlpha = mark.opacity;
+    context.fillStyle = mark.color;
+    context.font = `${mark.fontWeight} ${mark.fontSize}px ${mark.fontFamily}`;
+    context.fillText(
+      mark.text,
+      mark.x + mark.width / 2,
+      board.height - mark.bottom - 8,
+      mark.width - 16,
+    );
+    context.restore();
     const { promise, resolve, reject } = Promise.withResolvers<Blob>();
     canvas.toBlob(
       (blob) =>

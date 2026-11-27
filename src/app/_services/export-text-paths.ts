@@ -2,6 +2,7 @@ import 'server-only';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { create, type Font } from 'fontkit';
+import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
 import { rankTextColor } from '@/app/_lib/rank-text-color';
 import {
   exportPosterSize,
@@ -11,10 +12,9 @@ import {
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 
-const fontPath = join(process.cwd(), 'src/app/_assets/fonts/NotoSansCJKjp-Regular.otf');
 let loadedFont: Promise<Font> | undefined;
-const readExportFont = async () => {
-  const data = await readFile(fontPath);
+const readExportFont = async (filename: 'NotoSansCJKjp-Regular.otf' | 'Geist-Medium.ttf') => {
+  const data = await readFile(join(process.cwd(), 'src/app/_assets/fonts', filename));
   const font = create(data);
   if (!('layout' in font)) {
     throw new Error('The export font must be a single font.');
@@ -22,8 +22,16 @@ const readExportFont = async () => {
 
   return font;
 };
+let watermarkFont: Promise<Font> | undefined;
+
+const loadWatermarkFont = () => {
+  watermarkFont ??= readExportFont('Geist-Medium.ttf');
+
+  return watermarkFont;
+};
+
 const loadFont = () => {
-  loadedFont ??= readExportFont();
+  loadedFont ??= readExportFont('NotoSansCJKjp-Regular.otf');
 
   return loadedFont;
 };
@@ -56,7 +64,7 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
   const font = await loadFont();
   const board = layoutExportBoard(document);
 
-  return board.rows
+  const content = board.rows
     .map((row, rowIndex) => {
       const { lines, fontSize } = row.labelLayout;
       const rank = lines
@@ -110,4 +118,13 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
       return `<g fill="${row.textColor}">${rank}</g>${posters}`;
     })
     .join('');
+  const watermark = linePaths(await loadWatermarkFont(), {
+    text: mark.text,
+    x: mark.x + mark.width / 2,
+    y: board.height - mark.bottom - 8,
+    size: mark.fontSize,
+    width: mark.width - 16,
+  });
+
+  return `${content}<g><rect x="${mark.x}" y="${board.height - mark.bottom - mark.height}" width="${mark.width}" height="${mark.height}" rx="2" fill="${mark.background}" opacity="${mark.backgroundOpacity}"/><g fill="${mark.color}" opacity="${mark.opacity}">${watermark}</g></g>`;
 };

@@ -8,6 +8,7 @@ import {
   exportTitle,
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierImageMode } from '@/app/_types/tierlist.types';
+import { PreviewWatermark } from './preview-watermark';
 
 type PreviewBoardSurfaceProps = {
   rows: ExportRow[];
@@ -18,6 +19,7 @@ type PreviewBoardSurfaceProps = {
   priorityIds?: ReadonlySet<string>;
   frame?: { x: number; y: number; width: number; height: number };
   clipPrefix?: string;
+  watermark?: boolean;
   pendingIds?: ReadonlySet<string>;
   onPosterSettled?: (source: string) => void;
 };
@@ -33,6 +35,7 @@ export const PreviewBoardSurface = ({
   clipPrefix = '',
   pendingIds,
   onPosterSettled,
+  watermark = !frame,
 }: PreviewBoardSurfaceProps) => {
   const board = { rows, width, height };
 
@@ -163,6 +166,8 @@ export const PreviewBoardSurface = ({
           })}
         </g>
       ))}
+
+      {watermark && <PreviewWatermark height={height} />}
     </svg>
   );
 };

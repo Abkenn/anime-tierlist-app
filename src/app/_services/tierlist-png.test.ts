@@ -2,12 +2,39 @@
 
 import sharp from 'sharp';
 import { expect, it, vi } from 'vitest';
+import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
 
 vi.mock('server-only', () => ({}));
 vi.mock('next/cache', () => ({ cacheLife: vi.fn(), cacheTag: vi.fn() }));
 
 import { renderExportTextPaths } from './export-text-paths';
 import { renderTierlistPng } from './tierlist-png';
+
+it('bakes watermark lettering into the bottom row of the PNG', async () => {
+  const png = await renderTierlistPng({
+    version: 1,
+    imageMode: 'natural',
+    ranks: ['S'],
+    rankDetails: { S: { label: 'S', color: '#ffffff' } },
+    items: [],
+  });
+  const { data, info } = await sharp(png)
+    .extract({
+      left: mark.x * 2,
+      top: (160 - mark.bottom - mark.height) * 2,
+      width: 280,
+      height: mark.height * 2,
+    })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const brightness = Array.from(
+    { length: info.width * info.height },
+    (_, pixel) => data[pixel * info.channels],
+  );
+  expect(Math.min(...brightness)).toBeGreaterThan(180);
+  expect(Math.max(...brightness) - Math.min(...brightness)).toBeGreaterThan(10);
+});
 
 it('renders the exported board layout as a bounded PNG with local posters and edited titles', async () => {
   const png = await renderTierlistPng({

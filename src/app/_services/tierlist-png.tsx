@@ -1,7 +1,7 @@
 import 'server-only';
 import { prerender } from 'react-dom/static';
 import sharp from 'sharp';
-import { TierlistPreviewBoard } from '@/app/_components/sharing/tierlist-preview-board';
+import { PreviewBoardSurface } from '@/app/_components/sharing/preview-board-surface';
 import { usesAutomaticTitleColor } from '@/app/_lib/tier-item-title';
 import { exportCanvasSize, layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
@@ -63,8 +63,13 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
       };
     }),
   };
-  const element = TierlistPreviewBoard({ document: printable });
-  const { prelude } = await prerender(element);
+  const { prelude } = await prerender(
+    <PreviewBoardSurface
+      {...layoutExportBoard(printable)}
+      mode={printable.imageMode}
+      watermark={false}
+    />,
+  );
   const markup = await new Response(prelude).text();
   const outlines = await renderExportTextPaths(printable);
   const withoutText = markup.replace(/<text\b[^>]*>[\s\S]*?<\/text>/gu, '');
