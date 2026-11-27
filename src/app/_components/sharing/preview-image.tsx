@@ -5,6 +5,7 @@ import { preload } from 'react-dom';
 import { TierlistFind } from '@/app/_components/tier-board/tierlist-find';
 import { usePreviewPosters } from '@/app/_hooks/use-preview-posters';
 import { useTitleColors } from '@/app/_hooks/use-title-colors';
+import { useWatermarkColor } from '@/app/_hooks/use-watermark-color';
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
 import { watchPreviewClipboard } from '@/app/_lib/preview-clipboard';
@@ -27,6 +28,7 @@ export const PreviewImage = ({ id, width, height, rows, mode }: PreviewImageProp
   const [query, setQuery] = useState('');
   const [settledSources, setSettledSources] = useState<ReadonlySet<string>>(() => new Set());
   const deferredQuery = useDeferredValue(query);
+  const watermarkColor = useWatermarkColor(rows, height, mode);
   const posters = useMemo(() => rows.flatMap((row) => row.posters), [rows]);
   const visible = usePreviewPosters(root, posters, width, height);
   const colors = useTitleColors(
@@ -71,6 +73,7 @@ export const PreviewImage = ({ id, width, height, rows, mode }: PreviewImageProp
   return (
     <div ref={root} className="relative" style={{ minWidth: Math.max(640, width / 2) }}>
       <PreviewBoardSurface
+        watermarkColor={watermarkColor}
         rows={displayRows}
         width={width}
         height={height}

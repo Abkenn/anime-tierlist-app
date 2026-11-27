@@ -11,7 +11,7 @@ import { addRankAtom, removeRankAtom } from '@/app/_atoms/tierlist/ranks.atoms';
 import { enabledTierRanksAtom, rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { ColorPicker } from '@/app/_components/ui/color-picker';
 import { useTierLabelLayout } from '@/app/_hooks/use-tier-label-layout';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import type { HexColor, TierRank } from '@/app/_types/tierlist.types';
 import { TierRankMove } from './tier-rank-move';
@@ -95,7 +95,7 @@ export const TierRankLabel = ({ rank }: { rank: TierRank }) => {
         details[rank]?.color
           ? {
               backgroundColor: details[rank].color,
-              color: rankTextColor(details[rank].color),
+              color: contrastingTextColor(details[rank].color),
             }
           : undefined
       }

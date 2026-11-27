@@ -1,6 +1,13 @@
 import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
+import type { HexColor } from '@/app/_types/tierlist.types';
 
-export const PreviewWatermark = ({ height }: { height: number }) => (
+export const PreviewWatermark = ({
+  height,
+  color = mark.color,
+}: {
+  height: number;
+  color?: HexColor;
+}) => (
   <g pointerEvents="none">
     <rect
       x={mark.x}
@@ -19,7 +26,7 @@ export const PreviewWatermark = ({ height }: { height: number }) => (
       fontFamily={mark.fontFamily}
       fontSize={mark.fontSize}
       fontWeight={mark.fontWeight}
-      fill={mark.color}
+      fill={color}
       opacity={mark.opacity}
     >
       {mark.text}

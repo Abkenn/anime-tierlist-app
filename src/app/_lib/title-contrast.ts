@@ -1,5 +1,5 @@
 import type { HexColor, TierImageMode, TierItemData } from '@/app/_types/tierlist.types';
-import { rankTextColor } from './rank-text-color';
+import { averagePixelColor, contrastingTextColor } from './text-contrast';
 import { fullImageTrim } from './tier-image-trim';
 
 export const titleSampleSize = 32;
@@ -29,8 +29,7 @@ export const contrastingTitleColor = (
     bottom: area.bottom - band,
   };
   const top = positions[item.title?.position ?? 'bottom'];
-  const channels = [0, 0, 0];
-  let count = 0;
+  const selected: number[] = [];
   Array.from({ length: titleSampleSize * titleSampleSize }, (_, index) => index).forEach(
     (index) => {
       const x = ((index % titleSampleSize) + 0.5) / titleSampleSize;
@@ -38,23 +37,16 @@ export const contrastingTitleColor = (
       if (x < area.left || x > area.right || y < top || y > top + band) {
         return;
       }
-      const alpha = (pixels[index * 4 + 3] ?? 255) / 255;
-      channels.forEach((_, channel) => {
-        channels[channel] += (pixels[index * 4 + channel] ?? 28) * alpha + 28 * (1 - alpha);
-      });
-      count += 1;
+      selected.push(
+        ...Array.from(
+          { length: 4 },
+          (_, channel) => pixels[index * 4 + channel] ?? (channel === 3 ? 255 : 28),
+        ),
+      );
     },
   );
-  if (!count) {
+  if (!selected.length) {
     return '#ededeb';
   }
-  const background: HexColor = `#${channels
-    .map((value) =>
-      Math.round(value / count)
-        .toString(16)
-        .padStart(2, '0'),
-    )
-    .join('')}`;
-
-  return rankTextColor(background);
+  return contrastingTextColor(averagePixelColor(selected));
 };

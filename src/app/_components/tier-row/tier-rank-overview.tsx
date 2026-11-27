@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { useRef } from 'react';
 import { rankDetailsAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { useTierLabelLayout } from '@/app/_hooks/use-tier-label-layout';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import { tierColorClasses, tierColors } from '@/app/_lib/tier-colors';
 import type { TierRank } from '@/app/_types/tierlist.types';
 
@@ -20,7 +20,7 @@ export const TierRankOverview = ({ rank }: { rank: TierRank }) => {
   return (
     <motion.div
       ref={ref}
-      animate={color ? { backgroundColor: color, color: rankTextColor(color) } : undefined}
+      animate={color ? { backgroundColor: color, color: contrastingTextColor(color) } : undefined}
       className={cn(
         'relative flex min-h-(--tier-size,5rem) self-stretch items-center justify-center border-r border-ink text-graphite text-sm',
         label.length > 4 && 'min-h-24',

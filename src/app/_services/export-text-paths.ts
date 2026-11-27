@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { create, type Font } from 'fontkit';
 import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import {
   exportPosterSize,
   exportTextLines,
@@ -11,6 +11,7 @@ import {
   layoutExportBoard,
 } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
+import type { HexColor } from '@/app/_types/tierlist.types';
 
 let loadedFont: Promise<Font> | undefined;
 const readExportFont = async (filename: 'NotoSansCJKjp-Regular.otf' | 'Geist-Medium.ttf') => {
@@ -60,7 +61,10 @@ const linePaths = (font: Font, line: TextLine) => {
     .join('');
 };
 
-export const renderExportTextPaths = async (document: TierlistDocument) => {
+export const renderExportTextPaths = async (
+  document: TierlistDocument,
+  watermarkColor: HexColor = mark.color,
+) => {
   const font = await loadFont();
   const board = layoutExportBoard(document);
 
@@ -111,7 +115,7 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
               )
               .join('') ?? '';
 
-          return `<g clip-path="url(#poster-${rowIndex}-${index})"><g fill="#ededeb">${fallback}</g>${title ? `<g fill="${title.color}" stroke="${rankTextColor(title.color)}" stroke-width="1.5" paint-order="stroke" stroke-linejoin="round">${titlePaths}</g>` : ''}</g>`;
+          return `<g clip-path="url(#poster-${rowIndex}-${index})"><g fill="#ededeb">${fallback}</g>${title ? `<g fill="${title.color}" stroke="${contrastingTextColor(title.color)}" stroke-width="1.5" paint-order="stroke" stroke-linejoin="round">${titlePaths}</g>` : ''}</g>`;
         })
         .join('');
 
@@ -126,5 +130,5 @@ export const renderExportTextPaths = async (document: TierlistDocument) => {
     width: mark.width - 16,
   });
 
-  return `${content}<g><rect x="${mark.x}" y="${board.height - mark.bottom - mark.height}" width="${mark.width}" height="${mark.height}" rx="2" fill="${mark.background}" opacity="${mark.backgroundOpacity}"/><g fill="${mark.color}" opacity="${mark.opacity}">${watermark}</g></g>`;
+  return `${content}<g><rect x="${mark.x}" y="${board.height - mark.bottom - mark.height}" width="${mark.width}" height="${mark.height}" rx="2" fill="${mark.background}" opacity="${mark.backgroundOpacity}"/><g fill="${watermarkColor}" opacity="${mark.opacity}">${watermark}</g></g>`;
 };

@@ -1,5 +1,5 @@
 import type { HexColor, TierColor, TierItemData } from '@/app/_types/tierlist.types';
-import { rankTextColor } from './rank-text-color';
+import { contrastingTextColor } from './text-contrast';
 import { tierColors } from './tier-colors';
 import { fullImageTrim } from './tier-image-trim';
 import { getTierItemSize } from './tier-item-layout';
@@ -68,7 +68,7 @@ export const layoutExportBoard = (document: TierlistDocument) => {
         fontSize: 20,
       }),
       color,
-      textColor: rankTextColor(color),
+      textColor: contrastingTextColor(color),
       y: index * exportPosterSize,
       end: x,
       posters,

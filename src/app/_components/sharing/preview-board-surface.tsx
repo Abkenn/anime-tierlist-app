@@ -1,13 +1,13 @@
 import { posterCrossOrigin } from '@/app/_lib/poster-cross-origin';
 import { posterDisplaySource } from '@/app/_lib/poster-display-source';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import {
   type ExportRow,
   exportImageFrame,
   exportPosterSize,
   exportTitle,
 } from '@/app/_lib/tierlist-export-layout';
-import type { TierImageMode } from '@/app/_types/tierlist.types';
+import type { HexColor, TierImageMode } from '@/app/_types/tierlist.types';
 import { PreviewWatermark } from './preview-watermark';
 
 type PreviewBoardSurfaceProps = {
@@ -20,6 +20,7 @@ type PreviewBoardSurfaceProps = {
   frame?: { x: number; y: number; width: number; height: number };
   clipPrefix?: string;
   watermark?: boolean;
+  watermarkColor?: HexColor;
   pendingIds?: ReadonlySet<string>;
   onPosterSettled?: (source: string) => void;
 };
@@ -36,6 +37,7 @@ export const PreviewBoardSurface = ({
   pendingIds,
   onPosterSettled,
   watermark = !frame,
+  watermarkColor,
 }: PreviewBoardSurfaceProps) => {
   const board = { rows, width, height };
 
@@ -145,7 +147,7 @@ export const PreviewBoardSurface = ({
                       fontFamily="sans-serif"
                       fontWeight={600}
                       fontSize={title.fontSize}
-                      stroke={rankTextColor(title.color)}
+                      stroke={contrastingTextColor(title.color)}
                       strokeWidth={1.5}
                       paintOrder="stroke"
                     >
@@ -167,7 +169,7 @@ export const PreviewBoardSurface = ({
         </g>
       ))}
 
-      {watermark && <PreviewWatermark height={height} />}
+      {watermark && <PreviewWatermark height={height} color={watermarkColor} />}
     </svg>
   );
 };

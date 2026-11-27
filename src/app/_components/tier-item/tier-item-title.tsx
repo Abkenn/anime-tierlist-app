@@ -3,7 +3,7 @@
 import { cn } from 'cn';
 import { useTierTitleFrame } from '@/app/_hooks/use-tier-title-frame';
 import { useTitleColors } from '@/app/_hooks/use-title-colors';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import { getTierTitleLayout } from '@/app/_lib/tier-title-layout';
 import type {
   TierItemTitle as ItemTitle,
@@ -33,7 +33,7 @@ export const TierItemTitle = ({ title, image, mode, trim, crop }: TierItemTitleP
     mode,
   );
   const color = colors.get('title') ?? title.color;
-  const outline = rankTextColor(color);
+  const outline = contrastingTextColor(color);
 
   return (
     <span

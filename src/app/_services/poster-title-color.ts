@@ -8,7 +8,7 @@ import type { HexColor, TierImageMode, TierItemData } from '@/app/_types/tierlis
 
 const samples = new Map<string, Promise<Uint8ClampedArray | null>>();
 
-const readPixels = (source: string) => {
+export const readPosterPixels = (source: string) => {
   const existing = samples.get(source);
   if (existing) {
     return existing;
@@ -57,7 +57,7 @@ export const resolvePosterTitleColor = async (
   if (!item.title || !usesAutomaticTitleColor(item.title) || !item.image) {
     return fallback;
   }
-  const pixels = await readPixels(item.image.src);
+  const pixels = await readPosterPixels(item.image.src);
 
   return pixels ? contrastingTitleColor(pixels, item, mode) : fallback;
 };

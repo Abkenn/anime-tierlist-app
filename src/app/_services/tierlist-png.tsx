@@ -6,10 +6,12 @@ import { usesAutomaticTitleColor } from '@/app/_lib/tier-item-title';
 import { exportCanvasSize, layoutExportBoard } from '@/app/_lib/tierlist-export-layout';
 import type { TierlistDocument } from '@/app/_lib/tierlist-sync';
 import { contrastingTitleColor, titleSampleSize } from '@/app/_lib/title-contrast';
+import { boardWatermarkColor, watermarkPosters } from '@/app/_lib/watermark-contrast';
 import { embedExportPoster } from './export-poster';
 import { renderExportTextPaths } from './export-text-paths';
 
 export const renderTierlistPng = async (document: TierlistDocument) => {
+  const board = layoutExportBoard(document);
   const sources = [
     ...new Set(document.items.flatMap((item) => (item.image ? [item.image.src] : []))),
   ];
@@ -20,6 +22,11 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
       item.title && usesAutomaticTitleColor(item.title) && item.image ? [item.image.src] : [],
     ),
   );
+  watermarkPosters({ ...board, mode: document.imageMode }).forEach(({ item }) => {
+    if (item.image) {
+      automaticSources.add(item.image.src);
+    }
+  });
   let next = 0;
   const worker = async () => {
     while (next < sources.length) {
@@ -71,11 +78,13 @@ export const renderTierlistPng = async (document: TierlistDocument) => {
     />,
   );
   const markup = await new Response(prelude).text();
-  const outlines = await renderExportTextPaths(printable);
+  const outlines = await renderExportTextPaths(
+    printable,
+    boardWatermarkColor({ ...board, mode: document.imageMode }, samples),
+  );
   const withoutText = markup.replace(/<text\b[^>]*>[\s\S]*?<\/text>/gu, '');
   const end = withoutText.lastIndexOf('</svg>');
   const svg = `${withoutText.slice(0, end)}${outlines}</svg>`;
-  const board = layoutExportBoard(document);
   const output = exportCanvasSize(board.width, board.height);
 
   const input = Buffer.from(

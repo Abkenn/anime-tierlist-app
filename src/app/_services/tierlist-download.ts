@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { previewWatermark as mark } from '@/app/_lib/preview-watermark';
-import { rankTextColor } from '@/app/_lib/rank-text-color';
+import { contrastingTextColor } from '@/app/_lib/text-contrast';
 import {
   exportCanvasSize,
   exportImageFrame,
@@ -10,6 +10,7 @@ import {
   layoutExportBoard,
 } from '@/app/_lib/tierlist-export-layout';
 import { type TierlistDocument, userSeedSchema } from '@/app/_lib/tierlist-sync';
+import { watermarkTextColor } from '@/app/_lib/watermark-contrast';
 import { posterCacheName } from './poster-cache';
 import { resolvePosterTitleColor } from './poster-title-color';
 
@@ -166,7 +167,7 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
         context.font = `600 ${title.fontSize}px sans-serif`;
         const color = await resolvePosterTitleColor(box.item, data.imageMode);
         context.fillStyle = color;
-        context.strokeStyle = rankTextColor(color);
+        context.strokeStyle = contrastingTextColor(color);
         context.lineWidth = 1.5;
         title.lines.forEach((line, index) => {
           const y = title.y + title.fontSize + index * title.fontSize * 1.25;
@@ -185,6 +186,14 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
 
   try {
     await Promise.all(Array.from({ length: Math.min(6, posters.length) }, worker));
+    const watermarkColor = watermarkTextColor(
+      context.getImageData(
+        Math.floor(mark.x * output.scale),
+        Math.floor((board.height - mark.bottom - mark.height) * output.scale),
+        Math.max(1, Math.floor(mark.width * output.scale)),
+        Math.max(1, Math.floor(mark.height * output.scale)),
+      ).data,
+    );
     context.save();
     await document.fonts.load(`${mark.fontWeight} ${mark.fontSize}px Geist`);
     context.globalAlpha = mark.backgroundOpacity;
@@ -193,7 +202,7 @@ export const downloadTierlistPng = async (data: TierlistDocument) => {
     context.roundRect(mark.x, board.height - mark.bottom - mark.height, mark.width, mark.height, 2);
     context.fill();
     context.globalAlpha = mark.opacity;
-    context.fillStyle = mark.color;
+    context.fillStyle = watermarkColor;
     context.font = `${mark.fontWeight} ${mark.fontSize}px ${mark.fontFamily}`;
     context.fillText(
       mark.text,
