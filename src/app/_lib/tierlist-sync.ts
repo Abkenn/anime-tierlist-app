@@ -14,6 +14,7 @@ export const tierlistDocumentSchema = localTierlistSchema
     items: true,
     ranks: true,
     rankDetails: true,
+    positionsLocked: true,
     imageMode: true,
     posterSize: true,
     updatedAt: true,
@@ -45,6 +46,7 @@ export const getTierlistDocument = (snapshot: TierlistDocument): TierlistDocumen
   items: snapshot.items,
   ranks: snapshot.ranks,
   rankDetails: snapshot.rankDetails,
+  positionsLocked: snapshot.positionsLocked,
   imageMode: snapshot.imageMode,
   posterSize: snapshot.posterSize,
   updatedAt: snapshot.updatedAt,
@@ -79,10 +81,18 @@ const sameJsonValue = (first: unknown, second: unknown): boolean => {
 
 export const sameTierlistDocument = (first: TierlistDocument, second: TierlistDocument) => {
   // Save timestamps describe versions; they are not edits to the tierlist content.
-  const { updatedAt: _firstUpdatedAt, ...firstContent } = first;
-  const { updatedAt: _secondUpdatedAt, ...secondContent } = second;
+  const {
+    updatedAt: _firstUpdatedAt,
+    positionsLocked: firstLocked = false,
+    ...firstContent
+  } = first;
+  const {
+    updatedAt: _secondUpdatedAt,
+    positionsLocked: secondLocked = false,
+    ...secondContent
+  } = second;
 
-  return sameJsonValue(firstContent, secondContent);
+  return firstLocked === secondLocked && sameJsonValue(firstContent, secondContent);
 };
 
 export const getSyncDecision = (local: LocalTierlist, remote: RemoteTierlist) => {

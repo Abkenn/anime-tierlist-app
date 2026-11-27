@@ -40,6 +40,9 @@ describe('tierlist sync decisions', () => {
     };
 
     expect(sameTierlistDocument(first, second)).toBe(true);
+    expect(sameTierlistDocument(first, { ...second, positionsLocked: false })).toBe(true);
+    expect(sameTierlistDocument(first, { ...second, positionsLocked: true })).toBe(false);
+    expect(getTierlistDocument({ ...first, positionsLocked: true }).positionsLocked).toBe(true);
     expect(
       sameTierlistDocument({ ...first, updatedAt: 1000 }, { ...second, updatedAt: 2000 }),
     ).toBe(true);

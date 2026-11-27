@@ -2,7 +2,7 @@ import type { LocalTierlist } from './local-tierlist';
 
 export type LocalTierlistContent = Pick<
   LocalTierlist,
-  'items' | 'ranks' | 'rankDetails' | 'imageMode' | 'posterSize' | 'updatedAt'
+  'items' | 'ranks' | 'rankDetails' | 'imageMode' | 'posterSize' | 'updatedAt' | 'positionsLocked'
 >;
 
 const same = (first: unknown, second: unknown) => JSON.stringify(first) === JSON.stringify(second);
@@ -63,6 +63,10 @@ export const applyLocalTierlistEdit = (
       : after.rankDetails,
     ranks: same(before.ranks, after.ranks) ? current.ranks : after.ranks,
     posterSize: before.posterSize === after.posterSize ? current.posterSize : after.posterSize,
+    positionsLocked:
+      before.positionsLocked === after.positionsLocked
+        ? current.positionsLocked
+        : after.positionsLocked,
     imageMode: before.imageMode === after.imageMode ? current.imageMode : after.imageMode,
   };
 };

@@ -5,6 +5,7 @@ import { Provider } from 'jotai';
 import { createStore } from 'jotai/vanilla';
 import { type PropsWithChildren, StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { imageModeAtom } from '@/app/_atoms/tierlist/settings.atoms';
 import { useLocalTierlist } from '@/app/_hooks/use-local-tierlist';
@@ -428,4 +429,56 @@ describe('local tierlist durability', () => {
     expect(saved.imageMode).toBe('cover');
     hook.unmount();
   });
+});
+
+it('remembers the lock after reopening and restores the lock from another device', async () => {
+  const mount = () => {
+    const store = createStore();
+    const hook = renderHook(useLocalTierlist, {
+      wrapper: ({ children }: PropsWithChildren) => <Provider store={store}>{children}</Provider>,
+    });
+    return { store, hook };
+  };
+  const first = mount();
+  await waitFor(() => expect(first.hook.result.current.status).toBe('saved'));
+  act(() => first.store.set(positionsLockedAtom, true));
+  await waitFor(() => expect(first.hook.result.current.snapshot?.positionsLocked).toBe(true));
+  first.hook.unmount();
+
+  const second = mount();
+  try {
+    await waitFor(() => expect(second.hook.result.current.status).toBe('saved'));
+    expect(second.store.get(positionsLockedAtom)).toBe(true);
+    const document = second.hook.result.current.snapshot;
+    if (!document) {
+      throw new Error('Missing saved tierlist');
+    }
+    await act(() =>
+      second.hook.result.current.replaceRemote({
+        ownerId: 'owner',
+        revision: 1,
+        document: { ...document, positionsLocked: false },
+      }),
+    );
+    expect(second.store.get(positionsLockedAtom)).toBe(false);
+    await act(() =>
+      second.hook.result.current.replaceRemote({
+        ownerId: 'owner',
+        revision: 2,
+        document: { ...document, positionsLocked: true },
+      }),
+    );
+    expect(second.store.get(positionsLockedAtom)).toBe(true);
+    const { positionsLocked: _lock, ...legacy } = document;
+    await act(() =>
+      second.hook.result.current.replaceRemote({
+        ownerId: 'owner',
+        revision: 3,
+        document: legacy,
+      }),
+    );
+    expect(second.store.get(positionsLockedAtom)).toBe(false);
+  } finally {
+    second.hook.unmount();
+  }
 });

@@ -2,7 +2,7 @@
 
 import { useStore } from 'jotai';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { clearEditingItemAtom } from '@/app/_atoms/tierlist/interaction.atoms';
+import { clearEditingItemAtom, positionsLockedAtom } from '@/app/_atoms/tierlist/interaction.atoms';
 import { tierItemsAtom } from '@/app/_atoms/tierlist/items.atoms';
 import { posterPreviewsAtom } from '@/app/_atoms/tierlist/poster-preview.atoms';
 import {
@@ -140,6 +140,7 @@ export const useLocalTierlist = () => {
           updatedAt: Date.now(),
           items: store.get(tierItemsAtom),
           ranks: store.get(enabledTierRanksAtom),
+          positionsLocked: store.get(positionsLockedAtom),
           imageMode: store.get(imageModeAtom),
           posterSize: store.get(posterSizeAtom),
           rankDetails: store.get(rankDetailsAtom),
@@ -169,6 +170,7 @@ export const useLocalTierlist = () => {
           }
           store.set(tierItemsAtom, current.items);
           store.set(enabledTierRanksAtom, current.ranks);
+          store.set(positionsLockedAtom, current.positionsLocked ?? false);
           store.set(imageModeAtom, current.imageMode);
           store.set(posterSizeAtom, current.posterSize ?? 'dynamic');
           store.set(rankDetailsAtom, current.rankDetails ?? {});
@@ -221,6 +223,7 @@ export const useLocalTierlist = () => {
             updatedAt: Date.now(),
             items: store.get(tierItemsAtom),
             ranks: store.get(enabledTierRanksAtom),
+            positionsLocked: store.get(positionsLockedAtom),
             imageMode: store.get(imageModeAtom),
             posterSize: store.get(posterSizeAtom),
             rankDetails: store.get(rankDetailsAtom),
@@ -247,6 +250,7 @@ export const useLocalTierlist = () => {
           const subscriptions = [
             store.sub(tierItemsAtom, persist),
             store.sub(enabledTierRanksAtom, persist),
+            store.sub(positionsLockedAtom, persist),
             store.sub(imageModeAtom, persist),
             store.sub(posterSizeAtom, persist),
             store.sub(rankDetailsAtom, persist),
@@ -330,6 +334,7 @@ export const useLocalTierlist = () => {
               const next = {
                 ...current,
                 ...remote.document,
+                positionsLocked: remote.document.positionsLocked,
                 revision: current.revision + 1,
                 sync: {
                   ownerId: remote.ownerId,

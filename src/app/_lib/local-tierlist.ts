@@ -69,6 +69,7 @@ export const localTierlistSchema = z.object({
     )
     .optional(),
   posterSize: z.enum(['dynamic', 'small', 'medium', 'large']).optional(),
+  positionsLocked: z.boolean().optional(),
   imageMode: z.enum(['natural', 'cover', 'contain']),
   sync: z
     .object({
